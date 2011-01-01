@@ -767,7 +767,7 @@ VALUE
 rb_to_16s(VALUE self)
 {
   CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_16U, CV_MAT_CN(src->type)));
+  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_16S, CV_MAT_CN(src->type)));
   cvConvert(src, CVMAT(dest));
   return dest;
 }
@@ -923,7 +923,7 @@ rb_sub_rect(VALUE self, VALUE args)
  *   m = OpenCV::CvMat.new(10, 10) #=> size 10x10 matrix
  *   ml, mr = m.slice_width(2)     #=> 5x10 and 5x10 matrix
  *
- *   ml, mm, mr = m.sclice_width(3)#=> 3x10 3x10 3x10 matrix
+ *   ml, mm, mr = m.slice_width(3)#=> 3x10 3x10 3x10 matrix
  *   warning : width does not div correctly.
  */
 VALUE
@@ -1360,7 +1360,7 @@ rb_reshape(VALUE self, VALUE hash)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key (:row, :channel).");
   VALUE channel = rb_hash_aref(hash, ID2SYM(rb_intern("channel")));
   VALUE rows = rb_hash_aref(hash, ID2SYM(rb_intern("rows")));
-  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), CVALLOC(CvMat), NIL_P(rows) ? 0 : FIX2INT(rows), NIL_P(channel) ? 0 : FIX2INT(channel)), self);
+  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), CVALLOC(CvMat), NIL_P(channel) ? 0 : FIX2INT(channel), NIL_P(rows) ? 0 : FIX2INT(rows)), self);
 }
 
 /*
@@ -4523,7 +4523,7 @@ rb_snake_image(int argc, VALUE *argv, VALUE self)
  *     current = capture.query
  *     velx, vely = current.optical_flow_hs(prev, velx, vely) if prev
  *     prev = current
- *   emd
+ *   end
  */
 VALUE
 rb_optical_flow_hs(int argc, VALUE *argv, VALUE self)
