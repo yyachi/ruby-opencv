@@ -1,4 +1,4 @@
-= opencv
+= OpenCV
 
 The initial Open Computer Vision library was originally developed by Intel 
 Corporation. Recent development has been headed by Willow Garage, Inc.
