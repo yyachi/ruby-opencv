@@ -245,17 +245,17 @@ void define_ruby_class()
   rb_define_method(rb_klass, "not", RUBY_METHOD_FUNC(rb_not), 0);
   rb_define_method(rb_klass, "not!", RUBY_METHOD_FUNC(rb_not_bang), 0);
   rb_define_method(rb_klass, "eq", RUBY_METHOD_FUNC(rb_eq), 1);
-  rb_define_alias(rb_klass, "==", "eq");
+  // rb_define_alias(rb_klass, "==", "eq");
   rb_define_method(rb_klass, "gt", RUBY_METHOD_FUNC(rb_gt), 1);
-  rb_define_alias(rb_klass, ">", "gt");
+  // rb_define_alias(rb_klass, ">", "gt");
   rb_define_method(rb_klass, "ge", RUBY_METHOD_FUNC(rb_ge), 1);
-  rb_define_alias(rb_klass, ">=", "ge");
+  // rb_define_alias(rb_klass, ">=", "ge");
   rb_define_method(rb_klass, "lt", RUBY_METHOD_FUNC(rb_lt), 1);
-  rb_define_alias(rb_klass, "<", "lt");
+  // rb_define_alias(rb_klass, "<", "lt");
   rb_define_method(rb_klass, "le", RUBY_METHOD_FUNC(rb_le), 1);
-  rb_define_alias(rb_klass, "<=", "le");
+  // rb_define_alias(rb_klass, "<=", "le");
   rb_define_method(rb_klass, "ne", RUBY_METHOD_FUNC(rb_ne), 1);
-  rb_define_alias(rb_klass, "!=", "ne");
+  // rb_define_alias(rb_klass, "!=", "ne");
   rb_define_method(rb_klass, "in_range", RUBY_METHOD_FUNC(rb_in_range), 2);
   rb_define_method(rb_klass, "abs_diff", RUBY_METHOD_FUNC(rb_abs_diff), 1);
   rb_define_method(rb_klass, "count_non_zero", RUBY_METHOD_FUNC(rb_count_non_zero), 0);
@@ -417,11 +417,13 @@ rb_allocate(VALUE klass)
  * Number of channel is set by <i>channel</i>. <i>channel</i> should be 1..4.
  *
  */
+#include <stdio.h>
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
   VALUE row, column, depth, channel;
   rb_scan_args(argc, argv, "22", &row, &column, &depth, &channel);
+
   DATA_PTR(self) = cvCreateMat(FIX2INT(row), FIX2INT(column),
                                CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
   return self;
@@ -675,7 +677,7 @@ rb_clone(VALUE self)
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
 {
-  VALUE value, copied;
+  VALUE value, copied, tmp;
   CvMat *src = CVMAT(self);
   rb_scan_args(argc, argv, "01", &value);
   if (argc == 0) {
@@ -692,7 +694,9 @@ rb_copy(int argc, VALUE *argv, VALUE self)
       if (n > 0) {
         copied = rb_ary_new2(n);
         for (int i = 0; i < n; i++) {
-          rb_ary_store(copied, i, new_object(src->rows, src->cols, cvGetElemType(src)));
+	  tmp = new_object(src->rows, src->cols, cvGetElemType(src));
+	  cvCopy(src, CVMAT(tmp));
+          rb_ary_store(copied, i, tmp);
         }
         return copied;
       }else{
@@ -905,7 +909,7 @@ rb_sub_rect(VALUE self, VALUE args)
     area.height = NUM2INT(RARRAY_PTR(args)[3]);
     break;
   default:
-    rb_raise(rb_eArgError, "wrong number of arguments (%d of 1 or 2 or 4)", RARRAY_LEN(args));
+    rb_raise(rb_eArgError, "wrong number of arguments (%ld of 1 or 2 or 4)", RARRAY_LEN(args));
   }
   return DEPEND_OBJECT(rb_klass,
                        cvGetSubRect(CVARR(self), CVALLOC(CvMat), area),
@@ -1143,14 +1147,19 @@ rb_aref(VALUE self, VALUE args)
     scalar = cvGet1D(CVARR(self), index[0]);
     break;
   case 2:
-    scalar = cvGet2D(CVARR(self), index[1], index[0]);
+    scalar = cvGet2D(CVARR(self), index[0], index[1]);
     break;
+    /*
+    // cvGet3D should not be used in this method.
+    // "self" is always an instance of CvMat, and its data are 1D or 2D array.
   case 3:
-    scalar = cvGet3D(CVARR(self), index[2], index[1], index[0]);
+    scalar = cvGet3D(CVARR(self), index[0], index[1], index[2]);
     break;
+    */
   default:
     scalar = cvGetND(CVARR(self), index);
   }
+
   return cCvScalar::new_object(scalar);
 }
 
@@ -1174,11 +1183,15 @@ rb_aset(VALUE self, VALUE args)
     cvSet1D(CVARR(self), index[0], scalar);
     break;
   case 2:
-    cvSet2D(CVARR(self), index[1], index[0], scalar);
+    cvSet2D(CVARR(self), index[0], index[1], scalar);
     break;
+    // cvGet3D should not be used in this method.
+    // "self" is always an instance of CvMat, and its data are 1D or 2D array.
+    /*
   case 3:
-    cvSet3D(CVARR(self), index[2], index[1], index[0], scalar);
+     cvSet3D(CVARR(self), index[0], index[1], index[2], scalar);
     break;
+    */
   default:
     cvSetND(CVARR(self), index, scalar);
   }
@@ -1372,7 +1385,7 @@ rb_reshape(VALUE self, VALUE hash)
 VALUE
 rb_repeat(VALUE self, VALUE object)
 {
-  if (rb_obj_is_kind_of(object, rb_class()))
+  if (!rb_obj_is_kind_of(object, rb_class()))
     rb_raise(rb_eTypeError, "argument should be CvMat subclass.");
   cvRepeat(CVARR(self), CVARR(object));
   return object;
@@ -1380,14 +1393,16 @@ rb_repeat(VALUE self, VALUE object)
 
 /*
  * call-seq:
- *   flip(:x) -> cvmat
- *   flip(:y) -> cvmat
- *   flip ->  -> cvmat
+ *   flip(:x)  -> cvmat
+ *   flip(:y)  -> cvmat
+ *   flip(:xy) -> cvmat
+ *   flip      -> cvmat
  *
  * Return new flipped 2D array.
- * * flip(:x) - flip around horizontal
- * * flip(:y) - flip around vertical
- * * flip - flip around both axises
+ * * flip(:x)  - flip around horizontal
+ * * flip(:y)  - flip around vertical
+ * * flip(:xy) - flip around both axises
+ * * flip      - flip around vertical
  */
 VALUE
 rb_flip(int argc, VALUE *argv, VALUE self)
@@ -1397,9 +1412,10 @@ rb_flip(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   flip!(:x) -> self
- *   flip!(:y) -> self
- *   flip!     -> self
+ *   flip!(:x)  -> self
+ *   flip!(:y)  -> self
+ *   flip!(:xy) -> self
+ *   flip!      -> self
  *
  * Flip 2D array. Return self.
  *
@@ -1409,14 +1425,16 @@ VALUE
 rb_flip_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE format;
-  int mode = -1;
+  int mode = 0;
   if (rb_scan_args(argc, argv, "01", &format) > 0) {
     if (rb_to_id(format) == rb_intern("x"))
       mode = 1;
     else if (rb_to_id(format) == rb_intern("y"))
       mode = 0;
+    else if (rb_to_id(format) == rb_intern("xy"))
+      mode = -1;
     else
-      rb_warn("argument may be :x or :y");        
+      rb_warn("argument may be :x or :y or :xy");
   }
   cvFlip(CVARR(self), NULL, mode);
   return self;
@@ -1510,9 +1528,9 @@ rb_mix_channels(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   rand_shuffle([seed = nil][,iter = 1])
+ *   rand_shuffle([seed = nil][,iter_factor = 1]) -> cvmat
  *
- * Return filled the destination array with values from the look-up table.
+ * Return shuffled matrix
  * 
  * see rand_shuffle!
  */
@@ -1524,12 +1542,13 @@ rb_rand_shuffle(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   rand_shuffle!([seed = nil][,iter = 1])
+ *   rand_shuffle!([seed = nil][,iter_factor = 1]) -> cvmat
  *
- * fills the destination array with values from the look-up table.
- * Indices of the entries are taken from the source array. That is, the function processes each element of src as following:
- *   dst(I)=lut[src(I)+DELTA]
- * where DELTA=0 if src has depth :cv8u, and DELTA=128 if src has depth :cv8s.
+ * Shuffles the matrix by swapping randomly chosen pairs of the matrix elements on each iteration 
+ * (where each element may contain several components in case of multi-channel arrays). The number of 
+ * iterations (i.e. pairs swapped) is (iter_factor*mat.rows*mat.cols).round, so iter_factor=0 means 
+ * that no shuffling is done, iter_factor=1 means that the function swaps rows(mat)*cols(mat) random 
+ * pairs etc.
  */
 VALUE
 rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
@@ -1550,7 +1569,7 @@ rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
  * call-seq:
  *   lut(<i>lookup_table</i>) -> cvmat
  *
- * Return new matrix performed lookup-table transforme.
+ * Return new matrix performed lookup-table transform.
  *
  * <i>lookup_table</i> should be CvMat that have 256 element (e.g. 1x256 matrix).
  * Otherwise, raise CvStatusBadArgument error.
@@ -1581,7 +1600,7 @@ rb_convert_scale(VALUE self, VALUE hash)
   VALUE depth = rb_hash_aref(hash, ID2SYM(rb_intern("depth"))),
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
     shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(IF_DEPTH(depth, CV_MAT_DEPTH(CVMAT(self)->type)), CV_MAT_CN(CVMAT(self)->type)));
+    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(CVMAT(self)->type)), CV_MAT_CN(CVMAT(self)->type)));
   cvConvertScale(CVARR(self), CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
   return dest;
 }
@@ -1623,7 +1642,7 @@ rb_add(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = copy(self);
   if (rb_obj_is_kind_of(val, rb_klass))
     cvAdd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
   else
@@ -1647,11 +1666,14 @@ rb_sub(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  if (rb_obj_is_kind_of(val, rb_klass))
+
+  dest = copy(self);
+  if (rb_obj_is_kind_of(val, rb_klass)) {
     cvSub(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
-  else
+  }
+  else {
     cvSubS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  }
   return dest;
 }
 
@@ -1726,7 +1748,7 @@ rb_and(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = copy(self);
   if (rb_obj_is_kind_of(val, rb_klass))
     cvAnd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
   else
@@ -1749,7 +1771,7 @@ rb_or(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = copy(self);
   if (rb_obj_is_kind_of(val, rb_klass))
     cvOr(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
   else
@@ -1772,7 +1794,7 @@ rb_xor(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = copy(self);
   if (rb_obj_is_kind_of(val, rb_klass))
     cvXor(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
   else
@@ -1790,7 +1812,7 @@ rb_xor(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_not(VALUE self)
 {
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = copy(self);
   cvNot(CVARR(self), CVARR(dest));
   return dest;
 }
@@ -2101,7 +2123,10 @@ rb_transform(int argc, VALUE *argv, VALUE self)
   VALUE transmat, shiftvec;
   rb_scan_args(argc, argv, "11", &transmat, &shiftvec);
   VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), MASK(shiftvec));
+  if (NIL_P(shiftvec))
+    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), NULL);
+  else
+    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), CVMAT(shiftvec));
   return dest;
 }
 

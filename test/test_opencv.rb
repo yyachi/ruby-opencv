@@ -1,10 +1,4 @@
 #!/usr/bin/env ruby
-#  -*- mode: ruby; coding: utf-8-unix -*- 
-
-require 'test/unit'
-require 'digest/md5'
-require 'opencv'
-
 include OpenCV
 
 class TestOpenCV < Test::Unit::TestCase

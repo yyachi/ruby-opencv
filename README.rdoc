@@ -77,7 +77,7 @@ subfolder called data.
 
 == REQUIREMENTS:
 
-* OpenCV 2.0 or 2.1
+* OpenCV 2.2 or later
   http://opencv.willowgarage.com/wiki/
 * ffcall (optional)
   http://www.haible.de/bruno/packages-ffcall.html
