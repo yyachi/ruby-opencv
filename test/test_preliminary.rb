@@ -122,7 +122,6 @@ class TestPreliminary < OpenCVTestCase
     }
   end
   
->>>>>>> OpenCV_2.2
   def test_lena
     # Check that the lena jpg image has loaded correctly
     img = get_sample('lena.jpg', false)
