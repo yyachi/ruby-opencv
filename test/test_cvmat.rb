@@ -1661,5 +1661,128 @@ class TestCvMat < OpenCVTestCase
     }
     assert_in_delta(CvScalar.new(30, 60, 90, 120), m0.trace, 0.001)
   end
+
+  def test_transpose
+    m0 = create_cvmat(5, 5, :cv32f, 4) { |j, i, c|
+      CvScalar.new(c * 0.5, c * 1.0, c * 1.5, c * 2.0)
+    }
+    m1 = m0.clone
+    m2 = m1.transpose
+    m1.transpose!
+    m3 = m0.t
+    m4 = m0.clone
+    m4.t!
+
+    [m1, m2, m3, m4].each { |m|
+      assert_equal(m0.width, m.width)
+      assert_equal(m0.height, m.height)
+      assert_each_cvscalar(m, 0.001) { |j, i, c|
+        m0[i, j]
+      }
+    }
+  end
+
+  def test_det
+    elems = [2.5, 4.5, 2.0,
+             3.0, 2.5, -0.5,
+             1.0, 0.5, 1.5] 
+    m0 = create_cvmat(3, 3, :cv32f, 1) { |j, i, c|
+      CvScalar.new(elems[c])
+    }
+    assert_in_delta(-14.5, m0.det, 0.001)
+  end
+
+  def test_invert
+    elems = [1, 2, 3,
+             2, 6, 9,
+             1, 4, 7]
+    m0 = create_cvmat(3, 3, :cv32f, 1) { |j, i, c|
+      CvScalar.new(elems[c])
+    }
+    m1 = m0.invert
+    m2 = m0.invert(:lu)
+    m3 = m0.invert(:svd)
+    m4 = m0.invert(:svd_sym)
+    m5 = m0.invert(:svd_symmetric)
+
+    expected = [3, -1, 0, -2.5, 2, -1.5, 1, -1, 1]
+    [m1, m2, m3, m4, m5].each { |m|
+      assert_equal(m0.width, m.width)
+      assert_equal(m0.height, m.height)
+      assert_each_cvscalar(m, 0.001) { |j, i, c|
+        CvScalar.new(expected[c])
+      }
+    }
+  end
+
+  def test_solve
+    elems1 = [3, 4, 5,
+             8, 9, 6,
+             3, 5, 9]
+    elems2 = [3,
+              4,
+              5]
+    m0 = create_cvmat(3, 3, :cv32f, 1) { |j, i, c|
+      CvScalar.new(elems1[c])
+    }
+    b = create_cvmat(3, 1, :cv32f, 1) { |j, i, c|
+      CvScalar.new(elems2[c])
+    }
+
+    m1 = m0.solve(b)
+    m2 = m0.solve(b, :lu)
+    m3 = m0.solve(b, :svd)
+    m4 = m0.solve(b, :svd_sym)
+    m5 = m0.solve(b, :svd_symmetric)
+    expected = [2, -2, 1]
+    [m1, m2, m3, m4, m5].each { |m|
+      assert_equal(b.width, m.width)
+      assert_equal(m0.height, m.height)
+      assert_each_cvscalar(m, 0.001) { |j, i, c|
+        CvScalar.new(expected[c])
+      }
+    }
+  end
+
+  def test_svd
+    flunk('CvMat#svd is not implemented yet')
+  end
+
+  def test_svdksb
+    flunk('CvMat#svdksb is not implemented yet')
+  end
+
+  def test_eigenvv
+    elems = [6, -2, -3, 7]
+    m0 = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new(elems[c])
+    }
+
+    v1 = m0.eigenvv
+    v2 = m0.eigenvv(10 ** -15)
+    v3 = m0.eigenvv(10 ** -15, 1, 1)
+
+    [v1, v2].each { |vec, val|
+      assert_in_delta(-0.615, vec[0, 0][0], 0.01)
+      assert_in_delta(0.788, vec[0, 1][0], 0.01)
+      assert_in_delta(0.788, vec[1, 0][0], 0.01)
+      assert_in_delta(0.615, vec[1, 1][0], 0.01)
+      assert_in_delta(8.562, val[0][0], 0.01)
+      assert_in_delta(4.438, val[1][0], 0.01)
+    }
+
+    vec3, val3 = v3
+    assert_in_delta(-0.615, vec3[0, 0][0], 0.01)
+    assert_in_delta(0.788, vec3[0, 1][0], 0.01)
+    assert_in_delta(8.562, val3[0][0], 0.01)
+  end
+
+  def test_calc_covar_matrix
+    flunk('CvMat#calc_covar_matrix is not implemented yet')
+  end
+
+  def test_mahalonobis
+    flunk('CvMat#mahalonobis is not implemented yet')
+  end
 end
 
