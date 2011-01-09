@@ -1,60 +1,86 @@
 #!/usr/bin/env ruby
+# -*- mode: ruby; coding: utf-8-unix -*- 
+require 'test/unit'
+require 'opencv'
+require File.expand_path(File.dirname(__FILE__)) + '/helper'
+
 include OpenCV
 
-class TestOpenCV < Test::Unit::TestCase
-  # mat_types = [CV_8UC1, CV_8UC2, CV_8UC3, CV_8UC4,
-  #              CV_8SC1, CV_8SC2, CV_8SC3,  CV_8SC4,
-  #              CV_16UC1, CV_16UC2, CV_16UC3, CV_16UC4,
-  #              CV_16SC1, CV_16SC2, CV_16SC3, CV_16SC4,
-  #              CV_32SC1, CV_32SC2, CV_32SC3, CV_32SC4,
-  #              CV_32FC1, CV_32FC2, CV_32FC3, CV_32FC4,
-  #              CV_64FC1, CV_64FC2, CV_64FC3, CV_64FC4]
-
-  # mat_types_single = [CV_8UC1, CV_8SC1,
-  #                     CV_16UC1, CV_16SC1,
-  #                     CV_32SC1, CV_32FC1,
-  #                     CV_64FC1]
-
-  def setup
-    @depths = [CV_8U, CV_8S,
-               CV_16U, CV_16S,
-               CV_32S, CV_32F,
-               CV_64F]
-    @depthsize = {
-      CV_8U => 1,
-      CV_8S => 1,
-      CV_16U => 2,
-      CV_16S => 2,
-      CV_32S => 4,
-      CV_32F => 4,
-      CV_64F => 8
-    }
+class TestOpenCV < OpenCVTestCase
+  def test_constants
+    # Depths
+    assert_equal(0, CV_8U)
+    assert_equal(1, CV_8S)
+    assert_equal(2, CV_16U)
+    assert_equal(3, CV_16S)
+    assert_equal(4, CV_32S)
+    assert_equal(5, CV_32F)
+    assert_equal(6, CV_64F)
   end
 
-  def get_sample(filename, iscolor = nil)
-    IplImage::load('samples/' + filename, iscolor)
-  end
-  
-  def snap(*images)
-    win = []
-    images.size.times { |i| win << GUI::Window.new("snap-#{i}") }
-    win.each_with_index { |w, i| w.show images[i] }
-    
-    GUI::wait_key
-    GUI::Window::destroy_all
+  def test_symbols
+    # Depths
+    assert_equal(0, DEPTH[:cv8u])
+    assert_equal(1, DEPTH[:cv8s])
+    assert_equal(2, DEPTH[:cv16u])
+    assert_equal(3, DEPTH[:cv16s])
+    assert_equal(4, DEPTH[:cv32s])
+    assert_equal(5, DEPTH[:cv32f])
+    assert_equal(6, DEPTH[:cv64f])
+
+    # Inversion methods
+    assert_equal(0, INVERSION_METHOD[:lu])
+    assert_equal(1, INVERSION_METHOD[:svd])
+    assert_equal(2, INVERSION_METHOD[:svd_sym])
+    assert_equal(2, INVERSION_METHOD[:svd_symmetric])
+
+    # Flags for DFT and DCT
+    assert_equal(0, DXT_FLAG[:forward])
+    assert_equal(1, DXT_FLAG[:inverse])
+    assert_equal(2, DXT_FLAG[:scale])
+    assert_equal(4, DXT_FLAG[:rows])
+
+    # Interpolation methods
+    assert_equal(0, INTERPOLATION_METHOD[:nn])
+    assert_equal(1, INTERPOLATION_METHOD[:linear])
+    assert_equal(2, INTERPOLATION_METHOD[:cubic])
+    assert_equal(3, INTERPOLATION_METHOD[:area])
+
+    # Warp affine optional flags
+    assert_equal(8, WARP_FLAG[:fill_outliers])
+    assert_equal(16, WARP_FLAG[:inverse_map])
+
+    # Anti aliasing flags
+    assert_equal(16, CONNECTIVITY[:aa])
+    assert_equal(16, CONNECTIVITY[:anti_alias])
+
+    # Retrieval modes
+    assert_equal(0, RETRIEVAL_MODE[:external])
+    assert_equal(1, RETRIEVAL_MODE[:list])
+    assert_equal(2, RETRIEVAL_MODE[:ccomp])
+    assert_equal(3, RETRIEVAL_MODE[:tree])
+
+    # Approximation methods
+    assert_equal(0, APPROX_CHAIN_METHOD[:code])
+    assert_equal(1, APPROX_CHAIN_METHOD[:approx_none])
+    assert_equal(2, APPROX_CHAIN_METHOD[:approx_simple])
+    assert_equal(3, APPROX_CHAIN_METHOD[:approx_tc89_l1])
+    assert_equal(4, APPROX_CHAIN_METHOD[:approx_tc89_kcos])
+
+    # Approximation methods (polygon)
+    assert_equal(0, APPROX_POLY_METHOD[:dp])
+
+    # Match template methods
+    assert_equal(0, MATCH_TEMPLATE_METHOD[:sqdiff])
+    assert_equal(1, MATCH_TEMPLATE_METHOD[:sqdiff_normed])
+    assert_equal(2, MATCH_TEMPLATE_METHOD[:ccorr])
+    assert_equal(3, MATCH_TEMPLATE_METHOD[:ccorr_normed])
+    assert_equal(4, MATCH_TEMPLATE_METHOD[:ccoeff])
+    assert_equal(5, MATCH_TEMPLATE_METHOD[:ccoeff_normed])
   end
 
-  def hash_img(img)
-    # Compute a hash for an image, useful for image comparisons
-    Digest::MD5.hexdigest(img.data)
-  end
-
-  def is_same_float_array(a, b, delta = 0.01)
-    4.times { |i|
-      return false unless (a[i].to_f - b[i].to_f).abs <= delta.to_f
-    }
-    true
+  def test_cvt_color_funcs
+    flunk('FIXME: cvtColor functions are not tested yet.')
   end
 end
-
 
