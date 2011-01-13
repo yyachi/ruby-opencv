@@ -59,8 +59,12 @@ class TestCvBox2D < OpenCVTestCase
     box = CvBox2D.new
     box.center = CvPoint2D32f.new(10, 20)
     box.size = CvSize2D32f.new(5, 7)
-    pt = box.points
 
+    flunk('FIXME: On OpenCV 2.1, tests for CvBox2D#points always fail (They are passed on OpenCV 2.2).')
+    # The following tests are passed if the angle of box is added 90, like this:
+    # box.angle += 90
+    
+    pt = box.points
     assert_equal(4, pt.size)
     assert_in_delta(7.5, pt[0].x, 0.001)
     assert_in_delta(23.5, pt[0].y, 0.001)
