@@ -117,6 +117,18 @@ release_object(void *ptr)
   }
 }
 
+/*
+ * Release IplConvKernel object from memory and delete from hashtable.
+ */
+void
+release_iplconvkernel_object(void *ptr)
+{
+  if(ptr){
+    unresist_object(ptr);
+    cvReleaseStructuringElement((IplConvKernel**)(&ptr));
+  }
+}
+
 VALUE rb_module;
 VALUE rb_opencv_constants;
 
@@ -204,7 +216,14 @@ define_ruby_module()
   rb_define_const(rb_module, "WARP_FLAG", warp_flag);
   RESIST_CVMETHOD(warp_flag, "fill_outliers", CV_WARP_FILL_OUTLIERS);
   RESIST_CVMETHOD(warp_flag, "inverse_map", CV_WARP_INVERSE_MAP);
-  
+
+  VALUE homography_calc_method = rb_hash_new();
+  /* {:all, :ransac, :lmeds}: Methods used to computed homography matrix */
+  rb_define_const(rb_module, "HOMOGRAPHY_CALC_METHOD", homography_calc_method);
+  RESIST_CVMETHOD(homography_calc_method, "all", 0);
+  RESIST_CVMETHOD(homography_calc_method, "ransac", CV_RANSAC);
+  RESIST_CVMETHOD(homography_calc_method, "lmeds", CV_LMEDS);
+
   VALUE depth = rb_hash_new();
   /* {:cv8u, :cv8s, :cv16u, :cv16s, :cv32s, :cv32f, :cv64f}: Depth of each pixel. */
   rb_define_const(rb_module, "DEPTH", depth);

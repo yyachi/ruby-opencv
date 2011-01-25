@@ -24,6 +24,7 @@ void define_ruby_class();
 
 VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
+VALUE rb_load_imageM(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_method_missing(int argc, VALUE *argv, VALUE self);
 VALUE rb_to_s(VALUE self);
@@ -174,12 +175,13 @@ VALUE rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_good_features_to_track(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_sample_line(int argc, VALUE *argv, VALUE self);
-VALUE rb_rect_sub_pix(VALUE self, VALUE center, VALUE size);
-VALUE rb_quadrangle_sub_pix(VALUE self, VALUE map_matrix, VALUE size);
+VALUE rb_rect_sub_pix(int argc, VALUE *argv, VALUE self);
+VALUE rb_quadrangle_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_resize(int argc, VALUE *argv, VALUE self);
 VALUE rb_warp_affine(int argc, VALUE *argv, VALUE self);
-VALUE rb_rotation(VALUE self, VALUE center, VALUE angle, VALUE scale);
+VALUE rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale);
 VALUE rb_warp_perspective(int argc, VALUE *argv, VALUE self);
+VALUE rb_find_homograpy(int argc, VALUE *argv, VALUE self);
 //VALUE rb_perspective_transform();
 VALUE rb_remap(int argc, VALUE *argv, VALUE self);
 VALUE rb_log_polar(int argc, VALUE *argv);
