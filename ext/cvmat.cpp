@@ -1374,8 +1374,6 @@ rb_range_bang(int argc, VALUE *argv, VALUE self)
 }
 
 
-
-
 /*
  * call-seq:
  *   reshape(<i>[:rows => num][, :channel => cn]</i>) -> cvmat(refer self)
@@ -3580,11 +3578,14 @@ rb_morphology_close(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_morphology_gradient(int argc, VALUE *argv, VALUE self)
 {
-  VALUE element, iteration, temp, dest;
+  VALUE element, iteration, dest;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  temp = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvMorphologyEx(CVARR(self), CVARR(dest), CVARR(temp), IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
+  CvArr* self_ptr = CVARR(self);
+  CvSize size = cvGetSize(self_ptr);
+  CvMat* temp = cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
+  dest = new_object(size, cvGetElemType(self_ptr));
+  cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
+  cvReleaseMat(&temp);
   return dest;
 }
 
@@ -3628,7 +3629,6 @@ rb_morphology_blackhat(int argc, VALUE *argv, VALUE self)
  *
  * Smooths the image by simple blur with no scaling.
  * * 8bit unsigned -> return 16bit unsigned
- * * 8bit signed -> return 16bit signed
  * * 32bit floating point -> return 32bit floating point
  * <b>support single-channel image only.</b>
  */
@@ -3643,9 +3643,6 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
   case CV_8U:
     dest_type = CV_16U;
     break;
-  case CV_8S:
-    dest_type = CV_16S;
-    break;
   case CV_32F:
     dest_type = CV_32F;
     break;
@@ -3653,7 +3650,7 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eNotImpError, "unsupport format. (support 8bit unsigned/signed or 32bit floating point only)");
   }
   dest = new_object(cvGetSize(CVARR(self)), dest_type);
-  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 0));
+  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
@@ -3671,7 +3668,7 @@ rb_smooth_blur(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
   dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR, IF_INT(p1, 3), IF_INT(p2, 0));
+  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
@@ -3695,9 +3692,9 @@ rb_smooth_gaussian(int argc, VALUE *argv, VALUE self)
 {
   SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, p3, p4, dest;
-  rb_scan_args(argc, argv, "04", &p1, &p2, &p3, p4);
+  rb_scan_args(argc, argv, "04", &p1, &p2, &p3, &p4);
   dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvSmooth(CVARR(self), CVARR(dest), CV_GAUSSIAN, IF_INT(p1, 3), IF_INT(p2, 0), IF_DBL(p3, 0.0), IF_DBL(p4, 0.0));
+  cvSmooth(CVARR(self), CVARR(dest), CV_GAUSSIAN, IF_INT(p1, 3), IF_INT(p2, 3), IF_DBL(p3, 0.0), IF_DBL(p4, 0.0));
   return dest;
 }
 
@@ -3735,7 +3732,7 @@ rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
   dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvSmooth(CVARR(self), CVARR(dest), CV_BILATERAL, IF_INT(p1, 3), IF_INT(p2, 0));
+  cvSmooth(CVARR(self), CVARR(dest), CV_BILATERAL, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
