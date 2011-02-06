@@ -163,11 +163,11 @@ class TestOpenCV < OpenCVTestCase
     # RGB(A) <=> RGB(A)
     [mat_3ch.BGR2BGRA, mat_3ch.RGB2RGBA].each { |m|
       assert_equal(4, m.channel)
-      assert_cvscalar_equal(CvScalar.new(10, 20, 30, 255), m[0])
+      assert_cvscalar_equal(CvScalar.new(10, 20, 30, 0), m[0])
     }
     [mat_3ch.BGR2RGBA, mat_3ch.RGB2BGRA].each { |m|
       assert_equal(4, m.channel)
-      assert_cvscalar_equal(CvScalar.new(30, 20, 10, 255), m[0])
+      assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_4ch.BGRA2BGR, mat_4ch.RGBA2RGB].each { |m|
       assert_equal(3, m.channel)
@@ -201,7 +201,7 @@ class TestOpenCV < OpenCVTestCase
     }
     [mat_1ch.GRAY2BGRA, mat_1ch.GRAY2RGBA].each { |m|
       assert_equal(4, m.channel)
-      assert_cvscalar_equal(CvScalar.new(10, 10, 10, 255), m[0])
+      assert_cvscalar_equal(CvScalar.new(10, 10, 10, 0), m[0])
     }
 
     flunk('FIXME: Most cvtColor functions are not tested yet.')

@@ -265,7 +265,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('da3d7cdefabbaf84c4080ecd40d00897', hash_img(mat1))
     assert_equal('b4abcd12c4e1103c3de87bf9ad854936', hash_img(mat2))
     assert_equal('26f6b10e955125c91fd7e63a63cc06a3', hash_img(mat3))
-    assert_equal('cc4eb5d8eb7cb2c0b76941bc38fb91b1', hash_img(mat4))
+    assert_equal('1aad9c81296cc04bfc5d841f708d8f6a', hash_img(mat4))
 
     assert_raise(TypeError) {
       mat0.warp_affine("foobar")
@@ -311,7 +311,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     assert_equal('bba3a5395f9dd9a400a0083ae74d8986', hash_img(mat1))
     assert_equal('a0cc4f329f459410293b75b417fc4f25', hash_img(mat2))
-    assert_equal('3e34e6ed2404056bb72e86edf02610cb', hash_img(mat3))
+    assert_equal('d33a1f4caa331aa8dba58114396fa9cf', hash_img(mat3))
     assert_equal('71bd12857d2e4ac0c919652c2963b4e1', hash_img(mat4))
 
     assert_raise(TypeError) {
@@ -935,12 +935,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   def test_threshold
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
     test_proc = lambda { |type, type_sym, expected_mat, expected_threshold|
-      mat1 = mat0.threshold(3, 7, type)
-      mat2 = mat0.threshold(3, 7, type_sym)
+      mat1 = mat0.threshold(4, 7, type)
+      mat2 = mat0.threshold(4, 7, type_sym)
       mat3, th3 = mat0.threshold(5, 7, type | CV_THRESH_OTSU)
-      mat4, th4 = mat0.threshold(3, 7, type_sym, true)
+      mat4, th4 = mat0.threshold(4, 7, type_sym, true)
       mat5, th5 = mat0.threshold(5, 7, type | CV_THRESH_OTSU, true)
-      [mat1, mat2, mat3, mat4, mat5].each { |m|
+      [mat1, mat2, mat3, mat4, mat5].each_with_index { |m, n|
+        
         expected_mat.each_with_index { |x, i|
           assert_equal(x, m[i][0])
         }
@@ -951,33 +952,33 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     # Binary
     expected = [0, 0, 0,
-                0, 7, 7,
+                0, 0, 7,
                 7, 7, 7]
-    test_proc.call(CV_THRESH_BINARY, :binary, expected, 3)
+    test_proc.call(CV_THRESH_BINARY, :binary, expected, 4)
 
     # Binary inverse
     expected = [7, 7, 7,
-                7, 0, 0,
+                7, 7, 0,
                 0, 0, 0]
-    test_proc.call(CV_THRESH_BINARY_INV, :binary_inv, expected, 3)
+    test_proc.call(CV_THRESH_BINARY_INV, :binary_inv, expected, 4)
 
     # Trunc
     expected = [0, 1, 2,
-                3, 3, 3,
-                3, 3, 3]
-    test_proc.call(CV_THRESH_TRUNC, :trunc, expected, 3)
+                3, 4, 4,
+                4, 4, 4]
+    test_proc.call(CV_THRESH_TRUNC, :trunc, expected, 4)
 
     # To zero
     expected = [0, 0, 0,
-                0, 4, 5,
+                0, 0, 5,
                 6, 7, 8]
-    test_proc.call(CV_THRESH_TOZERO, :tozero, expected, 3)
+    test_proc.call(CV_THRESH_TOZERO, :tozero, expected, 4)
 
     # To zero inverse
     expected = [0, 1, 2,
-                3, 0, 0,
+                3, 4, 0,
                 0, 0, 0]
-    test_proc.call(CV_THRESH_TOZERO_INV, :tozero_inv, expected, 3)
+    test_proc.call(CV_THRESH_TOZERO_INV, :tozero_inv, expected, 4)
 
     assert_raise(ArgumentError) {
       mat0.threshold(1, 2, :foobar)
@@ -995,7 +996,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
 
     mat2, thresh2 = mat0.threshold_binary(5, 7, true)
-    assert_in_delta(3, thresh2, 0.001)
+    assert_in_delta(4, thresh2, 0.001)
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
@@ -1012,7 +1013,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
 
     mat2, thresh2 = mat0.threshold_binary_inverse(5, 7, true)
-    assert_in_delta(3, thresh2, 0.001)
+    assert_in_delta(4, thresh2, 0.001)
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
@@ -1029,7 +1030,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
 
     mat2, thresh2 = mat0.threshold_trunc(5, true)
-    assert_in_delta(3, thresh2, 0.001)
+    assert_in_delta(4, thresh2, 0.001)
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
@@ -1046,7 +1047,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
 
     mat2, thresh2 = mat0.threshold_to_zero(5, true)
-    assert_in_delta(3, thresh2, 0.001)
+    assert_in_delta(4, thresh2, 0.001)
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
@@ -1063,7 +1064,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
 
     mat2, thresh2 = mat0.threshold_to_zero_inverse(5, true)
-    assert_in_delta(3, thresh2, 0.001)
+    assert_in_delta(4, thresh2, 0.001)
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
