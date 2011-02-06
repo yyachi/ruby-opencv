@@ -152,6 +152,10 @@ extern "C"{
 #define RSTRING_PTR(arg) (RSTRING(arg)->ptr)
 #endif
 
+#ifndef DBL2NUM
+#define DBL2NUM(dbl) (rb_float_new(dbl))
+#endif
+
 
 // OpenCV module
 __NAMESPACE_BEGIN_OPENCV
@@ -191,7 +195,7 @@ IPLCONVKERNEL_OBJECT(VALUE klass, void *ptr)
 inline VALUE
 GENERIC_OBJECT(VALUE klass, void *ptr)
 {
-  return Data_Wrap_Struct(klass, 0, 0, ptr);
+  return Data_Wrap_Struct(klass, 0, -1, ptr);
 }
 
 inline VALUE
@@ -227,20 +231,20 @@ CVMETHOD(const char *name, VALUE method, int ifnone = 0)
     return ifnone;
   case T_FIXNUM:
     return FIX2INT(method);
-    case T_STRING:
-      method = rb_str_intern(method);
-    case T_SYMBOL:
-      value = rb_hash_aref(rb_const_get(rb_module_opencv(), rb_intern(name)), method);
-      if(NIL_P(value)){
-        rb_warn("invalid opencv method type (see OpenCV::%s)", name);
-        return ifnone;
-      }else{
-        return FIX2INT(value);
-      }if (rb_obj_is_kind_of(value, rb_cNumeric))
+  case T_STRING:
+    method = rb_str_intern(method);
+  case T_SYMBOL:
+    value = rb_hash_aref(rb_const_get(rb_module_opencv(), rb_intern(name)), method);
+    if(NIL_P(value)){
+      rb_warn("invalid opencv method type (see OpenCV::%s)", name);
+      return ifnone;
+    }else{
+      return FIX2INT(value);
+    }
   default:
     rb_raise(rb_eTypeError, "");
   }
-  return 0;
+  return ifnone;
 }
 
 inline int

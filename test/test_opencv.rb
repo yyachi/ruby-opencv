@@ -23,6 +23,34 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(1, CV_LOAD_IMAGE_COLOR)
     assert_equal(2, CV_LOAD_IMAGE_ANYDEPTH)
     assert_equal(4, CV_LOAD_IMAGE_ANYCOLOR)
+
+    # Structuring element shapes    
+    assert_equal(0, CV_SHAPE_RECT)
+    assert_equal(1, CV_SHAPE_CROSS)
+    assert_equal(2, CV_SHAPE_ELLIPSE)
+    assert_equal(100, CV_SHAPE_CUSTOM)
+
+    # Types of morphological operations
+    assert_equal(2, CV_MOP_OPEN)
+    assert_equal(3, CV_MOP_CLOSE)
+    assert_equal(4, CV_MOP_GRADIENT)
+    assert_equal(5, CV_MOP_TOPHAT)
+    assert_equal(6, CV_MOP_BLACKHAT)
+
+    # Types of the smoothing
+    assert_equal(0, CV_BLUR_NO_SCALE)
+    assert_equal(1, CV_BLUR)
+    assert_equal(2, CV_GAUSSIAN)
+    assert_equal(3, CV_MEDIAN)
+    assert_equal(4, CV_BILATERAL)
+
+    # Thresholding types
+    assert_equal(0, CV_THRESH_BINARY)
+    assert_equal(1, CV_THRESH_BINARY_INV)
+    assert_equal(2, CV_THRESH_TRUNC)
+    assert_equal(3, CV_THRESH_TOZERO)
+    assert_equal(4, CV_THRESH_TOZERO_INV)
+    assert_equal(8, CV_THRESH_OTSU)
   end
 
   def test_symbols
@@ -89,6 +117,34 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(3, MATCH_TEMPLATE_METHOD[:ccorr_normed])
     assert_equal(4, MATCH_TEMPLATE_METHOD[:ccoeff])
     assert_equal(5, MATCH_TEMPLATE_METHOD[:ccoeff_normed])
+
+    # Structuring element shapes
+    assert_equal(0, STRUCTURING_ELEMENT_SHAPE[:rect])
+    assert_equal(1, STRUCTURING_ELEMENT_SHAPE[:cross])
+    assert_equal(2, STRUCTURING_ELEMENT_SHAPE[:ellipse])
+    assert_equal(100, STRUCTURING_ELEMENT_SHAPE[:custom])
+
+    # Types of morphological operations
+    assert_equal(2, MORPHOLOGICAL_OPERATION[:open])
+    assert_equal(3, MORPHOLOGICAL_OPERATION[:close])
+    assert_equal(4, MORPHOLOGICAL_OPERATION[:gradient])
+    assert_equal(5, MORPHOLOGICAL_OPERATION[:tophat])
+    assert_equal(6, MORPHOLOGICAL_OPERATION[:blackhat])
+
+    # Types of the smoothing
+    assert_equal(0, SMOOTHING_TYPE[:blur_no_scale])
+    assert_equal(1, SMOOTHING_TYPE[:blur])
+    assert_equal(2, SMOOTHING_TYPE[:gaussian])
+    assert_equal(3, SMOOTHING_TYPE[:median])
+    assert_equal(4, SMOOTHING_TYPE[:bilateral])
+
+    # Thresholding types
+    assert_equal(0, THRESHOLD_TYPE[:binary])
+    assert_equal(1, THRESHOLD_TYPE[:binary_inv])
+    assert_equal(2, THRESHOLD_TYPE[:trunc])
+    assert_equal(3, THRESHOLD_TYPE[:tozero])
+    assert_equal(4, THRESHOLD_TYPE[:tozero_inv])
+    assert_equal(8, THRESHOLD_TYPE[:otsu])
   end
 
   def test_cvt_color_funcs

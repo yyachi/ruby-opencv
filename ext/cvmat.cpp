@@ -330,12 +330,14 @@ void define_ruby_class()
   rb_define_method(rb_klass, "erode!", RUBY_METHOD_FUNC(rb_erode_bang), -1);
   rb_define_method(rb_klass, "dilate", RUBY_METHOD_FUNC(rb_dilate), -1);
   rb_define_method(rb_klass, "dilate!", RUBY_METHOD_FUNC(rb_dilate_bang), -1);
+  rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
   rb_define_method(rb_klass, "morphology_open", RUBY_METHOD_FUNC(rb_morphology_open), -1);
   rb_define_method(rb_klass, "morphology_close", RUBY_METHOD_FUNC(rb_morphology_close), -1);
   rb_define_method(rb_klass, "morphology_gradient", RUBY_METHOD_FUNC(rb_morphology_gradient), -1);
   rb_define_method(rb_klass, "morphology_tophat", RUBY_METHOD_FUNC(rb_morphology_tophat), -1);
   rb_define_method(rb_klass, "morphology_blackhat", RUBY_METHOD_FUNC(rb_morphology_blackhat), -1);
 
+  rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
   rb_define_method(rb_klass, "smooth_blur_no_scale", RUBY_METHOD_FUNC(rb_smooth_blur_no_scale), -1);
   rb_define_method(rb_klass, "smooth_blur", RUBY_METHOD_FUNC(rb_smooth_blur), -1);
   rb_define_method(rb_klass, "smooth_gaussian", RUBY_METHOD_FUNC(rb_smooth_gaussian), -1);
@@ -345,6 +347,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "copy_make_border_constant", RUBY_METHOD_FUNC(rb_copy_make_border_constant), -1);
   rb_define_method(rb_klass, "copy_make_border_replicate", RUBY_METHOD_FUNC(rb_copy_make_border_replicate), -1);
   rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
+  rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
   rb_define_method(rb_klass, "threshold_binary", RUBY_METHOD_FUNC(rb_threshold_binary), -1);
   rb_define_method(rb_klass, "threshold_binary_inverse", RUBY_METHOD_FUNC(rb_threshold_binary_inverse), -1);
   rb_define_method(rb_klass, "threshold_trunc", RUBY_METHOD_FUNC(rb_threshold_trunc), -1);
@@ -3421,7 +3424,7 @@ rb_warp_perspective(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (3x3).", rb_class2name(cCvMat::rb_class()));
   VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
   cvWarpPerspective(CVARR(self), CVARR(dest), CVMAT(map_matrix),
-                    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
+                    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
   return dest;
 }
 
@@ -3534,6 +3537,44 @@ rb_dilate_bang(int argc, VALUE *argv, VALUE self)
   return self;
 }
 
+VALUE
+rb_morphology_internal(VALUE element, VALUE iteration, int operation, VALUE self)
+{
+  CvArr* self_ptr = CVARR(self);
+  CvSize size = cvGetSize(self_ptr);
+  VALUE dest = new_object(size, cvGetElemType(self_ptr));
+  if (operation == CV_MOP_GRADIENT) {
+    CvMat* temp = cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
+    cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
+    cvReleaseMat(&temp);
+  }
+  else {
+    cvMorphologyEx(self_ptr, CVARR(dest), 0, IPLCONVKERNEL(element), operation, IF_INT(iteration, 1));
+  }
+  return dest;
+}
+
+/*
+ * call-seq:
+ *   morpholohy(<i>operation[,element = nil][,iteration = 1]</i>) -> cvmat
+ *
+ * Performs advanced morphological transformations.
+ * <i>operation</i>
+ * Type of morphological operation, one of:
+ *   CV_MOP_OPEN - opening
+ *   CV_MOP_CLOSE - closing
+ *   CV_MOP_GRADIENT - morphological gradient
+ *   CV_MOP_TOPHAT - top hat
+ *   CV_MOP_BLACKHAT - black hat
+ */
+VALUE
+rb_morphology(int argc, VALUE *argv, VALUE self)
+{
+  VALUE element, iteration, operation;
+  rb_scan_args(argc, argv, "12", &operation, &element, &iteration);
+  return rb_morphology_internal(element, iteration, CVMETHOD("MORPHOLOGICAL_OPERATION", operation, -1), self);
+}
+
 /*
  * call-seq:
  *   morpholohy_open(<i>[element = nil][,iteration = 1]</i>) -> cvmat
@@ -3544,11 +3585,9 @@ rb_dilate_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_morphology_open(int argc, VALUE *argv, VALUE self)
 {
-  VALUE element, iteration, dest;
+  VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvMorphologyEx(CVARR(self), CVARR(dest), 0, IPLCONVKERNEL(element), CV_MOP_OPEN, IF_INT(iteration, 1));
-  return dest;
+  return rb_morphology_internal(element, iteration, CV_MOP_OPEN, self);
 }
 
 /*
@@ -3561,11 +3600,9 @@ rb_morphology_open(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_morphology_close(int argc, VALUE *argv, VALUE self)
 {
-  VALUE element, iteration, dest;
+  VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvMorphologyEx(CVARR(self), CVARR(dest), 0, IPLCONVKERNEL(element), CV_MOP_CLOSE, IF_INT(iteration, 1));
-  return dest;
+  return rb_morphology_internal(element, iteration, CV_MOP_CLOSE, self);
 }
 
 /*
@@ -3578,15 +3615,9 @@ rb_morphology_close(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_morphology_gradient(int argc, VALUE *argv, VALUE self)
 {
-  VALUE element, iteration, dest;
+  VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  CvArr* self_ptr = CVARR(self);
-  CvSize size = cvGetSize(self_ptr);
-  CvMat* temp = cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
-  dest = new_object(size, cvGetElemType(self_ptr));
-  cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
-  cvReleaseMat(&temp);
-  return dest;
+  return rb_morphology_internal(element, iteration, CV_MOP_GRADIENT, self);
 }
 
 /*
@@ -3599,11 +3630,9 @@ rb_morphology_gradient(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_morphology_tophat(int argc, VALUE *argv, VALUE self)
 {
-  VALUE element, iteration, dest;
+  VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvMorphologyEx(CVARR(self), CVARR(dest), 0, IPLCONVKERNEL(element), CV_MOP_TOPHAT, IF_INT(iteration, 1));
-  return dest;
+  return rb_morphology_internal(element, iteration, CV_MOP_TOPHAT, self);
 }
 
 /*
@@ -3618,9 +3647,38 @@ rb_morphology_blackhat(int argc, VALUE *argv, VALUE self)
 {
   VALUE element, iteration, dest;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvMorphologyEx(CVARR(self), CVARR(dest), 0, IPLCONVKERNEL(element), CV_MOP_BLACKHAT, IF_INT(iteration, 1));
-  return dest;
+  return rb_morphology_internal(element, iteration, CV_MOP_BLACKHAT, self);
+}
+
+VALUE
+rb_smooth(int argc, VALUE *argv, VALUE self)
+{
+  VALUE smoothtype, p1, p2, p3, p4;
+  rb_scan_args(argc, argv, "14", &smoothtype, &p1, &p2, &p3, &p4);
+  int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
+  
+  VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
+  switch (_smoothtype) {
+    case CV_BLUR_NO_SCALE:
+      smooth_func = rb_smooth_blur_no_scale;
+      break;
+    case CV_BLUR:
+      smooth_func = rb_smooth_blur;
+      break;
+    case CV_GAUSSIAN:
+      smooth_func = rb_smooth_gaussian;
+      break;
+    case CV_MEDIAN:
+      smooth_func = rb_smooth_median;
+      break;
+    case CV_BILATERAL:
+      smooth_func = rb_smooth_bilateral;
+      break;
+    default:
+      smooth_func = rb_smooth_gaussian;
+      break;
+    }
+  return (*smooth_func)(argc - 1, argv + 1, self);
 }
 
 /*
@@ -3826,6 +3884,42 @@ rb_integral(int argc, VALUE *argv, VALUE self)
   return dest;
 }
 
+VALUE
+rb_threshold_internal(int threshold_type, VALUE threshold, VALUE max_value, VALUE use_otsu, VALUE self)
+{
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = cCvMat::new_object(cvGetSize(self_ptr), cvGetElemType(self_ptr));
+  int otsu = (use_otsu == Qtrue) && ((threshold_type & CV_THRESH_OTSU) == 0);
+  int type = threshold_type | (otsu ? CV_THRESH_OTSU : 0);
+  double otsu_threshold = cvThreshold(self_ptr, CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), type);
+
+  if ((use_otsu == Qtrue) || (threshold_type & CV_THRESH_OTSU)) {
+    return rb_assoc_new(dest, DBL2NUM(otsu_threshold));
+  }
+  else
+    return dest;
+}
+
+/*
+ * call-seq:
+ *   threshold(<i>threshold, max_value, threshold_type[,use_otsu = false]</i>)
+ *
+ * Applies fixed-level threshold to array elements.
+ *
+ */
+VALUE
+rb_threshold(int argc, VALUE *argv, VALUE self)
+{
+  VALUE threshold, max_value, threshold_type, use_otsu;
+  rb_scan_args(argc, argv, "31", &threshold, &max_value, &threshold_type, &use_otsu);
+  const int INVALID_TYPE = -1;
+  int type = CVMETHOD("THRESHOLD_TYPE", threshold_type, INVALID_TYPE);
+  if (type == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid threshold type.");
+  
+  return rb_threshold_internal(type, threshold, max_value, use_otsu, self);
+}
+
 /*
  * call-seq:
  *   threshold_binary(<i>threshold, max_value[,use_otsu = false]</i>)
@@ -3838,11 +3932,9 @@ rb_integral(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_threshold_binary(int argc, VALUE *argv, VALUE self)
 {
-  VALUE threshold, max_value, use_otsu, dest;
+  VALUE threshold, max_value, use_otsu;
   rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvThreshold(CVARR(self), CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), CV_THRESH_BINARY | (use_otsu == Qtrue ? CV_THRESH_OTSU : 0));
-  return dest;
+  return rb_threshold_internal(CV_THRESH_BINARY, threshold, max_value, use_otsu, self);
 }
 
 /*
@@ -3857,11 +3949,9 @@ rb_threshold_binary(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self)
 {
-  VALUE threshold, max_value, use_otsu, dest;
+  VALUE threshold, max_value, use_otsu;
   rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvThreshold(CVARR(self), CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), CV_THRESH_BINARY_INV | (use_otsu == Qtrue ? CV_THRESH_OTSU : 0));
-  return dest;
+  return rb_threshold_internal(CV_THRESH_BINARY_INV, threshold, max_value, use_otsu, self);
 }
 
 /*
@@ -3876,11 +3966,9 @@ rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_threshold_trunc(int argc, VALUE *argv, VALUE self)
 {
-  VALUE threshold, use_otsu, dest;
+  VALUE threshold, use_otsu;
   rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvThreshold(CVARR(self), CVARR(dest), NUM2DBL(threshold), 0, CV_THRESH_TRUNC | (use_otsu == Qtrue ? CV_THRESH_OTSU : 0));
-  return dest;
+  return rb_threshold_internal(CV_THRESH_TRUNC, threshold, INT2NUM(0), use_otsu, self);
 }
 
 /*
@@ -3895,11 +3983,9 @@ rb_threshold_trunc(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_threshold_to_zero(int argc, VALUE *argv, VALUE self)
 {
-  VALUE threshold, use_otsu, dest;
+  VALUE threshold, use_otsu;
   rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvThreshold(CVARR(self), CVARR(dest), NUM2DBL(threshold), 0, CV_THRESH_TOZERO | (use_otsu == Qtrue ? CV_THRESH_OTSU : 0));
-  return dest;
+  return rb_threshold_internal(CV_THRESH_TOZERO, threshold, INT2NUM(0), use_otsu, self);
 }
 
 /*
@@ -3914,11 +4000,9 @@ rb_threshold_to_zero(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self)
 {
-  VALUE threshold, use_otsu, dest;
+  VALUE threshold, use_otsu;
   rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-  cvThreshold(CVARR(self), CVARR(dest), NUM2DBL(threshold), 0, CV_THRESH_TOZERO_INV | (use_otsu == Qtrue ? CV_THRESH_OTSU : 0));
-  return dest;
+  return rb_threshold_internal(CV_THRESH_TOZERO_INV, threshold, INT2NUM(0), use_otsu, self);
 }
 
 /*
@@ -4058,7 +4142,7 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
 	      VALUE_TO_CVPOINT(seed_point),
 	      VALUE_TO_CVSCALAR(new_val),
 	      NIL_P(lo_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(lo_diff),
-	      NIL_P(lo_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(up_diff),
+	      NIL_P(up_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(up_diff),
 	      CVCONNECTEDCOMP(comp),
 	      flags,
 	      CVARR(mask));

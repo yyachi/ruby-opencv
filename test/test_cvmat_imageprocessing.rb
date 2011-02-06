@@ -493,6 +493,47 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('9f02fc4438b1d69fea75a10dfd2b66b0', hash_img(mat6))
   end
 
+  def test_morphology
+    mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
+      if i >= 8 and i < 56 and j >= 8 and j < 56 and (i + j) % 15 != 0
+        CvScalar.new(255)
+      else
+        CvScalar.new(0)
+      end
+    }
+
+    # Open
+    kernel = IplConvKernel.new(5, 5, 2, 2, :cross)
+    mat1 = mat0.morphology(CV_MOP_OPEN, kernel)
+    mat2 = mat0.morphology(:open, kernel)
+    assert_equal('63ccb07cb93efb1563657f51e3d89252', hash_img(mat1))
+    assert_equal('63ccb07cb93efb1563657f51e3d89252', hash_img(mat2))
+
+    # Close
+    mat1 = mat0.morphology(CV_MOP_CLOSE, kernel)
+    mat2 = mat0.morphology(:close, kernel)
+    assert_equal('831c513d6ed86bce3f15c697de4a72f8', hash_img(mat1))
+    assert_equal('831c513d6ed86bce3f15c697de4a72f8', hash_img(mat2))
+
+    # Gradient
+    mat1 = mat0.morphology(CV_MOP_GRADIENT, kernel)
+    mat2 = mat0.morphology(:gradient, kernel)
+    assert_equal('1e8007c211d6f464cf8584e8e83b3c35', hash_img(mat1))
+    assert_equal('1e8007c211d6f464cf8584e8e83b3c35', hash_img(mat2))
+
+    # Top hat
+    mat1 = mat0.morphology(CV_MOP_TOPHAT, kernel)
+    mat2 = mat0.morphology(CV_MOP_TOPHAT, kernel)
+    assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat1))
+    assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat2))
+
+    # Black hat
+    mat1 = mat0.morphology(CV_MOP_BLACKHAT, kernel)
+    mat2 = mat0.morphology(:blackhat, kernel)
+    assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat1))
+    assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat2))
+  end
+  
   def test_morphology_open
     mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
       if i >= 8 and i < 56 and j >= 8 and j < 56 and (i + j) % 15 != 0
@@ -525,10 +566,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.morphology_close(nil, 2)
     kernel = IplConvKernel.new(5, 5, 2, 2, :cross)
     mat3 = mat0.morphology_close(kernel)
+    mat4 = mat0.morphology(CV_MOP_CLOSE, kernel)
 
     assert_equal('752914aae1cff07a2b3ce528b6ac3332', hash_img(mat1))
     assert_equal('0908b8f98999a198e8a1fbc743de52e5', hash_img(mat2))
     assert_equal('831c513d6ed86bce3f15c697de4a72f8', hash_img(mat3))
+    assert_equal('831c513d6ed86bce3f15c697de4a72f8', hash_img(mat4))
   end
 
   def test_morphology_gradient
@@ -544,10 +587,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.morphology_gradient(nil, 2)
     kernel = IplConvKernel.new(5, 5, 2, 2, :cross)
     mat3 = mat0.morphology_gradient(kernel)
+    mat4 = mat0.morphology(CV_MOP_GRADIENT, kernel)
 
     assert_equal('e15d131ae29a58237f8d9a89669c3a47', hash_img(mat1))
     assert_equal('31d158672f699f961c59908e0bd72d5c', hash_img(mat2))
     assert_equal('1e8007c211d6f464cf8584e8e83b3c35', hash_img(mat3))
+    assert_equal('1e8007c211d6f464cf8584e8e83b3c35', hash_img(mat4))
   end
 
   def test_morphology_tophat
@@ -563,10 +608,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.morphology_tophat(nil, 2)
     kernel = IplConvKernel.new(5, 5, 2, 2, :cross)
     mat3 = mat0.morphology_tophat(kernel)
+    mat4 = mat0.morphology(CV_MOP_TOPHAT, kernel)
 
     assert_equal('26f89a4f449ec8328499960acbfd44f2', hash_img(mat1))
     assert_equal('102833c2e96eaa706eea5854d2aeaf5a', hash_img(mat2))
     assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat3))
+    assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat4))
   end
 
   def test_morphology_blackhat
@@ -582,10 +629,122 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.morphology_blackhat(nil, 2)
     kernel = IplConvKernel.new(5, 5, 2, 2, :cross)
     mat3 = mat0.morphology_blackhat(kernel)
+    mat4 = mat0.morphology(CV_MOP_BLACKHAT, kernel)
 
     assert_equal('3773d2802aad82c91ea8e14a324e5fc3', hash_img(mat1))
     assert_equal('3fc6bc283fa952e1fd566944d94b3e9a', hash_img(mat2))
     assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat3))
+    assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat4))
+  end
+
+  def test_smooth
+    mat0 = CvMat.load(FILENAME_LENA32x32, CV_LOAD_IMAGE_GRAYSCALE)
+
+    # Blur no scale
+    mat1 = mat0.smooth(CV_BLUR_NO_SCALE)
+    mat2 = mat0.smooth(:blur_no_scale, 3, 3)
+    mat3 = mat0.smooth(CV_BLUR_NO_SCALE, 7, 7)
+    mat4 = CvMat.new(32, 32, :cv32f, 1).smooth(:blur_no_scale)
+
+    [mat1, mat2, mat3].each { |m|
+      assert_equal(1, m.channel)
+      assert_equal(:cv16u, m.depth)
+    }
+    assert_equal(1, mat4.channel)
+    assert_equal(:cv32f, mat4.depth)
+
+    assert_equal('3c9074c87b65117798f48e41a17b2f30', hash_img(mat1))
+    assert_equal('3c9074c87b65117798f48e41a17b2f30', hash_img(mat2))
+    assert_equal('9c549aa406a425a65b036c2f9a2689e0', hash_img(mat3))
+    
+    # Blur
+    mat1 = mat0.smooth(CV_BLUR)
+    mat2 = mat0.smooth(:blur, 3, 3)
+    mat3 = mat0.smooth(CV_BLUR, 7, 7)
+    mat4 = CvMat.new(32, 32, :cv16u, 1).smooth(:blur)
+    mat5 = CvMat.new(32, 32, :cv32f, 1).smooth(CV_BLUR)
+    mat6 = CvMat.new(32, 32, :cv8u, 3).smooth(:blur)
+
+    [mat1, mat2, mat3].each { |m|
+      assert_equal(1, m.channel)
+      assert_equal(:cv8u, m.depth)
+    }
+    assert_equal(1, mat4.channel)
+    assert_equal(:cv16u, mat4.depth)
+    assert_equal(1, mat5.channel)
+    assert_equal(:cv32f, mat5.depth)
+    assert_equal(3, mat6.channel)
+    assert_equal(:cv8u, mat6.depth)
+
+    assert_equal('f2473b5b964ae8950f6a7fa5cde4c67a', hash_img(mat1))
+    assert_equal('f2473b5b964ae8950f6a7fa5cde4c67a', hash_img(mat2))
+    assert_equal('d7bb344fc0f6ec0da4b9754d319e4e4a', hash_img(mat3))
+
+    # Gaussian
+    mat1 = mat0.smooth(CV_GAUSSIAN)
+    mat2 = mat0.smooth(:gaussian, 3, 3)
+    mat3 = mat0.smooth(CV_GAUSSIAN, 3, 3, 3)
+    mat4 = mat0.smooth(:gaussian, 3, 3, 3, 3)
+    mat5 = mat0.smooth(CV_GAUSSIAN, 7, 7, 5, 3)
+
+    mat6 = CvMat.new(32, 32, :cv16u, 1).smooth(CV_GAUSSIAN)
+    mat7 = CvMat.new(32, 32, :cv32f, 1).smooth(CV_GAUSSIAN)
+    mat8 = CvMat.new(32, 32, :cv8u, 3).smooth(CV_GAUSSIAN)
+
+    [mat1, mat2, mat3, mat4, mat5].each { |m|
+      assert_equal(1, m.channel)
+      assert_equal(:cv8u, m.depth)
+    }
+    assert_equal(1, mat6.channel)
+    assert_equal(:cv16u, mat6.depth)
+    assert_equal(1, mat7.channel)
+    assert_equal(:cv32f, mat7.depth)
+    assert_equal(3, mat8.channel)
+    assert_equal(:cv8u, mat8.depth)
+
+    assert_equal('580c88f3e0e317a5770be3f28f31eda2', hash_img(mat1))
+    assert_equal('580c88f3e0e317a5770be3f28f31eda2', hash_img(mat2))
+    assert_equal('a1ffaa14522719e37d75eec18ff8b309', hash_img(mat3))
+    assert_equal('a1ffaa14522719e37d75eec18ff8b309', hash_img(mat4))
+    assert_equal('f7f8b4eff3240ffc8f259ce975936d92', hash_img(mat5))
+
+    # Median
+    mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
+      if (i + j) % 15 != 0
+        CvScalar.new(255)
+      else
+        CvScalar.new(0)
+      end
+    }
+    (-1..1).each { |dy|
+      (-1..1).each { |dx|
+        mat0[32 + dy, 32 + dx] = CvScalar.new(0)
+      }
+    }
+    
+    mat1 = mat0.smooth(CV_MEDIAN)
+    mat2 = mat0.smooth(:median, 3)
+    mat3 = mat0.smooth(CV_MEDIAN, 7)
+    mat4 = CvMat.new(64, 64, :cv8u, 3).smooth(CV_MEDIAN)
+
+    assert_equal('7343a41c542e034db356636c06134961', hash_img(mat1))
+    assert_equal('7343a41c542e034db356636c06134961', hash_img(mat2))
+    assert_equal('6ae59e64850377ee5470c854761551ea', hash_img(mat3))
+
+    # Bilateral
+    mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
+      if i > 32
+        (i + j) % 15 != 0 ? CvScalar.new(32) : CvScalar.new(224)
+      else
+        (i + j) % 15 != 0 ? CvScalar.new(224) : CvScalar.new(32)
+      end
+    }
+
+    mat1 = mat0.smooth(CV_BILATERAL)
+    mat2 = mat0.smooth(:bilateral, 3, 3)
+    mat3 = mat0.smooth(CV_BILATERAL, 7, 7)
+    mat4 = CvMat.new(64, 64, :cv8u, 3).smooth(CV_BILATERAL)
+    flunk('FIXME: Cases of CvMat#smooth(CV_BILATERAL) are not tested yet.')
   end
 
   def test_smooth_blur_no_scale
@@ -773,6 +932,58 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
   end
 
+  def test_threshold
+    mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
+    test_proc = lambda { |type, type_sym, expected_mat, expected_threshold|
+      mat1 = mat0.threshold(3, 7, type)
+      mat2 = mat0.threshold(3, 7, type_sym)
+      mat3, th3 = mat0.threshold(5, 7, type | CV_THRESH_OTSU)
+      mat4, th4 = mat0.threshold(3, 7, type_sym, true)
+      mat5, th5 = mat0.threshold(5, 7, type | CV_THRESH_OTSU, true)
+      [mat1, mat2, mat3, mat4, mat5].each { |m|
+        expected_mat.each_with_index { |x, i|
+          assert_equal(x, m[i][0])
+        }
+      }
+      [th3, th4, th5].each { |th|
+        assert_in_delta(expected_threshold, th, 0.001)
+      }
+    }
+    # Binary
+    expected = [0, 0, 0,
+                0, 7, 7,
+                7, 7, 7]
+    test_proc.call(CV_THRESH_BINARY, :binary, expected, 3)
+
+    # Binary inverse
+    expected = [7, 7, 7,
+                7, 0, 0,
+                0, 0, 0]
+    test_proc.call(CV_THRESH_BINARY_INV, :binary_inv, expected, 3)
+
+    # Trunc
+    expected = [0, 1, 2,
+                3, 3, 3,
+                3, 3, 3]
+    test_proc.call(CV_THRESH_TRUNC, :trunc, expected, 3)
+
+    # To zero
+    expected = [0, 0, 0,
+                0, 4, 5,
+                6, 7, 8]
+    test_proc.call(CV_THRESH_TOZERO, :tozero, expected, 3)
+
+    # To zero inverse
+    expected = [0, 1, 2,
+                3, 0, 0,
+                0, 0, 0]
+    test_proc.call(CV_THRESH_TOZERO_INV, :tozero_inv, expected, 3)
+
+    assert_raise(ArgumentError) {
+      mat0.threshold(1, 2, :foobar)
+    }
+  end
+
   def test_threshold_binary
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
     mat1 = mat0.threshold_binary(3, 7)
@@ -783,7 +994,11 @@ class TestCvMat_imageprocessing < OpenCVTestCase
       assert_equal(x, mat1[i][0])
     }
 
-    flunk('FIXME: Cases of CV_THRESH_OTSU are not tested yet.')
+    mat2, thresh2 = mat0.threshold_binary(5, 7, true)
+    assert_in_delta(3, thresh2, 0.001)
+    expected.each_with_index { |x, i|
+      assert_equal(x, mat1[i][0])
+    }
   end
 
   def test_threshold_binary_inverse
@@ -795,7 +1010,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
-    flunk('FIXME: Cases of CV_THRESH_OTSU are not tested yet.')
+
+    mat2, thresh2 = mat0.threshold_binary_inverse(5, 7, true)
+    assert_in_delta(3, thresh2, 0.001)
+    expected.each_with_index { |x, i|
+      assert_equal(x, mat1[i][0])
+    }
   end
 
   def test_threshold_trunc
@@ -807,7 +1027,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
-    flunk('FIXME: Cases of CV_THRESH_OTSU are not tested yet.')
+
+    mat2, thresh2 = mat0.threshold_trunc(5, true)
+    assert_in_delta(3, thresh2, 0.001)
+    expected.each_with_index { |x, i|
+      assert_equal(x, mat1[i][0])
+    }
   end
 
   def test_threshold_to_zero
@@ -819,7 +1044,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
-    flunk('FIXME: Cases of CV_THRESH_OTSU are not tested yet.')
+
+    mat2, thresh2 = mat0.threshold_to_zero(5, true)
+    assert_in_delta(3, thresh2, 0.001)
+    expected.each_with_index { |x, i|
+      assert_equal(x, mat1[i][0])
+    }
   end
 
   def test_threshold_to_zero_inverse
@@ -831,7 +1061,97 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
-    flunk('FIXME: Cases of CV_THRESH_OTSU are not tested yet.')
+
+    mat2, thresh2 = mat0.threshold_to_zero_inverse(5, true)
+    assert_in_delta(3, thresh2, 0.001)
+    expected.each_with_index { |x, i|
+      assert_equal(x, mat1[i][0])
+    }
+  end
+
+  def test_pyr_down
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mat1 = mat0.pyr_down
+    mat2 = mat0.pyr_down(:gaussian_5x5)
+
+    assert_equal('de9ff2ffcf8e43f28564a201cf90b7f4', hash_img(mat1))
+    assert_equal('de9ff2ffcf8e43f28564a201cf90b7f4', hash_img(mat2))
+  end
+
+  def test_pyr_up
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mat1 = mat0.pyr_up
+    mat2 = mat0.pyr_up(:gaussian_5x5)
+
+    assert_equal('02430c6cf143d3d104e25bc829f1fa93', hash_img(mat1))
+    assert_equal('02430c6cf143d3d104e25bc829f1fa93', hash_img(mat2))
+  end
+
+  def test_flood_fill
+    mat0 = create_cvmat(128, 128, :cv8u, 1) { |j, i, c|
+      if (i >= 32 and i < 96) and (j >= 32 and j < 96)
+        CvScalar.new(255)
+      elsif (i >= 16 and i < 112) and (j >= 16 and j < 112)
+        CvScalar.new(192)
+      else
+        CvScalar.new(128)
+      end
+    }
+
+    point = CvPoint.new(20, 20)
+    mat1, comp1, mask1 = mat0.flood_fill(point, 0)
+    mat2, comp2, mask2 = mat0.flood_fill(point, 0, CvScalar.new(64))
+    mat3, comp3, mask3 = mat0.flood_fill(point, 0, CvScalar.new(0), CvScalar.new(64))
+    mat4, comp4, mask4 = mat0.flood_fill(point, 0, CvScalar.new(0), CvScalar.new(64),
+                                         {:connectivity => 8, :fixed_range => true, :mask_only => true})
+    mat05 = mat0.clone
+    mat5, comp5, mask5 = mat05.flood_fill!(point, 0, CvScalar.new(0), CvScalar.new(64),
+                                         {:connectivity => 8, :fixed_range => true, :mask_only => true})
+
+    assert_equal('8c6a235fdf4c9c4f6822a45daac5b1af', hash_img(mat1))
+    assert_equal(5120.0, comp1.area)
+    assert_equal(16, comp1.rect.x)
+    assert_equal(16, comp1.rect.y)
+    assert_equal(96, comp1.rect.width)
+    assert_equal(96, comp1.rect.height)
+    assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), comp1.value)
+    assert_equal('98ebfcc49df7b8ebca6dd1c931ce7c34', hash_img(mask1))
+
+    assert_equal('7456e5de74bb8b4e783d04bbf1904644', hash_img(mat2))
+    assert_equal(12288.0, comp2.area)
+    assert_equal(0, comp2.rect.x)
+    assert_equal(0, comp2.rect.y)
+    assert_equal(128, comp2.rect.width)
+    assert_equal(128, comp2.rect.height)
+    assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), comp2.value)
+    assert_equal('3c23b0e491bb59dc9af75bf191d24458', hash_img(mask2))
+
+    assert_equal('df720005423762ca1b68e06571f58b21', hash_img(mat3))
+    assert_equal(9216.0, comp3.area)
+    assert_equal(16, comp3.rect.x)
+    assert_equal(16, comp3.rect.y)
+    assert_equal(96, comp3.rect.width)
+    assert_equal(96, comp3.rect.height)
+    assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), comp3.value)
+
+    assert_equal('7833f4c85c77056db71e33ae8072a1b5', hash_img(mat4))
+    assert_equal(9216.0, comp4.area)
+    assert_equal(16, comp4.rect.x)
+    assert_equal(16, comp4.rect.y)
+    assert_equal(96, comp4.rect.width)
+    assert_equal(96, comp4.rect.height)
+    assert_cvscalar_equal(CvScalar.new(220, 0, 0, 0), comp4.value)
+    assert_equal('33e01cdd72d7630e4231ffa63557da3e', hash_img(mask4))
+
+    assert_equal('7833f4c85c77056db71e33ae8072a1b5', hash_img(mat5))
+    assert_equal('7833f4c85c77056db71e33ae8072a1b5', hash_img(mat05))
+    assert_equal(9216.0, comp5.area)
+    assert_equal(16, comp5.rect.x)
+    assert_equal(16, comp5.rect.y)
+    assert_equal(96, comp5.rect.width)
+    assert_equal(96, comp5.rect.height)
+    assert_cvscalar_equal(CvScalar.new(220, 0, 0, 0), comp5.value)
+    assert_equal('33e01cdd72d7630e4231ffa63557da3e', hash_img(mask5))
   end
 end
 

@@ -187,6 +187,34 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_LOAD_IMAGE_ANYDEPTH", INT2FIX(CV_LOAD_IMAGE_ANYDEPTH));
   rb_define_const(rb_module, "CV_LOAD_IMAGE_ANYCOLOR", INT2FIX(CV_LOAD_IMAGE_ANYCOLOR));
 
+  /* Types of morphological operations */
+  rb_define_const(rb_module, "CV_MOP_OPEN", INT2FIX(CV_MOP_OPEN));
+  rb_define_const(rb_module, "CV_MOP_CLOSE", INT2FIX(CV_MOP_CLOSE));
+  rb_define_const(rb_module, "CV_MOP_GRADIENT", INT2FIX(CV_MOP_GRADIENT));
+  rb_define_const(rb_module, "CV_MOP_TOPHAT", INT2FIX(CV_MOP_TOPHAT));
+  rb_define_const(rb_module, "CV_MOP_BLACKHAT", INT2FIX(CV_MOP_BLACKHAT));
+
+  /* Shape of the structuring elements */
+  rb_define_const(rb_module, "CV_SHAPE_RECT", INT2FIX(CV_SHAPE_RECT));
+  rb_define_const(rb_module, "CV_SHAPE_CROSS", INT2FIX(CV_SHAPE_CROSS));
+  rb_define_const(rb_module, "CV_SHAPE_ELLIPSE", INT2FIX(CV_SHAPE_ELLIPSE));
+  rb_define_const(rb_module, "CV_SHAPE_CUSTOM", INT2FIX(CV_SHAPE_CUSTOM));
+
+  /* Types of the smoothing */
+  rb_define_const(rb_module, "CV_BLUR_NO_SCALE", INT2FIX(CV_BLUR_NO_SCALE));
+  rb_define_const(rb_module, "CV_BLUR", INT2FIX(CV_BLUR));
+  rb_define_const(rb_module, "CV_GAUSSIAN", INT2FIX(CV_GAUSSIAN));
+  rb_define_const(rb_module, "CV_MEDIAN", INT2FIX(CV_MEDIAN));
+  rb_define_const(rb_module, "CV_BILATERAL", INT2FIX(CV_BILATERAL));
+
+  /* Thresholding types */
+  rb_define_const(rb_module, "CV_THRESH_BINARY", INT2FIX(CV_THRESH_BINARY));
+  rb_define_const(rb_module, "CV_THRESH_BINARY_INV", INT2FIX(CV_THRESH_BINARY_INV));
+  rb_define_const(rb_module, "CV_THRESH_TRUNC", INT2FIX(CV_THRESH_TRUNC));
+  rb_define_const(rb_module, "CV_THRESH_TOZERO", INT2FIX(CV_THRESH_TOZERO));
+  rb_define_const(rb_module, "CV_THRESH_TOZERO_INV", INT2FIX(CV_THRESH_TOZERO_INV));
+  rb_define_const(rb_module, "CV_THRESH_OTSU", INT2FIX(CV_THRESH_OTSU));
+
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
   rb_define_const(rb_module, "INVERSION_METHOD", inversion_method);
@@ -241,6 +269,14 @@ define_ruby_module()
   RESIST_CVMETHOD(connectivity, "aa", CV_AA);
   RESIST_CVMETHOD(connectivity, "anti_alias", CV_AA);
 
+  VALUE structuring_element_shape = rb_hash_new();
+  /* {:rect, :cross, :ellipse, :custom}: Shape of the structuring elements */
+  rb_define_const(rb_module, "STRUCTURING_ELEMENT_SHAPE", structuring_element_shape);
+  RESIST_CVMETHOD(structuring_element_shape, "rect", CV_SHAPE_RECT);
+  RESIST_CVMETHOD(structuring_element_shape, "cross", CV_SHAPE_CROSS);
+  RESIST_CVMETHOD(structuring_element_shape, "ellipse", CV_SHAPE_ELLIPSE);
+  RESIST_CVMETHOD(structuring_element_shape, "custom", CV_SHAPE_CUSTOM);
+
   VALUE retrieval_mode = rb_hash_new();
   /* {:external, :list, :ccomp, :tree}: Retrieval mode */
   rb_define_const(rb_module, "RETRIEVAL_MODE", retrieval_mode);
@@ -272,6 +308,34 @@ define_ruby_module()
   RESIST_CVMETHOD(match_template_method, "ccorr_normed", CV_TM_CCORR_NORMED);
   RESIST_CVMETHOD(match_template_method, "ccoeff", CV_TM_CCOEFF);
   RESIST_CVMETHOD(match_template_method, "ccoeff_normed", CV_TM_CCOEFF_NORMED);
+
+  VALUE morphological_operation = rb_hash_new();
+  /* {:open, :close, :gradient, :tophat, :blackhat}: Types of morphological operations */
+  rb_define_const(rb_module, "MORPHOLOGICAL_OPERATION", morphological_operation);
+  RESIST_CVMETHOD(morphological_operation, "open", CV_MOP_OPEN);
+  RESIST_CVMETHOD(morphological_operation, "close", CV_MOP_CLOSE);
+  RESIST_CVMETHOD(morphological_operation, "gradient", CV_MOP_GRADIENT);
+  RESIST_CVMETHOD(morphological_operation, "tophat", CV_MOP_TOPHAT);
+  RESIST_CVMETHOD(morphological_operation, "blackhat", CV_MOP_BLACKHAT);
+
+  VALUE smoothing_type = rb_hash_new();
+  /* {:blur_no_scale, :blur, :gaussian, :median, :bilateral}: Types of smoothing */
+  rb_define_const(rb_module, "SMOOTHING_TYPE", smoothing_type);
+  RESIST_CVMETHOD(smoothing_type, "blur_no_scale", CV_BLUR_NO_SCALE);
+  RESIST_CVMETHOD(smoothing_type, "blur", CV_BLUR);
+  RESIST_CVMETHOD(smoothing_type, "gaussian", CV_GAUSSIAN);
+  RESIST_CVMETHOD(smoothing_type, "median", CV_MEDIAN);
+  RESIST_CVMETHOD(smoothing_type, "bilateral", CV_BILATERAL);
+
+  VALUE threshold_type = rb_hash_new();
+  /* {:binary, :binary_inv, :trunc, :tozero, :tozero_inv, :otsu} : Thresholding types */
+  rb_define_const(rb_module, "THRESHOLD_TYPE", threshold_type);
+  RESIST_CVMETHOD(threshold_type, "binary", CV_THRESH_BINARY);
+  RESIST_CVMETHOD(threshold_type, "binary_inv", CV_THRESH_BINARY_INV);
+  RESIST_CVMETHOD(threshold_type, "trunc", CV_THRESH_TRUNC);
+  RESIST_CVMETHOD(threshold_type, "tozero", CV_THRESH_TOZERO);
+  RESIST_CVMETHOD(threshold_type, "tozero_inv", CV_THRESH_TOZERO_INV);
+  RESIST_CVMETHOD(threshold_type, "otsu", CV_THRESH_OTSU);
 
   /* color convert methods */
   rb_define_module_function(rb_module, "BGR2BGRA", RUBY_METHOD_FUNC(rb_BGR2BGRA), 1);
