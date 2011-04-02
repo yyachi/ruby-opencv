@@ -9,7 +9,15 @@ include OpenCV
 # Tests for image processing functions of OpenCV::CvMat
 class TestCvMat_imageprocessing < OpenCVTestCase
   FILENAME_LENA256x256 = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-256x256.jpg'
+  FILENAME_LENA_INPAINT = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-inpaint.jpg'
+  FILENAME_INPAINT_MASK = File.expand_path(File.dirname(__FILE__)) + '/samples/inpaint-mask.bmp'
   FILENAME_LENA32x32 = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-32x32.jpg'
+  FILENAME_CONTOURS = File.expand_path(File.dirname(__FILE__)) + '/samples/contours.jpg'
+  FILENAME_LINES = File.expand_path(File.dirname(__FILE__)) + '/samples/lines.jpg'
+  FILENAME_LENA_EYES = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-eyes.jpg'
+  FILENAME_STR_CV = File.expand_path(File.dirname(__FILE__)) + '/samples/str-cv.jpg'
+  FILENAME_STR_OV = File.expand_path(File.dirname(__FILE__)) + '/samples/str-ov.jpg'
+  FILENAME_STR_CV_ROTATED = File.expand_path(File.dirname(__FILE__)) + '/samples/str-cv-rotated.jpg'
 
   def test_sobel
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
@@ -1107,7 +1115,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
                                          {:connectivity => 8, :fixed_range => true, :mask_only => true})
     mat05 = mat0.clone
     mat5, comp5, mask5 = mat05.flood_fill!(point, 0, CvScalar.new(0), CvScalar.new(64),
-                                         {:connectivity => 8, :fixed_range => true, :mask_only => true})
+                                           {:connectivity => 8, :fixed_range => true, :mask_only => true})
 
     assert_equal('8c6a235fdf4c9c4f6822a45daac5b1af', hash_img(mat1))
     assert_equal(5120.0, comp1.area)
@@ -1153,6 +1161,409 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(96, comp5.rect.height)
     assert_cvscalar_equal(CvScalar.new(220, 0, 0, 0), comp5.value)
     assert_equal('33e01cdd72d7630e4231ffa63557da3e', hash_img(mask5))
+  end
+
+  def test_find_contours
+    mat0 = CvMat.load(FILENAME_CONTOURS, CV_LOAD_IMAGE_GRAYSCALE)
+
+    # Make binary image
+    mat0.height.times { |j|
+      mat0.width.times { |i|
+        mat0[j, i] = (mat0[j, i][0] < 128) ? CvColor::Black : CvColor::White
+      }
+    }
+
+    [mat0.find_contours, mat0.find_contours(:mode => CV_RETR_LIST),
+     mat0.find_contours(:method => CV_CHAIN_APPROX_SIMPLE),
+     mat0.find_contours(:mode => CV_RETR_LIST, :method => CV_CHAIN_APPROX_SIMPLE)].each { |contours|
+      assert_not_nil(contours)
+      assert_equal(8, contours.total)
+      assert_not_nil(contours.h_next)
+      assert_equal(4, contours.h_next.total)
+      assert_not_nil(contours.h_next.h_next)
+      assert_equal(8, contours.h_next.h_next.total)
+      assert_not_nil(contours.h_next.h_next.h_next)
+      assert_equal(4, contours.h_next.h_next.h_next.total)
+      assert_nil(contours.v_next)
+      assert_nil(contours.h_next.v_next)
+      assert_nil(contours.h_next.h_next.v_next)
+      assert_nil(contours.h_next.h_next.h_next.v_next)
+    }
+    
+    contours = mat0.find_contours(:mode => CV_RETR_TREE)
+    assert_not_nil(contours)
+    assert_equal(4, contours.total)
+    assert_not_nil(contours.v_next)
+    assert_equal(8, contours.v_next.total)
+    assert_nil(contours.v_next.v_next)
+    assert_not_nil(contours.h_next)
+    assert_equal(4, contours.h_next.total)
+    assert_not_nil(contours.h_next.v_next)
+    assert_equal(8, contours.h_next.v_next.total)
+    assert_nil(contours.h_next.v_next.v_next)
+
+    contours = mat0.find_contours(:mode => CV_RETR_CCOMP)
+    assert_not_nil(contours)
+    assert_equal(4, contours.total)
+    assert_not_nil(contours.v_next)
+    assert_equal(8, contours.v_next.total)
+    assert_nil(contours.v_next.v_next)
+    assert_not_nil(contours.h_next)
+    assert_equal(4, contours.h_next.total)
+    assert_not_nil(contours.h_next.v_next)
+    assert_equal(8, contours.h_next.v_next.total)
+    assert_nil(contours.h_next.v_next.v_next)
+
+    contours = mat0.find_contours(:mode => CV_RETR_EXTERNAL)
+    assert_not_nil(contours)
+    assert_equal(4, contours.total)
+    assert_nil(contours.v_next)
+    assert_not_nil(contours.h_next)
+    assert_equal(4, contours.h_next.total)
+    assert_nil(contours.h_next.v_next)
+
+    contours = mat0.find_contours(:mode => CV_RETR_TREE, :method => CV_CHAIN_APPROX_NONE)
+    assert_not_nil(contours)
+    assert_equal(474, contours.total)
+    assert_not_nil(contours.v_next)
+    assert_equal(318, contours.v_next.total)
+    assert_nil(contours.v_next.v_next)
+    assert_not_nil(contours.h_next)
+    assert_equal(396, contours.h_next.total)
+    assert_not_nil(contours.h_next.v_next)
+    assert_equal(240, contours.h_next.v_next.total)
+    assert_nil(contours.h_next.v_next.v_next)
+
+    contours = mat0.find_contours(:mode => CV_RETR_EXTERNAL, :method => CV_CHAIN_CODE)
+    assert_equal(474, contours.total)
+    assert_equal(396, contours.h_next.total)
+
+    contours = mat0.find_contours(:mode => CV_RETR_EXTERNAL, :method => CV_CHAIN_APPROX_TC89_L1)
+    assert_equal(4, contours.total)
+    assert_equal(4, contours.h_next.total)
+
+    contours = mat0.find_contours(:mode => CV_RETR_EXTERNAL, :method => CV_CHAIN_APPROX_TC89_KCOS)
+    assert_equal(4, contours.total)
+    assert_equal(4, contours.h_next.total)
+  end
+
+  def test_pyr_segmentation
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mat1, seq1 = mat0.pyr_segmentation(4, 255, 50)
+    assert_equal('ebd9bad0bbc90b1d4a25289b7d59c958', hash_img(mat1))
+    assert_equal(5, seq1.total)
+
+    img0 = IplImage.load(FILENAME_CAT, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    img0.set_roi(CvRect.new(0, 0, 256, 512))
+    img2, seq2 = img0.pyr_segmentation(2, 255, 50)
+    assert_equal('963b26f51b14f175fbbf128e9b9e979f', hash_img(img2))
+    assert_equal(11, seq2.total)
+  end
+
+
+  def test_pyr_mean_shift_filtering
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mat1 = mat0.pyr_mean_shift_filtering(30, 30)
+    mat2 = mat0.pyr_mean_shift_filtering(30, 30, 2)
+    mat3 = mat0.pyr_mean_shift_filtering(30, 30, nil, CvTermCriteria.new(3, 0.01))
+    
+    assert_equal('6887e96bc5dfd552f76ac5411b394775', hash_img(mat1))
+    assert_equal('3cd9c4983fcabeafa04be200d5e08841', hash_img(mat2))
+    assert_equal('e37f0157f93fe2a98312ae6b768e8295', hash_img(mat3))
+  end
+
+  def test_watershed
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    marker = CvMat.new(mat0.cols, mat0.rows, :cv32s, 1).set_zero
+    marker[150, 150] = CvScalar.new(1, 1, 1, 1)
+    marker[210, 210] = CvScalar.new(2, 2, 2, 2)
+    marker[40, 90] = CvScalar.new(3, 3, 3, 3)
+
+    mat1 = mat0.watershed(marker)
+    assert_equal('ee6bec03296039c8df1899d3edc4684e', hash_img(mat1))
+  end
+
+  def test_hough_lines
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+
+    [CV_HOUGH_STANDARD, :standard].each { |method|
+      seq = mat.hough_lines(method, 1, Math::PI / 180, 65)
+      assert_equal(4, seq.size)
+    }
+
+    [CV_HOUGH_PROBABILISTIC, :probabilistic].each { |method|
+      seq = mat.hough_lines(method, 1, Math::PI / 180, 40, 30, 10)
+      assert_equal(4, seq.size)
+    }
+
+    [CV_HOUGH_MULTI_SCALE, :multi_scale].each { |method|
+      seq = mat.hough_lines(method, 1, Math::PI / 180, 40, 2, 3)
+      assert_equal(9, seq.size)
+    }
+  end
+
+  def test_hough_lines_standard
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+    seq = mat.hough_lines_standard(1, Math::PI / 180, 65)
+    assert_equal(4, seq.size)
+
+    # Uncomment the following lines to show the result
+    # seq.each { |line|
+    #   cos = Math::cos(line.theta)
+    #   sin = Math::sin(line.theta)
+    #   x0 = line.rho * cos
+    #   y0 = line.rho * sin
+    #   pt1 = CvPoint.new
+    #   pt2 = CvPoint.new
+    #   pt1.x = x0 + mat.width * 10 * (-sin)
+    #   pt1.y = y0 + mat.height * 10 * (cos)
+    #   pt2.x = x0 - mat.width * 10 * (-sin)
+    #   pt2.y = y0 - mat.height * 10 * (cos)
+    #   mat0.line!(pt1, pt2, :color => CvColor::Red, :thickness => 1, :line_type => :aa)
+    # }
+    # snap mat0
+  end
+
+  def test_hough_lines_probabilistic
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+    seq = mat.hough_lines_probabilistic(1, Math::PI / 180, 40, 30, 10)
+    assert_equal(4, seq.size)
+
+    # Uncomment the following lines to show the result
+    # seq.each { |points|
+    #   mat0.line!(*points, :color => CvColor::Red, :thickness => 1, :line_type => :aa)
+    # }
+    # snap mat0
+  end
+
+  def test_hough_lines_multi_scale
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+    seq = mat.hough_lines_multi_scale(1, Math::PI / 180, 40, 2, 3)
+    assert_equal(9, seq.size)
+
+    # Uncomment the following lines to show the result
+    # seq.each { |line|
+    #   cos = Math::cos(line.theta)
+    #   sin = Math::sin(line.theta)
+    #   x0 = line.rho * cos
+    #   y0 = line.rho * sin
+    #   pt1 = CvPoint.new
+    #   pt2 = CvPoint.new
+    #   pt1.x = x0 + mat.width * 10 * (-sin)
+    #   pt1.y = y0 + mat.height * 10 * (cos)
+    #   pt2.x = x0 - mat.width * 10 * (-sin)
+    #   pt2.y = y0 - mat.height * 10 * (cos)
+    #   mat0.line!(pt1, pt2, :color => CvColor::Red, :thickness => 1, :line_type => :aa)
+    # }
+    # snap mat0
+  end
+
+  def test_hough_circles
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+
+    [mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 50, 10, 50),
+     mat.hough_circles(:gradient, 1.5, 40, 100, 50, 10, 50),
+     mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 50),
+     mat.hough_circles(:gradient, 1.5, 40, 100, 50)].each { |seq|
+      assert_equal(2, seq.size)
+    }
+
+    # Uncomment the following lines to show the result
+    # seq = mat.hough_circles(:gradient, 1.5, 40, 100, 50, 10, 50)
+    # seq.each { |circle|
+    #   mat0.circle!(circle.center, circle.radius, :color => CvColor::Red, :thickness => 2)
+    # }
+    # snap mat0
+  end
+
+  def test_hough_circles_gradient
+    mat0 = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # make a binary image
+    mat = CvMat.new(mat0.rows, mat0.cols, :cv8u, 1)
+    (mat0.rows * mat0.cols).times { |i|
+      mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
+    }
+
+    [mat.hough_circles_gradient(1.5, 40, 100, 50, 10, 50),
+     mat.hough_circles_gradient(1.5, 40, 100, 50)].each { |seq|
+      assert_equal(2, seq.size)
+    }
+
+    # Uncomment the following lines to show the result
+    # seq = mat.hough_circles_gradient(1.5, 40, 100, 50, 10, 50)
+    # seq.each { |circle|
+    #   mat0.circle!(circle.center, circle.radius, :color => CvColor::Red, :thickness => 2)
+    # }
+    # snap mat0
+  end
+
+  def test_inpaint
+    mat = CvMat.load(FILENAME_LENA_INPAINT, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mask = CvMat.load(FILENAME_INPAINT_MASK, CV_LOAD_IMAGE_GRAYSCALE)
+
+    [CV_INPAINT_NS, :ns].each { |method|
+      result_ns = mat.inpaint(method, mask, 10)
+      assert_equal('d3df4dda8642c83512fb417ffa5e1457', hash_img(result_ns))
+    }
+    [CV_INPAINT_TELEA, :telea].each { |method|
+      result_telea = mat.inpaint(method, mask, 10)
+      assert_equal('d45bec22d03067578703f2ec68567167', hash_img(result_telea))
+    }
+
+    # Uncomment the following lines to show the results
+    # result_ns = mat.inpaint(:ns, mask, 10)
+    # result_telea = mat.inpaint(:telea, mask, 10)
+    # snap mat, result_ns, result_telea
+  end
+
+  def test_inpaint_ns
+    mat = CvMat.load(FILENAME_LENA_INPAINT, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mask = CvMat.load(FILENAME_INPAINT_MASK, CV_LOAD_IMAGE_GRAYSCALE)
+    result = mat.inpaint_ns(mask, 10)
+    assert_equal('d3df4dda8642c83512fb417ffa5e1457', hash_img(result))
+    # Uncomment the following lines to show the result
+    # snap mat, result
+  end
+
+  def test_inpaint_telea
+    mat = CvMat.load(FILENAME_LENA_INPAINT, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    mask = CvMat.load(FILENAME_INPAINT_MASK, CV_LOAD_IMAGE_GRAYSCALE)
+    result = mat.inpaint_telea(mask, 10)
+    assert_equal('d45bec22d03067578703f2ec68567167', hash_img(result))
+    # Uncomment the following lines to show the result
+    # snap mat, result
+  end
+
+  def test_equalize_hist
+    mat = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
+    result = mat.equalize_hist
+    assert_equal('de235065c746193d7f3de9359f63a7af', hash_img(result))
+
+    # Uncomment the following lines to show the result
+    # snap mat, result
+  end
+
+  def test_match_template
+    mat = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    templ = CvMat.load(FILENAME_LENA_EYES, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    
+    # sqdiff
+    result = mat.match_template(templ)
+    assert_equal('88663ec44be797ca883fc87bb6d7c09b', hash_img(result))
+    [CV_TM_SQDIFF, :sqdiff].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('88663ec44be797ca883fc87bb6d7c09b', hash_img(result))
+    }
+
+    # sqdiff_normed
+    [CV_TM_SQDIFF_NORMED, :sqdiff_normed].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('75c812f87184b2ccd8f83b70a8436356', hash_img(result))
+    }
+
+    # ccorr
+    [CV_TM_CCORR, :ccorr].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('6ebe7e48edf8fc64bcc0fd7f1e96555c', hash_img(result))
+    }
+
+    # ccorr_normed
+    [CV_TM_CCORR_NORMED, :ccorr_normed].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('4cf8ebcec870f8295d615a9aa345ae4d', hash_img(result))
+    }
+
+    # ccoeff
+    [CV_TM_CCOEFF, :ccoeff].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('248a391c5a1e1dbcf7a19f3310b5cd7a', hash_img(result))
+    }
+    
+    # ccoeff_normed
+    [CV_TM_CCOEFF_NORMED, :ccoeff_normed].each { |method|
+      result = mat.match_template(templ, method)
+      assert_equal('27a4e9b45ed648848f0498356bd2c5b5', hash_img(result))
+    }
+
+    # Uncomment the following lines to show the result
+    # result = mat.match_template(templ)
+    # pt1 = result.min_max_loc[2] # minimum location
+    # pt2 = CvPoint.new(pt1.x + templ.width, pt1.y + templ.height)
+    # mat.rectangle!(pt1, pt2, :color => CvColor::Black, :thickness => 3)
+    # snap mat, templ, result
+  end
+
+  def test_match_shapes
+    mat_cv = CvMat.load(FILENAME_STR_CV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_ov = CvMat.load(FILENAME_STR_OV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_cv_rotated = CvMat.load(FILENAME_STR_CV_ROTATED, CV_LOAD_IMAGE_GRAYSCALE)
+
+    [CV_CONTOURS_MATCH_I1, :i1].each { |method|
+      assert_in_delta(0, mat_cv.match_shapes(mat_cv_rotated, method), 0.00001)
+      assert_in_delta(0.0010649, mat_cv.match_shapes(mat_ov, method), 0.00001)
+    }
+
+    [CV_CONTOURS_MATCH_I2, :i2].each { |method|
+      assert_in_delta(0, mat_cv.match_shapes(mat_cv_rotated, method), 0.00001)
+      assert_in_delta(0.0104650, mat_cv.match_shapes(mat_ov, method), 0.00001)
+    }
+
+    [CV_CONTOURS_MATCH_I3, :i3].each { |method|
+      assert_in_delta(0, mat_cv.match_shapes(mat_cv_rotated, method), 0.00001)
+      assert_in_delta(0.0033327, mat_cv.match_shapes(mat_ov, method), 0.00001)
+    }
+  end
+  
+  def test_match_shapes_i1
+    mat_cv = CvMat.load(FILENAME_STR_CV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_ov = CvMat.load(FILENAME_STR_OV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_cv_rotated = CvMat.load(FILENAME_STR_CV_ROTATED, CV_LOAD_IMAGE_GRAYSCALE)
+
+    assert_in_delta(0, mat_cv.match_shapes_i1(mat_cv_rotated), 0.00001)
+    assert_in_delta(0.0010649, mat_cv.match_shapes_i1(mat_ov), 0.00001)
+  end
+
+  def test_match_shapes_i2
+    mat_cv = CvMat.load(FILENAME_STR_CV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_ov = CvMat.load(FILENAME_STR_OV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_cv_rotated = CvMat.load(FILENAME_STR_CV_ROTATED, CV_LOAD_IMAGE_GRAYSCALE)
+
+    assert_in_delta(0, mat_cv.match_shapes_i2(mat_cv_rotated), 0.00001)
+    assert_in_delta(0.0104650, mat_cv.match_shapes_i2(mat_ov), 0.00001)
+  end
+
+  def test_match_shapes_i3
+    mat_cv = CvMat.load(FILENAME_STR_CV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_ov = CvMat.load(FILENAME_STR_OV, CV_LOAD_IMAGE_GRAYSCALE)
+    mat_cv_rotated = CvMat.load(FILENAME_STR_CV_ROTATED, CV_LOAD_IMAGE_GRAYSCALE)
+
+    assert_in_delta(0, mat_cv.match_shapes_i3(mat_cv_rotated), 0.00001)
+    assert_in_delta(0.0033327, mat_cv.match_shapes_i3(mat_ov), 0.00001)
   end
 end
 

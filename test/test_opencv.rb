@@ -51,6 +51,48 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(3, CV_THRESH_TOZERO)
     assert_equal(4, CV_THRESH_TOZERO_INV)
     assert_equal(8, CV_THRESH_OTSU)
+
+    # Retrieval mode
+    assert_equal(0, CV_RETR_EXTERNAL)
+    assert_equal(1, CV_RETR_LIST)
+    assert_equal(2, CV_RETR_CCOMP)
+    assert_equal(3, CV_RETR_TREE)
+
+    # Approximation method
+    assert_equal(0, CV_CHAIN_CODE)
+    assert_equal(1, CV_CHAIN_APPROX_NONE)
+    assert_equal(2, CV_CHAIN_APPROX_SIMPLE)
+    assert_equal(3, CV_CHAIN_APPROX_TC89_L1)
+    assert_equal(4, CV_CHAIN_APPROX_TC89_KCOS)
+    assert_equal(5, CV_LINK_RUNS)
+
+    # Termination criteria for iterative algorithms
+    assert_equal(1, CV_TERMCRIT_ITER)
+    assert_equal(1, CV_TERMCRIT_NUMBER)
+    assert_equal(2, CV_TERMCRIT_EPS)
+
+    # Hough transform methods
+    assert_equal(0, CV_HOUGH_STANDARD)
+    assert_equal(1, CV_HOUGH_PROBABILISTIC)
+    assert_equal(2, CV_HOUGH_MULTI_SCALE)
+    assert_equal(3, CV_HOUGH_GRADIENT)
+
+    # Inpaint method
+    assert_equal(0, CV_INPAINT_NS)
+    assert_equal(1, CV_INPAINT_TELEA)
+
+    # Match tempalte method
+    assert_equal(0, CV_TM_SQDIFF)
+    assert_equal(1, CV_TM_SQDIFF_NORMED)
+    assert_equal(2, CV_TM_CCORR)
+    assert_equal(3, CV_TM_CCORR_NORMED)
+    assert_equal(4, CV_TM_CCOEFF)
+    assert_equal(5, CV_TM_CCOEFF_NORMED)
+    
+    # Comparison method
+    assert_equal(1, CV_CONTOURS_MATCH_I1)
+    assert_equal(2, CV_CONTOURS_MATCH_I2)
+    assert_equal(3, CV_CONTOURS_MATCH_I3)
   end
 
   def test_symbols
@@ -145,6 +187,21 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(3, THRESHOLD_TYPE[:tozero])
     assert_equal(4, THRESHOLD_TYPE[:tozero_inv])
     assert_equal(8, THRESHOLD_TYPE[:otsu])
+
+    # Hough transform methods
+    assert_equal(0, HOUGH_TRANSFORM_METHOD[:standard])
+    assert_equal(1, HOUGH_TRANSFORM_METHOD[:probabilistic])
+    assert_equal(2, HOUGH_TRANSFORM_METHOD[:multi_scale])
+    assert_equal(3, HOUGH_TRANSFORM_METHOD[:gradient])
+
+    # Inpaint method
+    assert_equal(0, INPAINT_METHOD[:ns])
+    assert_equal(1, INPAINT_METHOD[:telea])
+
+    # Comparison method
+    assert_equal(1, COMPARISON_METHOD[:i1])
+    assert_equal(2, COMPARISON_METHOD[:i2])
+    assert_equal(3, COMPARISON_METHOD[:i3])
   end
 
   def test_cvt_color_funcs

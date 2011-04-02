@@ -224,21 +224,25 @@ VALUE rb_find_contours(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_contours_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_pyr_segmentation(int argc, VALUE *argv, VALUE self);
 VALUE rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self);
-VALUE rb_watershed(VALUE self);
+VALUE rb_watershed(VALUE self, VALUE markers);
 
 VALUE rb_moments(int argc, VALUE *argv, VALUE self);
 
-VALUE rb_hough_lines_standard(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_lines_probabilistic(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_lines_multi_scale(int argc, VALUE *argv, VALUE self);
+VALUE rb_hough_lines(int argc, VALUE *argv, VALUE self);
+VALUE rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold);
+VALUE rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
+VALUE rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
+VALUE rb_hough_circles(int argc, VALUE *argv, VALUE self);
 VALUE rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self);
 VALUE rb_dist_transform(int argc, VALUE *argv, VALUE self);
+VALUE rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius);
 VALUE rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius);
 VALUE rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius);
 
 VALUE rb_equalize_hist(VALUE self);
 /* Matching*/
 VALUE rb_match_template(int argc, VALUE *argv, VALUE self);
+VALUE rb_match_shapes(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes_i1(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes_i2(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes_i3(int argc, VALUE *argv, VALUE self);

@@ -58,7 +58,7 @@ void
 mark_root_object(void *ptr)
 {
   VALUE value;
-  if(ptr && st_lookup(root_table, (st_data_t)ptr, (st_data_t*)&value)){      
+  if (ptr && st_lookup(root_table, (st_data_t)ptr, (st_data_t*)&value)) {
     rb_gc_mark(value);
   }
 }
@@ -70,7 +70,7 @@ VALUE
 lookup_root_object(void *ptr)
 {
   VALUE value = 0;
-  if(ptr)
+  if (ptr)
     st_lookup(root_table, (st_data_t)ptr, (st_data_t*)&value);
   return value;
 }
@@ -99,7 +99,7 @@ unresist_object(void *ptr)
 void
 free_object(void *ptr)
 {
-  if(ptr){      
+  if (ptr) {
     unresist_object(ptr);
     cvFree(&ptr);
   }
@@ -111,7 +111,7 @@ free_object(void *ptr)
 void
 release_object(void *ptr)
 {
-  if(ptr){
+  if (ptr) {
     unresist_object(ptr);
     cvRelease(&ptr);
   }
@@ -123,7 +123,7 @@ release_object(void *ptr)
 void
 release_iplconvkernel_object(void *ptr)
 {
-  if(ptr){
+  if (ptr) {
     unresist_object(ptr);
     cvReleaseStructuringElement((IplConvKernel**)(&ptr));
   }
@@ -150,7 +150,7 @@ error_callback(int status,
                void *user_data)
 {
   int error_code = (CvStatus)cvGetErrStatus();
-  if(error_code){
+  if (error_code) {
     OPENCV_RSTERR(); // = CV_StsOk
     rb_warn("OpenCV error code (%d) : %s (%d in %s)", error_code, function_name, line, file_name);
     rb_raise(mCvError::by_code(error_code), "%s", error_message);
@@ -161,7 +161,7 @@ error_callback(int status,
 void
 define_ruby_module()
 {
-  if(rb_module)
+  if (rb_module)
     return;
   rb_module = rb_define_module("OpenCV");
   
@@ -215,6 +215,48 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_THRESH_TOZERO_INV", INT2FIX(CV_THRESH_TOZERO_INV));
   rb_define_const(rb_module, "CV_THRESH_OTSU", INT2FIX(CV_THRESH_OTSU));
 
+  /* Retrieval mode */
+  rb_define_const(rb_module, "CV_RETR_EXTERNAL", INT2FIX(CV_RETR_EXTERNAL));
+  rb_define_const(rb_module, "CV_RETR_LIST", INT2FIX(CV_RETR_LIST));
+  rb_define_const(rb_module, "CV_RETR_CCOMP", INT2FIX(CV_RETR_CCOMP));
+  rb_define_const(rb_module, "CV_RETR_TREE", INT2FIX(CV_RETR_TREE));
+  
+  /* Approximation method */
+  rb_define_const(rb_module, "CV_CHAIN_CODE", INT2FIX(CV_CHAIN_CODE));
+  rb_define_const(rb_module, "CV_CHAIN_APPROX_NONE", INT2FIX(CV_CHAIN_APPROX_NONE));
+  rb_define_const(rb_module, "CV_CHAIN_APPROX_SIMPLE", INT2FIX(CV_CHAIN_APPROX_SIMPLE));
+  rb_define_const(rb_module, "CV_CHAIN_APPROX_TC89_L1", INT2FIX(CV_CHAIN_APPROX_TC89_L1));
+  rb_define_const(rb_module, "CV_CHAIN_APPROX_TC89_KCOS", INT2FIX(CV_CHAIN_APPROX_TC89_KCOS));
+  rb_define_const(rb_module, "CV_LINK_RUNS", INT2FIX(CV_LINK_RUNS));
+
+  /* Termination criteria for iterative algorithms */
+  rb_define_const(rb_module, "CV_TERMCRIT_ITER", INT2FIX(CV_TERMCRIT_ITER));
+  rb_define_const(rb_module, "CV_TERMCRIT_NUMBER", INT2FIX(CV_TERMCRIT_NUMBER));
+  rb_define_const(rb_module, "CV_TERMCRIT_EPS", INT2FIX(CV_TERMCRIT_EPS));
+
+  /* Hough transform method */
+  rb_define_const(rb_module, "CV_HOUGH_STANDARD", INT2FIX(CV_HOUGH_STANDARD));
+  rb_define_const(rb_module, "CV_HOUGH_PROBABILISTIC", INT2FIX(CV_HOUGH_PROBABILISTIC));
+  rb_define_const(rb_module, "CV_HOUGH_MULTI_SCALE", INT2FIX(CV_HOUGH_MULTI_SCALE));
+  rb_define_const(rb_module, "CV_HOUGH_GRADIENT", INT2FIX(CV_HOUGH_GRADIENT));
+
+  /* Inpaint method */
+  rb_define_const(rb_module, "CV_INPAINT_NS", INT2FIX(CV_INPAINT_NS));
+  rb_define_const(rb_module, "CV_INPAINT_TELEA", INT2FIX(CV_INPAINT_TELEA));
+
+  /* Match template method */
+  rb_define_const(rb_module, "CV_TM_SQDIFF", INT2FIX(CV_TM_SQDIFF));
+  rb_define_const(rb_module, "CV_TM_SQDIFF_NORMED", INT2FIX(CV_TM_SQDIFF_NORMED));
+  rb_define_const(rb_module, "CV_TM_CCORR", INT2FIX(CV_TM_CCORR));
+  rb_define_const(rb_module, "CV_TM_CCORR_NORMED", INT2FIX(CV_TM_CCORR_NORMED));
+  rb_define_const(rb_module, "CV_TM_CCOEFF", INT2FIX(CV_TM_CCOEFF));
+  rb_define_const(rb_module, "CV_TM_CCOEFF_NORMED", INT2FIX(CV_TM_CCOEFF_NORMED));
+
+  /* Comparison method */
+  rb_define_const(rb_module, "CV_CONTOURS_MATCH_I1", INT2FIX(CV_CONTOURS_MATCH_I1));
+  rb_define_const(rb_module, "CV_CONTOURS_MATCH_I2", INT2FIX(CV_CONTOURS_MATCH_I2));
+  rb_define_const(rb_module, "CV_CONTOURS_MATCH_I3", INT2FIX(CV_CONTOURS_MATCH_I3));
+  
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
   rb_define_const(rb_module, "INVERSION_METHOD", inversion_method);
@@ -336,6 +378,27 @@ define_ruby_module()
   RESIST_CVMETHOD(threshold_type, "tozero", CV_THRESH_TOZERO);
   RESIST_CVMETHOD(threshold_type, "tozero_inv", CV_THRESH_TOZERO_INV);
   RESIST_CVMETHOD(threshold_type, "otsu", CV_THRESH_OTSU);
+
+  VALUE hough_transform_method = rb_hash_new();
+  /* {:standard, :probabilistic, :multi_scale} : Hough transform method */
+  rb_define_const(rb_module, "HOUGH_TRANSFORM_METHOD", hough_transform_method);
+  RESIST_CVMETHOD(hough_transform_method, "standard", CV_HOUGH_STANDARD);
+  RESIST_CVMETHOD(hough_transform_method, "probabilistic", CV_HOUGH_PROBABILISTIC);
+  RESIST_CVMETHOD(hough_transform_method, "multi_scale", CV_HOUGH_MULTI_SCALE);
+  RESIST_CVMETHOD(hough_transform_method, "gradient", CV_HOUGH_GRADIENT);
+
+  VALUE inpaint_method = rb_hash_new();
+  /* {:ns, :telea} : Inpaint method */
+  rb_define_const(rb_module, "INPAINT_METHOD", inpaint_method);
+  RESIST_CVMETHOD(inpaint_method, "ns", CV_INPAINT_NS);
+  RESIST_CVMETHOD(inpaint_method, "telea", CV_INPAINT_TELEA);
+
+  VALUE comparison_method = rb_hash_new();
+  /* Comparison method */
+  rb_define_const(rb_module, "COMPARISON_METHOD", comparison_method);
+  RESIST_CVMETHOD(comparison_method, "i1", CV_CONTOURS_MATCH_I1);
+  RESIST_CVMETHOD(comparison_method, "i2", CV_CONTOURS_MATCH_I2);
+  RESIST_CVMETHOD(comparison_method, "i3", CV_CONTOURS_MATCH_I3);
 
   /* color convert methods */
   rb_define_module_function(rb_module, "BGR2BGRA", RUBY_METHOD_FUNC(rb_BGR2BGRA), 1);
@@ -523,6 +586,7 @@ extern "C"{
     mOpenCV::cCvFont::define_ruby_class();
     mOpenCV::cIplConvKernel::define_ruby_class();
     mOpenCV::cCvMoments::define_ruby_class();
+    mOpenCV::cCvHuMoments::define_ruby_class();
     mOpenCV::cCvConvexityDefect::define_ruby_class();
 
     mOpenCV::cCvMemStorage::define_ruby_class();

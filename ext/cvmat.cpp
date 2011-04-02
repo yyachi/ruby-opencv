@@ -53,7 +53,7 @@ __NAMESPACE_BEGIN_CVMAT
 #define DRAWING_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")), rb_intern("merge"), 1, op)
 #define DO_COLOR(op) VALUE_TO_CVSCALAR(rb_hash_aref(op, ID2SYM(rb_intern("color"))))
 #define DO_THICKNESS(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("thickness"))))
-#define DO_LINE_TYPE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("line_type"))) == ID2SYM("aa") ? INT2FIX(CV_AA) : rb_hash_aref(op, ID2SYM(rb_intern("line_type"))))
+#define DO_LINE_TYPE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("line_type"))))
 #define DO_SHIFT(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("shift"))))
 #define DO_IS_CLOSED(op) ({VALUE _is_closed = rb_hash_aref(op, ID2SYM(rb_intern("is_closed"))); NIL_P(_is_closed) ? 0 : _is_closed == Qfalse ? 0 : 1;})
 
@@ -363,21 +363,25 @@ void define_ruby_class()
   rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
   rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), -1);
   rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
-  rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 0);
+  rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
 
   rb_define_method(rb_klass, "moments", RUBY_METHOD_FUNC(rb_moments), -1);
 
-  rb_define_method(rb_klass, "hough_lines_standard", RUBY_METHOD_FUNC(rb_hough_lines_standard), -1);
-  rb_define_method(rb_klass, "hough_lines_probabilistic", RUBY_METHOD_FUNC(rb_hough_lines_probabilistic), -1);
-  rb_define_method(rb_klass, "hough_lines_multi_scale", RUBY_METHOD_FUNC(rb_hough_lines_multi_scale), -1);
+  rb_define_method(rb_klass, "hough_lines", RUBY_METHOD_FUNC(rb_hough_lines), -1);
+  rb_define_method(rb_klass, "hough_lines_standard", RUBY_METHOD_FUNC(rb_hough_lines_standard), 3);
+  rb_define_method(rb_klass, "hough_lines_probabilistic", RUBY_METHOD_FUNC(rb_hough_lines_probabilistic), 5);
+  rb_define_method(rb_klass, "hough_lines_multi_scale", RUBY_METHOD_FUNC(rb_hough_lines_multi_scale), 5);
+  rb_define_method(rb_klass, "hough_circles", RUBY_METHOD_FUNC(rb_hough_circles), -1);
   rb_define_method(rb_klass, "hough_circles_gradient", RUBY_METHOD_FUNC(rb_hough_circles_gradient), -1);
   //rb_define_method(rb_klass, "dist_transform", RUBY_METHOD_FUNC(rb_dist_transform), -1);
 
+  rb_define_method(rb_klass, "inpaint", RUBY_METHOD_FUNC(rb_inpaint), 3);
   rb_define_method(rb_klass, "inpaint_ns", RUBY_METHOD_FUNC(rb_inpaint_ns), 2);
   rb_define_method(rb_klass, "inpaint_telea", RUBY_METHOD_FUNC(rb_inpaint_telea), 2);
 
   rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
   rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
+  rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
   rb_define_method(rb_klass, "match_shapes_i1", RUBY_METHOD_FUNC(rb_match_shapes_i1), -1);
   rb_define_method(rb_klass, "match_shapes_i2", RUBY_METHOD_FUNC(rb_match_shapes_i2), -1);
   rb_define_method(rb_klass, "match_shapes_i3", RUBY_METHOD_FUNC(rb_match_shapes_i3), -1);
@@ -3193,7 +3197,7 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eArgError, "option :max should be positive value.");
   CvPoint2D32f *p32 = (CvPoint2D32f*)cvAlloc(sizeof(CvPoint2D32f) * np);
   if(!p32)
-    rb_raise(rb_eNoMemError, "failed allocate memory.");
+    rb_raise(rb_eNoMemError, "failed to allocate memory.");
   cvGoodFeaturesToTrack(src, &eigen, &tmp, p32, &np, NUM2DBL(quality_level), NUM2DBL(min_distance),
 			GF_MASK(good_features_to_track_option),
 			GF_BLOCK_SIZE(good_features_to_track_option),
@@ -3893,9 +3897,8 @@ rb_threshold_internal(int threshold_type, VALUE threshold, VALUE max_value, VALU
   int type = threshold_type | (otsu ? CV_THRESH_OTSU : 0);
   double otsu_threshold = cvThreshold(self_ptr, CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), type);
 
-  if ((use_otsu == Qtrue) || (threshold_type & CV_THRESH_OTSU)) {
+  if ((use_otsu == Qtrue) || (threshold_type & CV_THRESH_OTSU))
     return rb_assoc_new(dest, DBL2NUM(otsu_threshold));
-  }
   else
     return dest;
 }
@@ -4152,7 +4155,7 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   find_contours([find_contours_options]) -> cvchain or chcontour or nil
+ *   find_contours([find_contours_options]) -> cvchain or cvcontour or nil
  *
  * Finds contours in binary image, and return contours as CvContour or CvChain.
  * If contours not found, return nil.
@@ -4210,29 +4213,27 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
   SUPPORT_8UC1_ONLY(self);
   VALUE find_contours_option, klass, element_klass, storage;
   rb_scan_args(argc, argv, "01", &find_contours_option);
-  CvSeq *contour = 0;
+  CvSeq *contour = NULL;
   find_contours_option = FIND_CONTOURS_OPTION(find_contours_option);
   int mode = FC_MODE(find_contours_option);
   int method = FC_METHOD(find_contours_option);
-  int header, header_size, element_size;
+  int header_size, element_size;
   if (method == CV_CHAIN_CODE) {
     klass = cCvChain::rb_class();
     element_klass = cCvChainCode::rb_class();
-    header = CV_SEQ_CHAIN_CONTOUR;
     header_size = sizeof(CvChain);
     element_size = sizeof(CvChainCode);
-  } else {
+  }
+  else {
     klass = cCvContour::rb_class();
     element_klass = cCvPoint::rb_class();
-    header = CV_SEQ_CONTOUR;
     header_size = sizeof(CvContour);
     element_size = sizeof(CvPoint);
   }
   storage = cCvMemStorage::new_object();
-  if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage), &contour, header, mode, method, FC_OFFSET(find_contours_option)) == 0)
+  if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
+  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0)
     return Qnil;
-  if(!contour)
-    contour = cvCreateSeq(header, header_size, element_size, CVMEMSTORAGE(storage));
   return cCvSeq::new_sequence(klass, contour, element_klass, storage);
 }
 
@@ -4262,9 +4263,10 @@ rb_pyr_segmentation(int argc, VALUE *argv, VALUE self)
   IplImage *src = IPLIMAGE(self);
   int l = FIX2INT(level);
   double t1 = NUM2DBL(threshold1), t2 = NUM2DBL(threshold2);
-  if (!(l >0))
+  CvRect roi = cvGetImageROI(src);
+  if (l <= 0)
     rb_raise(rb_eArgError, "argument 1 (level) should be > 0.");
-  if(((src->width | src->height) & ((1 << l) -1 )) != 0)
+  if(((roi.width | roi.height) & ((1 << l) - 1)) != 0)
     rb_raise(rb_eArgError, "bad image size on level %d.", FIX2INT(level));
   if (t1 < 0)
     rb_raise(rb_eArgError, "argument 2 (threshold for establishing the link) should be >= 0.");
@@ -4338,10 +4340,8 @@ rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self)
  * Does watershed segmentation.
  */
 VALUE
-rb_watershed(VALUE self)
+rb_watershed(VALUE self, VALUE markers)
 {
-  VALUE markers = cCvMat::new_object(cvGetSize(CVARR(self)), CV_32SC1);
-  cvZero(CVARR(markers));
   cvWatershed(CVARR(self), CVARR(markers));
   return markers;
 }
@@ -4369,7 +4369,60 @@ rb_moments(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   hough_line_standard(<i>rho, theta, threshold</i>) -> cvseq(include CvLine)
+ *   hough_lines(<i>method, rho, theta, threshold, param1, param2</i>) -> cvseq(include CvLine or CvTwoPoints)
+ *
+ * Finds lines in binary image using a Hough transform.
+ * * method –
+ * *   The Hough transform variant, one of the following:
+ * *   - CV_HOUGH_STANDARD - classical or standard Hough transform.
+ * *   - CV_HOUGH_PROBABILISTIC - probabilistic Hough transform (more efficient in case if picture contains a few long linear segments).
+ * *   - CV_HOUGH_MULTI_SCALE - multi-scale variant of the classical Hough transform. The lines are encoded the same way as CV_HOUGH_STANDARD.
+ * * rho - Distance resolution in pixel-related units.
+ * * theta - Angle resolution measured in radians.
+ * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
+ * * param1 –
+ * *   The first method-dependent parameter:
+ * *     For the classical Hough transform it is not used (0).
+ * *     For the probabilistic Hough transform it is the minimum line length.
+ * *     For the multi-scale Hough transform it is the divisor for the distance resolution . (The coarse distance resolution will be rho and the accurate resolution will be (rho / param1)).
+ * * param2 –
+ * *   The second method-dependent parameter:
+ * *     For the classical Hough transform it is not used (0).
+ * *     For the probabilistic Hough transform it is the maximum gap between line segments lying on the same line to treat them as a single line segment (i.e. to join them).
+ * *     For the multi-scale Hough transform it is the divisor for the angle resolution. (The coarse angle resolution will be theta and the accurate resolution will be (theta / param2).)
+ */
+VALUE
+rb_hough_lines(int argc, VALUE *argv, VALUE self)
+{
+  SUPPORT_8UC1_ONLY(self);
+  const int INVALID_TYPE = -1;
+  VALUE method, rho, theta, threshold, p1, p2;
+  rb_scan_args(argc, argv, "42", &method, &rho, &theta, &threshold, &p1, &p2);
+  int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
+  VALUE storage = cCvMemStorage::new_object();
+  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
+			     method_flag, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
+			     IF_DBL(p1, 0), IF_DBL(p2, 0));
+  switch (method_flag) {
+  case CV_HOUGH_STANDARD:
+  case CV_HOUGH_MULTI_SCALE:
+    return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
+    break;
+  case CV_HOUGH_PROBABILISTIC:
+    return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvTwoPoints::rb_class(), storage);
+    break;
+  default:
+    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
+    break;
+  }
+
+  return Qnil;
+}
+
+
+/*
+ * call-seq:
+ *   hough_lines_standard(<i>rho, theta, threshold</i>) -> cvseq(include CvLine)
  *
  * Finds lines in binary image using standard(classical) Hough transform.
  * * rho - Distance resolution in pixel-related units.
@@ -4377,12 +4430,10 @@ rb_moments(int argc, VALUE *argv, VALUE self)
  * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
  */
 VALUE
-rb_hough_lines_standard(int argc, VALUE *argv, VALUE self)
+rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold)
 {
   SUPPORT_8UC1_ONLY(self);
-  VALUE rho, theta, threshold, storage;
-  rb_scan_args(argc, argv, "30", &rho, &theta, &threshold);
-  storage = cCvMemStorage::new_object();
+  VALUE storage = cCvMemStorage::new_object();
   CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
 			     CV_HOUGH_STANDARD, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold));
   return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
@@ -4390,7 +4441,7 @@ rb_hough_lines_standard(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   hough_line_probabilistic(<i>rho, theta, threshold, min_length, max_gap</i>) -> cvseq(include CvTwoPoints)
+ *   hough_lines_probabilistic(<i>rho, theta, threshold, min_length, max_gap</i>) -> cvseq(include CvTwoPoints)
  *
  * Finds lines in binary image using probabilistic Hough transform.
  * * rho - Distance resolution in pixel-related units.
@@ -4400,12 +4451,10 @@ rb_hough_lines_standard(int argc, VALUE *argv, VALUE self)
  * * max_gap - The maximum gap between line segments lieing on the same line to treat them as the single line segment (i.e. to join them).
  */
 VALUE
-rb_hough_lines_probabilistic(int argc, VALUE *argv, VALUE self)
+rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
 {
   SUPPORT_8UC1_ONLY(self);
-  VALUE rho, theta, threshold, p1, p2, storage;
-  rb_scan_args(argc, argv, "50", &rho, &theta, &threshold, &p1, &p2);
-  storage = cCvMemStorage::new_object();
+  VALUE storage = cCvMemStorage::new_object();
   CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
 			     CV_HOUGH_PROBABILISTIC, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
 			     NUM2DBL(p1), NUM2DBL(p2));
@@ -4414,7 +4463,7 @@ rb_hough_lines_probabilistic(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   hough_line_multi_scale(<i>rho, theta, threshold, div_rho, div_theta</i>) -> cvseq(include CvLine)
+ *   hough_lines_multi_scale(<i>rho, theta, threshold, div_rho, div_theta</i>) -> cvseq(include CvLine)
  *
  * Finds lines in binary image using multi-scale variant of classical Hough transform.
  * * rho - Distance resolution in pixel-related units.
@@ -4424,16 +4473,37 @@ rb_hough_lines_probabilistic(int argc, VALUE *argv, VALUE self)
  * * div_theta = divisor for angle resolution theta.
  */
 VALUE
-rb_hough_lines_multi_scale(int argc, VALUE *argv, VALUE self)
+rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
 {
   SUPPORT_8UC1_ONLY(self);
-  VALUE rho, theta, threshold, p1, p2, storage;
-  rb_scan_args(argc, argv, "50", &rho, &theta, &threshold, &p1, &p2);
-  storage = cCvMemStorage::new_object();
+  VALUE storage = cCvMemStorage::new_object();
   CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
 			     CV_HOUGH_MULTI_SCALE, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
 			     NUM2DBL(p1), NUM2DBL(p2));
   return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
+}
+
+/*
+ * call-seq:
+ *   hough_circles(<i>method, dp, min_dist, param1, param2, min_radius = 0, max_radius = max(width,height)</i>) -> cvseq(include CvCircle32f)
+ *
+ * Finds circles in grayscale image using Hough transform.
+ */
+VALUE
+rb_hough_circles(int argc, VALUE *argv, VALUE self)
+{
+  SUPPORT_8UC1_ONLY(self);
+  const int INVALID_TYPE = -1;
+  VALUE method, dp, min_dist, param1, param2, min_radius, max_radius, storage;
+  rb_scan_args(argc, argv, "52", &method, &dp, &min_dist, &param1, &param2, 
+	       &min_radius, &max_radius);
+  storage = cCvMemStorage::new_object();
+  int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
+  CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
+			      method_flag, NUM2DBL(dp), NUM2DBL(min_dist),
+			      NUM2DBL(param1), NUM2DBL(param2),
+			      IF_INT(min_radius, 0), IF_INT(max_radius, 0));
+  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvCircle32f::rb_class(), storage);
 }
 
 /*
@@ -4447,7 +4517,7 @@ rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self)
 {
   SUPPORT_8UC1_ONLY(self);
   VALUE dp, min_dist, threshold_canny, threshold_accumulate, min_radius, max_radius, storage;
-  rb_scan_args(argc, argv, "24", &dp, &min_dist, &threshold_canny, &threshold_accumulate, &min_radius, &max_radius);
+  rb_scan_args(argc, argv, "42", &dp, &min_dist, &threshold_canny, &threshold_accumulate, &min_radius, &max_radius);
   storage = cCvMemStorage::new_object();
   CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
 			      CV_HOUGH_GRADIENT, NUM2DBL(dp), NUM2DBL(min_dist),
@@ -4455,6 +4525,29 @@ rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self)
 			      IF_INT(min_radius, 0), IF_INT(max_radius, 0));
   return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvCircle32f::rb_class(), storage);
 }
+
+/*
+ * call-seq:
+ *   inpaint(<i>inpaint_method, mask, radius</i>) -> cvmat
+ *
+ * Inpaints the selected region in the image
+ * The radius of circlular neighborhood of each point inpainted that is considered by the algorithm.
+ */
+VALUE
+rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius)
+{
+  SUPPORT_8U_ONLY(self);
+  SUPPORT_C1C3_ONLY(self);
+  const int INVALID_TYPE = -1;
+  VALUE dest;
+  int method = CVMETHOD("INPAINT_METHOD", inpaint_method, INVALID_TYPE);
+  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
+    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
+  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), method);
+  return dest;
+}
+
 
 /*
  * call-seq:
@@ -4528,7 +4621,7 @@ rb_equalize_hist(VALUE self)
  * Compares template against overlapped image regions.
 
  * <i>method</i> is specifies the way the template must be compared with image regions.
- * <i>method</i> should be following symbol. (see CvMat::MATCH_TEMPLATE_METHOD 's key and value.)
+ * <i>method</i> should be following symbol. (see OpenCV::MATCH_TEMPLATE_METHOD 's key and value.)
  *
  * * :sqdiff
  *   R(x,y)=sumx',y'[T(x',y')-I(x+x',y+y')]2
@@ -4554,17 +4647,60 @@ VALUE
 rb_match_template(int argc, VALUE *argv, VALUE self)
 {
   VALUE templ, method, result;
-  rb_scan_args(argc, argv, "11", &templ, &method);
+  int method_flag;
+  if (rb_scan_args(argc, argv, "11", &templ, &method) == 1)
+    method_flag = CV_TM_SQDIFF;
+  else
+    method_flag = CVMETHOD("MATCH_TEMPLATE_METHOD", method);
+
   if (!(rb_obj_is_kind_of(templ, cCvMat::rb_class())))
     rb_raise(rb_eTypeError, "argument 1 (template) should be %s.", rb_class2name(cCvMat::rb_class()));
   if (cvGetElemType(CVARR(self)) != cvGetElemType(CVARR(templ)))
     rb_raise(rb_eTypeError, "template should be same type of self.");
-  CvSize src_size = cvGetSize(CVARR(self)), template_size = cvGetSize(CVARR(self));
-  result = cCvMat::new_object(cvSize(src_size.width - template_size.width + 1,
-				     src_size.height - template_size.height + 1),
+  CvSize src_size = cvGetSize(CVARR(self));
+  CvSize template_size = cvGetSize(CVARR(templ));
+  result = cCvMat::new_object(src_size.height - template_size.height + 1,
+			      src_size.width - template_size.width + 1,
 			      CV_32FC1);
-  cvMatchTemplate(CVARR(self), CVARR(templ), CVARR(result), CVMETHOD("MATCH_TEMPLATE_METHOD", CV_TM_SQDIFF));
+  cvMatchTemplate(CVARR(self), CVARR(templ), CVARR(result), method_flag);
   return result;
+}
+
+/*
+ * call-seq:
+ *   match_shapes(<i>object, method</i>) -> float
+ *
+ * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
+ *
+ * A - object1, B - object2:
+ * * method=CV_CONTOUR_MATCH_I1
+ *     I1(A,B)=sumi=1..7abs(1/mAi - 1/mBi)
+ * * method=CV_CONTOUR_MATCH_I2
+ *     I2(A,B)=sumi=1..7abs(mAi - mBi)
+ * * method=CV_CONTOUR_MATCH_I3
+ *     I3(A,B)=sumi=1..7abs(mAi - mBi)/abs(mAi)
+ */
+VALUE
+rb_match_shapes(int argc, VALUE *argv, VALUE self)
+{
+  VALUE object, method, param;
+  rb_scan_args(argc, argv, "21", &object, &method, &param);
+  int method_flag = CVMETHOD("COMPARISON_METHOD", method);
+  if (!(rb_obj_is_kind_of(object, cCvMat::rb_class()) || rb_obj_is_kind_of(object, cCvContour::rb_class())))
+    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s",
+	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
+  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method_flag));
+}
+
+inline VALUE
+rb_match_shapes_internal(int argc, VALUE *argv, VALUE self, int method)
+{
+  VALUE object;
+  rb_scan_args(argc, argv, "10", &object);
+  if (!(rb_obj_is_kind_of(object, cCvMat::rb_class()) || rb_obj_is_kind_of(object, cCvContour::rb_class())))
+    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s",
+	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
+  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method));
 }
 
 /*
@@ -4573,17 +4709,13 @@ rb_match_template(int argc, VALUE *argv, VALUE self)
  *
  * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
  *
- * A ~ object1, B - object2):
+ * A - object1, B - object2:
  *   I1(A,B)=sumi=1..7abs(1/mAi - 1/mBi)
  */
 VALUE
 rb_match_shapes_i1(int argc, VALUE *argv, VALUE self)
 {
-  VALUE object;
-  rb_scan_args(argc, argv, "10", &object);
-  if ((!(rb_obj_is_kind_of(object, cCvMat::rb_class()))) && (!(rb_obj_is_kind_of(object, cCvContour::rb_class()))))
-    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s", rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), CV_CONTOURS_MATCH_I1));
+  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I1);
 }
 
 /*
@@ -4592,17 +4724,13 @@ rb_match_shapes_i1(int argc, VALUE *argv, VALUE self)
  *
  * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
  *
- * A ~ object1, B - object2):
+ * A - object1, B - object2:
  *   I2(A,B)=sumi=1..7abs(mAi - mBi)
  */
 VALUE
 rb_match_shapes_i2(int argc, VALUE *argv, VALUE self)
 {
-  VALUE object;
-  rb_scan_args(argc, argv, "10", &object);
-  if ((!(rb_obj_is_kind_of(object, cCvMat::rb_class()))) && (!(rb_obj_is_kind_of(object, cCvContour::rb_class()))))
-    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s", rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), CV_CONTOURS_MATCH_I2));
+  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I2);
 }
 
 /*
@@ -4611,17 +4739,13 @@ rb_match_shapes_i2(int argc, VALUE *argv, VALUE self)
  *
  * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
  *
- * A ~ object1, B - object2):
+ * A - object1, B - object2:
  *   I3(A,B)=sumi=1..7abs(mAi - mBi)/abs(mAi)
  */
 VALUE
 rb_match_shapes_i3(int argc, VALUE *argv, VALUE self)
 {
-  VALUE object;
-  rb_scan_args(argc, argv, "10", &object);
-  if ((!(rb_obj_is_kind_of(object, cCvMat::rb_class()))) && (!(rb_obj_is_kind_of(object, cCvContour::rb_class()))))
-    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s", rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), CV_CONTOURS_MATCH_I3));
+  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I3);
 }
 
 
