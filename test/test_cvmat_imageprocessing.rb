@@ -1262,14 +1262,15 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
 
   def test_pyr_mean_shift_filtering
-    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
-    mat1 = mat0.pyr_mean_shift_filtering(30, 30)
-    mat2 = mat0.pyr_mean_shift_filtering(30, 30, 2)
-    mat3 = mat0.pyr_mean_shift_filtering(30, 30, nil, CvTermCriteria.new(3, 0.01))
+    flunk('FIXME: CvMat#pyr_mean_shift_filtering does not work with OpenCV 2.1')
+    # mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+    # mat1 = mat0.pyr_mean_shift_filtering(30, 30)
+    # mat2 = mat0.pyr_mean_shift_filtering(30, 30, 2)
+    # mat3 = mat0.pyr_mean_shift_filtering(30, 30, nil, CvTermCriteria.new(3, 0.01))
     
-    assert_equal('6887e96bc5dfd552f76ac5411b394775', hash_img(mat1))
-    assert_equal('3cd9c4983fcabeafa04be200d5e08841', hash_img(mat2))
-    assert_equal('e37f0157f93fe2a98312ae6b768e8295', hash_img(mat3))
+    # assert_equal('6887e96bc5dfd552f76ac5411b394775', hash_img(mat1))
+    # assert_equal('3cd9c4983fcabeafa04be200d5e08841', hash_img(mat2))
+    # assert_equal('e37f0157f93fe2a98312ae6b768e8295', hash_img(mat3))
   end
 
   def test_watershed
