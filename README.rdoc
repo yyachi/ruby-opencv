@@ -40,7 +40,7 @@ Then inside the ruby-opencv folder run:
 
 You can also add ruby-opencv in your Gemfile:
 
-  echo -e "\n"'gem "opencv", :git => "https://github.com/pcting/ruby-opencv"' >> Gemfile
+  echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
   bundle install # or bundle update
 
 == SYNOPSIS:
