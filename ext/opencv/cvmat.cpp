@@ -434,8 +434,30 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE row, column, depth, channel;
   rb_scan_args(argc, argv, "22", &row, &column, &depth, &channel);
 
-  DATA_PTR(self) = cvCreateMat(FIX2INT(row), FIX2INT(column),
-                               CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
+  CvMat *ptr;
+  try {
+    ptr = cvCreateMat(FIX2INT(row), FIX2INT(column),
+		      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
+  }
+  catch(cv::Exception& e) {
+    if (e.code != CV_StsNoMem) {
+      rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
+
+    // When memory allocation is failed, run GC and retry it
+    rb_gc_start();
+    try {
+      ptr = cvCreateMat(FIX2INT(row), FIX2INT(column),
+			CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
+    }
+    catch (...) {
+      fprintf(stderr, "[FATAL] failed to allocate memory\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+  free(DATA_PTR(self));
+  DATA_PTR(self) = ptr;
+
   return self;
 }
 
