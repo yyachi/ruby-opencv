@@ -216,6 +216,37 @@ rb_cvCreateImage(CvSize size, int depth, int channels)
   return ptr;
 }
 
+/*
+ * Creates a structuring element
+ * When memory allocation is failed, run GC and retry it
+ */
+IplConvKernel *
+rb_cvCreateStructuringElementEx(int cols, int rows,
+				int anchorX, int anchorY,
+				int shape, int *values)
+{
+  IplConvKernel* ptr = NULL;
+  try {
+    ptr = cvCreateStructuringElementEx(cols, rows, anchorX, anchorY, shape, values);
+  }
+  catch(cv::Exception& e) {
+    if (e.code != CV_StsNoMem)
+      rb_raise(rb_eRuntimeError, "%s", e.what());
+
+    rb_gc_start();
+    try {
+      ptr = cvCreateStructuringElementEx(cols, rows, anchorX, anchorY, shape, values);
+    }
+    catch (cv::Exception& e) {
+      if (e.code == CV_StsNoMem)
+	rb_raise(rb_eNoMemError, "%s", e.what());
+      else
+	rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
+  }
+  return ptr;
+}
+
 VALUE rb_module;
 VALUE rb_opencv_constants;
 

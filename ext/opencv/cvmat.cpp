@@ -594,7 +594,8 @@ rb_to_IplConvKernel(VALUE self, VALUE anchor)
 {
   CvMat *src = CVMAT(self);
   CvPoint p = VALUE_TO_CVPOINT(anchor);
-  IplConvKernel *kernel = cvCreateStructuringElementEx(src->cols, src->rows, p.x, p.y, CV_SHAPE_CUSTOM, src->data.i);
+  IplConvKernel *kernel = rb_cvCreateStructuringElementEx(src->cols, src->rows, p.x, p.y,
+							  CV_SHAPE_CUSTOM, src->data.i);
   return DEPEND_OBJECT(cIplConvKernel::rb_class(), kernel, self);
 }
 

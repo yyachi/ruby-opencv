@@ -104,7 +104,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     for (int i = 0; i < num_values; i++)
       _values[i] = NUM2INT(values_ptr[i]);
   }
-  DATA_PTR(self) = cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),shape_type, _values);
+  DATA_PTR(self) = rb_cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),
+						   shape_type, _values);
   return self;
 }
 
