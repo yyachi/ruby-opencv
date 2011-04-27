@@ -185,6 +185,8 @@ void release_iplconvkernel_object(void *ptr);
 VALUE rb_module_opencv();
 void define_ruby_module();
 
+CvMat* rb_cvCreateMat(int height, int width, int type);
+
 // Ruby/OpenCV inline functions  
 inline CvArr*
 CVARR(VALUE object)

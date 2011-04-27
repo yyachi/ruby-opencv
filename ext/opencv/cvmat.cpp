@@ -434,27 +434,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE row, column, depth, channel;
   rb_scan_args(argc, argv, "22", &row, &column, &depth, &channel);
 
-  CvMat *ptr;
-  try {
-    ptr = cvCreateMat(FIX2INT(row), FIX2INT(column),
-		      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem) {
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-    }
-
-    // When memory allocation is failed, run GC and retry it
-    rb_gc_start();
-    try {
-      ptr = cvCreateMat(FIX2INT(row), FIX2INT(column),
-			CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
-    }
-    catch (...) {
-      fprintf(stderr, "[FATAL] failed to allocate memory\n");
-      exit(EXIT_FAILURE);
-    }
-  }
+  CvMat *ptr = rb_cvCreateMat(FIX2INT(row), FIX2INT(column),
+			      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
   free(DATA_PTR(self));
   DATA_PTR(self) = ptr;
 
@@ -1518,7 +1499,7 @@ rb_split(VALUE self)
   CvSize size = cvGetSize(CVARR(self));
   CvMat *dest[] = {NULL, NULL, NULL, NULL};
   for (int i = 0; i < channel; i++)
-    dest[i] = cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
+    dest[i] = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
   cvSplit(CVARR(self), dest[0], dest[1], dest[2], dest[3]);
   VALUE ary = rb_ary_new2(channel);
   for (int i = 0; i < channel; i++)
@@ -3226,8 +3207,8 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
   good_features_to_track_option = GOOD_FEATURES_TO_TRACK_OPTION(good_features_to_track_option);
   CvMat *src = CVMAT(self);
   CvSize size = cvGetSize(src);
-  eigen = cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
-  tmp = cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
+  eigen = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
+  tmp = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
   int np = GF_MAX(good_features_to_track_option);
   if(!(np > 0))
     rb_raise(rb_eArgError, "option :max should be positive value.");
@@ -3584,7 +3565,7 @@ rb_morphology_internal(VALUE element, VALUE iteration, int operation, VALUE self
   CvSize size = cvGetSize(self_ptr);
   VALUE dest = new_object(size, cvGetElemType(self_ptr));
   if (operation == CV_MOP_GRADIENT) {
-    CvMat* temp = cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
+    CvMat* temp = rb_cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
     cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
     cvReleaseMat(&temp);
   }
@@ -5226,13 +5207,13 @@ rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VAL
 VALUE
 new_object(int rows, int cols, int type)
 {
-  return OPENCV_OBJECT(rb_klass, cvCreateMat(rows, cols, type));
+  return OPENCV_OBJECT(rb_klass, rb_cvCreateMat(rows, cols, type));
 }
 
 VALUE
 new_object(CvSize size, int type)
 {
-  return OPENCV_OBJECT(rb_klass, cvCreateMat(size.height, size.width, type));
+  return OPENCV_OBJECT(rb_klass, rb_cvCreateMat(size.height, size.width, type));
 }
 
 

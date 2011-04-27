@@ -363,7 +363,7 @@ cvShiftDFT(CvArr *src_arr, CvArr *dst_arr )
   }
 
   if(src_arr==dst_arr){
-    tmp = cvCreateMat(size.height/2, size.width/2, cvGetElemType(src_arr));
+    tmp = rb_cvCreateMat(size.height/2, size.width/2, cvGetElemType(src_arr));
   }
 
   cx = size.width/2;
@@ -425,7 +425,7 @@ create_fourier_image(const IplImage *im)
   dft_M = cvGetOptimalDFTSize( im->height - 1 );
   dft_N = cvGetOptimalDFTSize( im->width - 1 );
 
-  dft_A = cvCreateMat( dft_M, dft_N, CV_64FC2 );
+  dft_A = rb_cvCreateMat( dft_M, dft_N, CV_64FC2 );
   image_Re = cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
   image_Im = cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
 
