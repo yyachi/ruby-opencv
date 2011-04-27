@@ -333,7 +333,7 @@ rb_seq_push(VALUE self, VALUE args, int flag)
 	cvSeqPush(seq, DATA_PTR(object));
     }
     else if (rb_obj_is_kind_of(object, rb_klass) && CLASS_OF(rb_first(object)) == klass) { // object is CvSeq
-      buffer = cvCvtSeqToArray(CVSEQ(object), cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
+      buffer = cvCvtSeqToArray(CVSEQ(object), rb_cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
       cvSeqPushMulti(seq, buffer, CVSEQ(object)->total, flag);
       cvFree(&buffer);
     }

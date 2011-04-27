@@ -130,6 +130,35 @@ release_iplconvkernel_object(void *ptr)
 }
 
 /*
+ * Allocates a memory buffer
+ * When memory allocation is failed, run GC and retry it
+ */
+void*
+rb_cvAlloc(size_t size)
+{
+  void* ptr = NULL;
+  try {
+    ptr = cvAlloc(size);
+  }
+  catch(cv::Exception& e) {
+    if (e.code != CV_StsNoMem)
+      rb_raise(rb_eRuntimeError, "%s", e.what());
+
+    rb_gc_start();
+    try {
+      ptr = cvAlloc(size);
+    }
+    catch (cv::Exception& e) {
+      if (e.code == CV_StsNoMem)
+	rb_raise(rb_eNoMemError, "%s", e.what());
+      else
+	rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
+  }
+  return ptr;
+}
+
+/*
  * Creates CvMat and underlying data
  * When memory allocation is failed, run GC and retry it
  */
@@ -147,6 +176,35 @@ rb_cvCreateMat(int height, int width, int type)
     rb_gc_start();
     try {
       ptr = cvCreateMat(height, width, type);
+    }
+    catch (cv::Exception& e) {
+      if (e.code == CV_StsNoMem)
+	rb_raise(rb_eNoMemError, "%s", e.what());
+      else
+	rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
+  }
+  return ptr;
+}
+
+/*
+ * Create IplImage header and allocate underlying data
+ * When memory allocation is failed, run GC and retry it
+ */
+IplImage*
+rb_cvCreateImage(CvSize size, int depth, int channels)
+{
+  IplImage* ptr = NULL;
+  try {
+    ptr = cvCreateImage(size, depth, channels);
+  }
+  catch(cv::Exception& e) {
+    if (e.code != CV_StsNoMem)
+      rb_raise(rb_eRuntimeError, "%s", e.what());
+
+    rb_gc_start();
+    try {
+      ptr = cvCreateImage(size, depth, channels);
     }
     catch (cv::Exception& e) {
       if (e.code == CV_StsNoMem)

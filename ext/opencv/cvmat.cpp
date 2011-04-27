@@ -921,7 +921,7 @@ rb_square_q(VALUE self)
 VALUE
 rb_to_CvMat(VALUE self)
 {
-  return DEPEND_OBJECT(rb_klass, cvGetMat(CVARR(self), CVALLOC(CvMat)), self);
+  return DEPEND_OBJECT(rb_klass, cvGetMat(CVARR(self), RB_CVALLOC(CvMat)), self);
 }
 
 /*
@@ -965,7 +965,7 @@ rb_sub_rect(VALUE self, VALUE args)
     rb_raise(rb_eArgError, "wrong number of arguments (%ld of 1 or 2 or 4)", RARRAY_LEN(args));
   }
   return DEPEND_OBJECT(rb_klass,
-                       cvGetSubRect(CVARR(self), CVALLOC(CvMat), area),
+                       cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), area),
                        self);
 }
 
@@ -994,7 +994,7 @@ rb_slice_width(VALUE self, VALUE num)
   VALUE ary = rb_ary_new2(n);
   for (int i = 0; i < n; i++) {
     CvRect rect = {div_x * i, 0, div_x, size.height};
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), CVALLOC(CvMat), rect), self));
+    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
   }
   return ary;
 }
@@ -1019,7 +1019,7 @@ rb_slice_height(VALUE self, VALUE num)
   VALUE ary = rb_ary_new2(n);
   for (int i = 0; i < n; i++) {
     CvRect rect = {0, div_y * i, size.width, div_y};
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), CVALLOC(CvMat), rect), self));
+    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
   }
   return ary;
 }
@@ -1041,10 +1041,11 @@ rb_row(VALUE self, VALUE args)
   for (int i = 0; i < len; i++) {
     VALUE value = rb_ary_entry(args, i);
     if (FIXNUM_P(value)) {
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), CVALLOC(CvMat), FIX2INT(value)), self));
+      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
     }else{
       CvSlice slice = VALUE_TO_CVSLICE(value);
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRows(CVARR(self), CVALLOC(CvMat), slice.start_index, slice.end_index), self));
+      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRows(CVARR(self), RB_CVALLOC(CvMat),
+							     slice.start_index, slice.end_index), self));
     }
   }
   return RARRAY_LEN(ary) > 1 ? ary : rb_ary_entry(ary, 0);
@@ -1067,10 +1068,11 @@ rb_col(VALUE self, VALUE args)
   for (int i = 0; i < len; i++) {
     VALUE value = rb_ary_entry(args, i);
     if (FIXNUM_P(value)) {
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), CVALLOC(CvMat), FIX2INT(value)), self));
+      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
     }else{
       CvSlice slice = VALUE_TO_CVSLICE(value);
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCols(CVARR(self), CVALLOC(CvMat), slice.start_index, slice.end_index), self));
+      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCols(CVARR(self), RB_CVALLOC(CvMat),
+							     slice.start_index, slice.end_index), self));
     }
   }
   return RARRAY_LEN(ary) > 1 ? ary : rb_ary_entry(ary, 0);
@@ -1089,7 +1091,7 @@ rb_each_row(VALUE self)
 {
   int rows = CVMAT(self)->rows;
   for (int i = 0; i < rows; i++) {
-    rb_yield(DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), CVALLOC(CvMat), i), self));
+    rb_yield(DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), i), self));
   }
   return self;
 }
@@ -1107,7 +1109,7 @@ rb_each_col(VALUE self)
 {
   int cols = CVMAT(self)->cols;
   for (int i = 0; i < cols; i++) {
-    rb_yield(DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), CVALLOC(CvMat), i), self));
+    rb_yield(DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), i), self));
   }
   return self;
 }
@@ -1127,7 +1129,7 @@ rb_diag(int argc, VALUE *argv, VALUE self)
   if (rb_scan_args(argc, argv, "01", &val) < 1) {
     val = INT2FIX(0);
   }
-  return DEPEND_OBJECT(rb_klass, cvGetDiag(CVARR(self), CVALLOC(CvMat), NUM2INT(val)), self);
+  return DEPEND_OBJECT(rb_klass, cvGetDiag(CVARR(self), RB_CVALLOC(CvMat), NUM2INT(val)), self);
 }
 
 /*
@@ -1410,7 +1412,8 @@ rb_reshape(VALUE self, VALUE hash)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key (:row, :channel).");
   VALUE channel = rb_hash_aref(hash, ID2SYM(rb_intern("channel")));
   VALUE rows = rb_hash_aref(hash, ID2SYM(rb_intern("rows")));
-  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), CVALLOC(CvMat), NIL_P(channel) ? 0 : FIX2INT(channel), NIL_P(rows) ? 0 : FIX2INT(rows)), self);
+  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), RB_CVALLOC(CvMat), NIL_P(channel) ? 0 : FIX2INT(channel),
+					   NIL_P(rows) ? 0 : FIX2INT(rows)), self);
 }
 
 /*
@@ -3212,7 +3215,7 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
   int np = GF_MAX(good_features_to_track_option);
   if(!(np > 0))
     rb_raise(rb_eArgError, "option :max should be positive value.");
-  CvPoint2D32f *p32 = (CvPoint2D32f*)cvAlloc(sizeof(CvPoint2D32f) * np);
+  CvPoint2D32f *p32 = (CvPoint2D32f*)rb_cvAlloc(sizeof(CvPoint2D32f) * np);
   if(!p32)
     rb_raise(rb_eNoMemError, "failed to allocate memory.");
   cvGoodFeaturesToTrack(src, &eigen, &tmp, p32, &np, NUM2DBL(quality_level), NUM2DBL(min_distance),

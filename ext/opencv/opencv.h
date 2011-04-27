@@ -135,7 +135,7 @@ extern "C"{
 #include "mouseevent.h"
 
 // memory management wrapper
-#define CVALLOC(type) (type*)cvAlloc(sizeof(type))
+#define RB_CVALLOC(type) (type*)rb_cvAlloc(sizeof(type))
 
 // useful macros
 #define IF_INT(val, ifnone) NIL_P(val) ? ifnone : NUM2INT(val)
@@ -185,7 +185,9 @@ void release_iplconvkernel_object(void *ptr);
 VALUE rb_module_opencv();
 void define_ruby_module();
 
+void* rb_cvAlloc(size_t size);
 CvMat* rb_cvCreateMat(int height, int width, int type);
+IplImage* rb_cvCreateImage(CvSize size, int depth, int channels);
 
 // Ruby/OpenCV inline functions  
 inline CvArr*

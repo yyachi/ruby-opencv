@@ -90,7 +90,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "22", &width, &height, &depth, &channel);
   int _depth = argc < 3 ? CV_8U : FIX2INT(depth);
   int _channel = argc < 4 ? 3 : FIX2INT(channel);
-  DATA_PTR(self) = cvCreateImage(cvSize(FIX2INT(width), FIX2INT(height)), cvIplDepth(_depth), _channel);
+  DATA_PTR(self) = rb_cvCreateImage(cvSize(FIX2INT(width), FIX2INT(height)), cvIplDepth(_depth), _channel);
   return self;
 }
 
@@ -267,7 +267,7 @@ rb_smoothness(int argc, VALUE *argv, VALUE self)
 	p64DepthImage = NULL;
 	pFourierImage = create_fourier_image(IPLIMAGE(self));
   } else {
-	p64DepthImage = cvCreateImage(cvGetSize(IPLIMAGE(self)), IPL_DEPTH_64F, 1);
+	p64DepthImage = rb_cvCreateImage(cvGetSize(IPLIMAGE(self)), IPL_DEPTH_64F, 1);
 	cvConvertScale(CVARR(self), p64DepthImage, 1.0, 0.0);
 	pFourierImage = create_fourier_image(p64DepthImage);
   }
@@ -414,9 +414,9 @@ create_fourier_image(const IplImage *im)
   IplImage *image_Re;
   IplImage *image_Im;
 
-  realInput = cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 1);
-  imaginaryInput = cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 1);
-  complexInput = cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 2);
+  realInput = rb_cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 1);
+  imaginaryInput = rb_cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 1);
+  complexInput = rb_cvCreateImage( cvGetSize(im), IPL_DEPTH_64F, 2);
 
   cvScale(im, realInput, 1.0, 0.0);
   cvZero(imaginaryInput);
@@ -426,8 +426,8 @@ create_fourier_image(const IplImage *im)
   dft_N = cvGetOptimalDFTSize( im->width - 1 );
 
   dft_A = rb_cvCreateMat( dft_M, dft_N, CV_64FC2 );
-  image_Re = cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
-  image_Im = cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
+  image_Re = rb_cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
+  image_Im = rb_cvCreateImage( cvSize(dft_N, dft_M), IPL_DEPTH_64F, 1);
 
   // copy A to dft_A and pad dft_A with zeros
   cvGetSubRect( dft_A, &tmp, cvRect(0,0, im->width, im->height));
@@ -484,8 +484,8 @@ create_frequency_filtered_image(const IplImage *pImage, int low, int high)
   box.size.width = high;
   box.size.height = high;
 
-  IplImage *pFilterMask = cvCreateImage( cvGetSize(pImage), IPL_DEPTH_64F, 1 );
-  IplImage *pFiltered = cvCreateImage( cvGetSize(pImage), IPL_DEPTH_64F, 1 );
+  IplImage *pFilterMask = rb_cvCreateImage( cvGetSize(pImage), IPL_DEPTH_64F, 1 );
+  IplImage *pFiltered = rb_cvCreateImage( cvGetSize(pImage), IPL_DEPTH_64F, 1 );
 
   cvZero(pFilterMask);
   cvZero(pFiltered);
@@ -525,13 +525,13 @@ high_pass_range(const IplImage *pImage, float lostPercentage, int &outLow, int &
 VALUE
 new_object(int width, int height, int type)
 {
-  return OPENCV_OBJECT(rb_klass, cvCreateImage(cvSize(width, height), cvIplDepth(type), CV_MAT_CN(type)));
+  return OPENCV_OBJECT(rb_klass, rb_cvCreateImage(cvSize(width, height), cvIplDepth(type), CV_MAT_CN(type)));
 }
 
 VALUE
 new_object(CvSize size, int type)
 {
-  return OPENCV_OBJECT(rb_klass, cvCreateImage(size, cvIplDepth(type), CV_MAT_CN(type)));
+  return OPENCV_OBJECT(rb_klass, rb_cvCreateImage(size, cvIplDepth(type), CV_MAT_CN(type)));
 }
 
 __NAMESPACE_END_IPLIMAGE
