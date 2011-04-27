@@ -41,7 +41,7 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvMemStorage *storage = cvCreateMemStorage();
+  CvMemStorage *storage = rb_cvCreateMemStorage(0);
   return Data_Wrap_Struct(klass, 0, cvmemstorage_free, storage);
 }
 
@@ -54,7 +54,7 @@ cvmemstorage_free(void *ptr)
 VALUE
 new_object(int blocksize)
 {
-  CvMemStorage *storage = cvCreateMemStorage(blocksize);
+  CvMemStorage *storage = rb_cvCreateMemStorage(blocksize);
   return Data_Wrap_Struct(rb_klass, 0, cvmemstorage_free, storage);
 }
 

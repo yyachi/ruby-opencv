@@ -189,6 +189,7 @@ void* rb_cvAlloc(size_t size);
 CvMat* rb_cvCreateMat(int height, int width, int type);
 IplImage* rb_cvCreateImage(CvSize size, int depth, int channels);
 IplConvKernel* rb_cvCreateStructuringElementEx(int cols, int rows, int anchorX, int anchorY, int shape, int *values);
+CvMemStorage* rb_cvCreateMemStorage(int block_size);
 
 // Ruby/OpenCV inline functions  
 inline CvArr*

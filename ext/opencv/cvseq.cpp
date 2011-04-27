@@ -145,7 +145,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     storage = CVMEMSTORAGE(storage_value);
   }
   else
-    storage = cvCreateMemStorage(0);
+    storage = rb_cvCreateMemStorage(0);
   
   if(!rb_obj_is_kind_of(klass, rb_cClass))
     rb_raise(rb_eTypeError, "argument 1 (sequence-block class) should be %s.", rb_class2name(rb_cClass));
