@@ -517,7 +517,7 @@ high_pass_range(const IplImage *pImage, float lostPercentage, int &outLow, int &
     lostPercentage = 0;
   }
 
-  outHigh = (int) min( pImage->width, pImage->height );
+  outHigh = (int) MIN( pImage->width, pImage->height );
   outLow = (int) (lostPercentage * outHigh);
 }
 
