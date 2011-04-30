@@ -10,7 +10,7 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
-opencv
+OpenCV-2.2.0
 ruby-1.9.2-p180
 ext/opencv/test.txt
 pkg/
