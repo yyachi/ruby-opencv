@@ -205,6 +205,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "[]", RUBY_METHOD_FUNC(rb_aref), -2);
   rb_define_alias(rb_klass, "at", "[]");
   rb_define_method(rb_klass, "[]=", RUBY_METHOD_FUNC(rb_aset), -2);
+  rb_define_method(rb_klass, "set_data", RUBY_METHOD_FUNC(rb_set_data), 1);
   rb_define_method(rb_klass, "fill", RUBY_METHOD_FUNC(rb_fill), -1);
   rb_define_alias(rb_klass, "set", "fill");
   rb_define_method(rb_klass, "fill!", RUBY_METHOD_FUNC(rb_fill_bang), -1);
@@ -1237,6 +1238,66 @@ rb_aset(VALUE self, VALUE args)
   default:
     cvSetND(CVARR(self), index, scalar);
   }
+  return self;
+}
+
+/*
+ * call-seq:
+ *   set_data(<i>data</i>)
+ *
+ * Assigns user data to the array header.
+ * <i>data</i> should be Array which contains numbers.
+ */
+VALUE
+rb_set_data(VALUE self, VALUE data)
+{
+  data = rb_funcall(data, rb_intern("flatten"), 0);
+  const int DATA_LEN = RARRAY_LEN(data);
+  CvMat *self_ptr = CVMAT(self);
+  int depth = CV_MAT_DEPTH(self_ptr->type);
+  void* array = NULL;
+
+  switch (depth) {
+  case CV_8U:
+    array = rb_cvAlloc(sizeof(uchar) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((uchar*)array)[i] = (uchar)(NUM2INT(rb_ary_entry(data, i)));
+    break;
+  case CV_8S:
+   array = rb_cvAlloc(sizeof(char) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((char*)array)[i] = (char)(NUM2INT(rb_ary_entry(data, i)));
+    break;
+  case CV_16U:
+    array = rb_cvAlloc(sizeof(ushort) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((ushort*)array)[i] = (ushort)(NUM2INT(rb_ary_entry(data, i)));
+    break;
+  case CV_16S:
+    array = rb_cvAlloc(sizeof(short) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((short*)array)[i] = (short)(NUM2INT(rb_ary_entry(data, i)));
+    break;
+  case CV_32S:
+    array = rb_cvAlloc(sizeof(int) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((int*)array)[i] = NUM2INT(rb_ary_entry(data, i));
+    break;
+  case CV_32F:
+    array = rb_cvAlloc(sizeof(float) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((float*)array)[i] = (float)NUM2DBL(rb_ary_entry(data, i));
+    break;
+  case CV_64F:
+    array = rb_cvAlloc(sizeof(double) * DATA_LEN);
+    for (int i = 0; i < DATA_LEN; ++i)
+      ((double*)array)[i] = NUM2DBL(rb_ary_entry(data, i));
+    break;
+  default:
+    rb_raise(rb_eTypeError, "Invalid CvMat depth");
+  }
+  cvSetData(self_ptr, array, self_ptr->step);
+
   return self;
 }
 

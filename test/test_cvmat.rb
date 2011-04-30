@@ -500,6 +500,33 @@ class TestCvMat < OpenCVTestCase
     assert_cvscalar_equal(CvScalar.new(5, 5, 5, 5), m[1, 0])
   end
 
+  def test_set_data
+    [CV_8U, CV_8S, CV_16U, CV_16S, CV_32S].each { |depth|
+      a = [10, 20, 30, 40, 50, 60]
+      m = CvMat.new(2, 3, depth, 1)
+      m.set_data(a)
+      (m.rows * m.cols).times { |i|
+        assert_equal(a[i], m[i][0])
+      }
+    }
+
+    [CV_32F, CV_64F].each { |depth|
+      a = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+      m = CvMat.new(2, 3, depth, 1)
+      m.set_data(a)
+      (m.rows * m.cols).times { |i|
+        assert_in_delta(a[i], m[i][0], 1.0e-5)
+      }
+    }
+
+    a = [[10, 20, 30], [40, 50, 60]]
+    m = CvMat.new(2, 3, CV_8U, 1)
+    m.set_data(a)
+    (m.rows * m.cols).times { |i|
+      assert_equal(a.flatten[i], m[i][0])
+    }
+  end
+
   def test_fill
     m1 = create_cvmat(2, 3)
     m2 = m1.fill(CvScalar.new(1, 2, 3, 4))
