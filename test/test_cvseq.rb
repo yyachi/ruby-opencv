@@ -9,7 +9,8 @@ include OpenCV
 # Tests for OpenCV::CvSeq
 class TestCvSeq < OpenCVTestCase
   def test_initialize
-    assert_not_nil(CvSeq.new(CvIndex))
+    # assert_not_nil(CvSeq.new(CvIndex))
+    assert_not_nil(CvSeq.new(Fixnum))
     assert_not_nil(CvSeq.new(CvPoint))
     assert_not_nil(CvSeq.new(CvPoint2D32f))
     assert_not_nil(CvSeq.new(CvPoint3D32f))
@@ -47,6 +48,13 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(40, seq1[1].y)
     assert_equal(50, seq1[2].x)
     assert_equal(60, seq1[2].y)
+    
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+
+    assert_equal(Fixnum, seq2[0].class)
+    assert_equal(10, seq2[0])
+    assert_equal(20, seq2[1])
+    assert_equal(30, seq2[2])
   end
 
   def test_push
@@ -73,6 +81,15 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(30, seq2[2].x)
     assert_equal(40, seq2[2].y)
 
+    seq3 = CvSeq.new(Fixnum).push(10)
+    seq4 = CvSeq.new(Fixnum).push(20, 30)
+    seq3.push(seq4)
+    assert_equal(3, seq3.total)
+    assert_equal(Fixnum, seq3[0].class)
+    assert_equal(10, seq3[0])
+    assert_equal(20, seq3[1])
+    assert_equal(30, seq3[2])
+
     assert_raise(TypeError) {
       seq1.push(CvPoint2D32f.new(55.5, 66.6))
     }
@@ -96,6 +113,11 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(20, seq1[0].y)
 
     assert_nil(CvSeq.new(CvPoint).pop)
+
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+    assert_equal(30, seq2.pop)
+    assert_equal(20, seq2.pop)
+    assert_equal(10, seq2.pop)
   end
 
   def test_clear
@@ -129,6 +151,12 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(50, seq2[2].x)
     assert_equal(60, seq2[2].y)
 
+    seq3 = CvSeq.new(Fixnum).unshift(10, 20, 30)
+    assert_equal(3, seq3.total)
+    assert_equal(30, seq3[0])
+    assert_equal(20, seq3[1])
+    assert_equal(10, seq3[2])
+
     assert_raise(TypeError) {
       seq1.unshift(CvPoint2D32f.new(55.5, 66.6))
     }
@@ -151,6 +179,11 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(30, seq1[0].x)
     assert_equal(40, seq1[0].y)
 
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+    assert_equal(10, seq2.shift)
+    assert_equal(20, seq2.shift)
+    assert_equal(30, seq2.shift)
+
     assert_nil(CvSeq.new(CvPoint).shift)
   end
 
@@ -160,6 +193,9 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(CvPoint, point1.class)
     assert_equal(10, point1.x)
     assert_equal(20, point1.y)
+
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+    assert_equal(10, seq2.first)
   end
 
   def test_last
@@ -168,6 +204,9 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(CvPoint, point1.class)
     assert_equal(50, point1.x)
     assert_equal(60, point1.y)
+
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+    assert_equal(30, seq2.last)
   end
 
   def test_each
@@ -177,6 +216,14 @@ class TestCvSeq < OpenCVTestCase
       assert_equal(CvPoint, s.class)
       assert_equal(seq1[i].x, s.x)
       assert_equal(seq1[i].y, s.y)
+      i += 1
+    }
+    assert_equal(3, i)
+
+    seq2 = CvSeq.new(Fixnum).push(10, 20, 30)
+    i = 0
+    seq2.each { |s|
+      assert_equal(seq2[i], s)
       i += 1
     }
     assert_equal(3, i)
@@ -194,7 +241,6 @@ class TestCvSeq < OpenCVTestCase
 
   def test_insert
     seq1 = CvSeq.new(CvPoint).push(CvPoint.new(10, 20), CvPoint.new(30, 40))
-
     seq1.insert(1, CvPoint.new(50, 60))
     assert_equal(3, seq1.total)
     assert_equal(CvPoint, seq1[0].class)
@@ -206,6 +252,13 @@ class TestCvSeq < OpenCVTestCase
     assert_equal(CvPoint, seq1[2].class)
     assert_equal(30, seq1[2].x)
     assert_equal(40, seq1[2].y)
+
+    seq2 = CvSeq.new(Fixnum).push(10, 20)
+    seq2.insert(1, 15)
+    assert_equal(3, seq2.total)
+    assert_equal(10, seq2[0])
+    assert_equal(15, seq2[1])
+    assert_equal(20, seq2[2])
   end
 
   def test_remove

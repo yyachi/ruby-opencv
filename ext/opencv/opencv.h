@@ -117,7 +117,6 @@ extern "C"{
 #include "cvhistogram.h"
 #include "cvcapture.h"
 
-#include "cvindex.h"
 #include "cvline.h"
 #include "cvtwopoints.h"
 #include "cvcircle32f.h"

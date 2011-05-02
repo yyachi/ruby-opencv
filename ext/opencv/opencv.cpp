@@ -761,7 +761,6 @@ extern "C"{
     mOpenCV::cCvHistogram::define_ruby_class();
     mOpenCV::cCvCapture::define_ruby_class();
 
-    mOpenCV::cCvIndex::define_ruby_class();
     mOpenCV::cCvLine::define_ruby_class();
     mOpenCV::cCvTwoPoints::define_ruby_class();
     mOpenCV::cCvCircle32f::define_ruby_class();
