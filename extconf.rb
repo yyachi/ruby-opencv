@@ -71,5 +71,9 @@ else
   puts "http://www.haible.de/bruno/packages-ffcall.html"
 end
 
+# Quick fix for 1.8.7
+$CFLAGS << "-I#{File.dirname(__FILE__)}/ext/opencv"
+
 # step-final. create Makefile
 create_makefile("opencv", "./ext/opencv")
+
