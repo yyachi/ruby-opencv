@@ -12,6 +12,7 @@
 
 #include "opencv.h"
 
+
 #define __NAMESPACE_BEGIN_CVMAT namespace cCvMat{
 #define __NAMESPACE_END_CVMAT }
 
@@ -69,6 +70,7 @@ VALUE rb_dims(VALUE self);
 VALUE rb_dim_size(VALUE self, VALUE index);
 VALUE rb_aref(VALUE self, VALUE args);
 VALUE rb_aset(VALUE self, VALUE args);
+VALUE rb_set_data(VALUE self, VALUE data);
 VALUE rb_fill(int argc, VALUE *argv, VALUE self);
 VALUE rb_fill_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_clear(VALUE self);
@@ -253,15 +255,16 @@ VALUE rb_cam_shift(VALUE self, VALUE window, VALUE criteria);
 VALUE rb_snake_image(int argc, VALUE *argv, VALUE self);
 /* Optical Flow */
 VALUE rb_optical_flow_hs(int argc, VALUE *argv, VALUE self);
-VALUE rb_optical_flow_lk(int argc, VALUE *argv, VALUE self);
+VALUE rb_optical_flow_lk(VALUE self, VALUE prev, VALUE win_size);
 VALUE rb_optical_flow_bm(int argc, VALUE *argv, VALUE self);
 VALUE rb_optical_flow_pyr_lk(int argc, VALUE *argv, VALUE self);
 
 /* Epipolar Geometory */
-VALUE rb_find_fundamental_mat_7point(int argc, VALUE *argv, VALUE klass);
-VALUE rb_find_fundamental_mat_8point(int argc, VALUE *argv, VALUE klass);
+VALUE rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2);
+VALUE rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2);
 VALUE rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass);
 VALUE rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass);
+VALUE rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass);
 VALUE rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix);
   
 // HighGUI function
@@ -270,7 +273,9 @@ VALUE rb_save_image(VALUE self, VALUE filename);
 VALUE new_object(int rows, int cols, int type);
 VALUE new_object(CvSize size, int type);
 
+
 __NAMESPACE_END_CVMAT
+
 
 inline CvMat*
 CVMAT(VALUE object)

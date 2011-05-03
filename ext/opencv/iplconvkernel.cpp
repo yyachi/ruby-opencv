@@ -89,7 +89,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   int _cols = NUM2INT(cols);
   int _rows = NUM2INT(rows);
   int num_values;
-  int *_values;
+  int *_values = NULL;
   const int INVALID_SHAPE = -1;
   
   shape_type = CVMETHOD("STRUCTURING_ELEMENT_SHAPE", shape, INVALID_SHAPE);
@@ -104,7 +104,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     for (int i = 0; i < num_values; i++)
       _values[i] = NUM2INT(values_ptr[i]);
   }
-  DATA_PTR(self) = cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),shape_type, _values);
+  DATA_PTR(self) = rb_cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),
+						   shape_type, _values);
   return self;
 }
 

@@ -145,15 +145,15 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     storage = CVMEMSTORAGE(storage_value);
   }
   else
-    storage = cvCreateMemStorage(0);
+    storage = rb_cvCreateMemStorage(0);
   
   if(!rb_obj_is_kind_of(klass, rb_cClass))
     rb_raise(rb_eTypeError, "argument 1 (sequence-block class) should be %s.", rb_class2name(rb_cClass));
 
   int type = 0, size = 0;
-  if (klass == cCvIndex::rb_class()) {
+  if (klass == rb_cFixnum) {
     type = CV_SEQ_ELTYPE_INDEX;
-    size = sizeof(CvIndex);
+    size = sizeof(int);
   }
   else if (klass == cCvPoint::rb_class()) {
     type = CV_SEQ_ELTYPE_POINT;
@@ -167,8 +167,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     type = CV_SEQ_ELTYPE_POINT3D;
     size = sizeof(CvPoint3D32f);
   }
-  // todo: more various class will be support.
-  if (!size)
+  else
     rb_raise(rb_eTypeError, "unsupport %s class for sequence-block.", rb_class2name(klass));
   
   CvSeq* seq = cvCreateSeq(type, sizeof(CvSeq), size, storage);
@@ -213,11 +212,15 @@ rb_aref(VALUE self, VALUE index)
 {
   CvSeq *seq = CVSEQ(self);
   int idx = NUM2INT(index);
-  if(!(seq->total > 0))
+  if (seq->total == 0)
     return Qnil;
   if (idx >= seq->total)
     rb_raise(rb_eIndexError, "index %d out of sequence", idx);
-  return REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, idx), self);
+
+  if (seqblock_class(seq) == rb_cFixnum)
+    return INT2FIX(*CV_GET_SEQ_ELEM(int, seq, idx));
+  else
+    return REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, idx), self);
 }
 
 /*
@@ -229,10 +232,7 @@ rb_aref(VALUE self, VALUE index)
 VALUE
 rb_first(VALUE self)
 {
-  CvSeq *seq = CVSEQ(self);
-  if(!(seq->total > 0))
-    return Qnil;
-  return REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, 0), self);
+  return rb_aref(self, INT2FIX(0));
 }
 
 /*
@@ -244,10 +244,7 @@ rb_first(VALUE self)
 VALUE
 rb_last(VALUE self)
 {
-  CvSeq *seq = CVSEQ(self);
-  if(!(seq->total > 0))
-    return Qnil;
-  return REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, -1), self);
+  return rb_aref(self, INT2FIX(-1));
 }
     
 /*
@@ -324,16 +321,25 @@ rb_seq_push(VALUE self, VALUE args, int flag)
   CvSeq *seq = CVSEQ(self);
   VALUE klass = seqblock_class(seq), object;
   void *buffer = NULL;
-  for (int i = 0; i < RARRAY_LEN(args); i++) {
+  void *elem = NULL;
+  int len = RARRAY_LEN(args);
+  for (int i = 0; i < len; ++i) {
     object = RARRAY_PTR(args)[i];
     if (CLASS_OF(object) == klass) {
+      if (TYPE(object) == T_FIXNUM) {
+	int int_elem = FIX2INT(object);
+	elem = &int_elem;
+      }
+      else {
+	elem = (void*)DATA_PTR(object);
+      }
       if (flag == CV_FRONT)
-	cvSeqPushFront(seq, DATA_PTR(object));
+	cvSeqPushFront(seq, elem);
       else
-	cvSeqPush(seq, DATA_PTR(object));
+	cvSeqPush(seq, elem);
     }
     else if (rb_obj_is_kind_of(object, rb_klass) && CLASS_OF(rb_first(object)) == klass) { // object is CvSeq
-      buffer = cvCvtSeqToArray(CVSEQ(object), cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
+      buffer = cvCvtSeqToArray(CVSEQ(object), rb_cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
       cvSeqPushMulti(seq, buffer, CVSEQ(object)->total, flag);
       cvFree(&buffer);
     }
@@ -342,6 +348,7 @@ rb_seq_push(VALUE self, VALUE args, int flag)
 	       rb_class2name(klass), rb_class2name(rb_klass), rb_class2name(klass));
     }
   }
+  
   return self;
 }
 
@@ -369,11 +376,20 @@ VALUE
 rb_pop(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  if(!(seq->total > 0)){
+  if (seq->total == 0)
     return Qnil;
+  
+  VALUE object;
+  VALUE klass = seqblock_class(seq);
+  if (klass == rb_cFixnum) {
+    int n = 0;
+    cvSeqPop(seq, &n);
+    object = INT2FIX(n);
   }
-  VALUE object = GENERIC_OBJECT(seqblock_class(seq), malloc(seq->elem_size));
-  cvSeqPop(seq, DATA_PTR(object));
+  else {
+    object = GENERIC_OBJECT(klass, malloc(seq->elem_size));
+    cvSeqPop(seq, DATA_PTR(object));
+  }
   return object;
 }
 
@@ -412,11 +428,20 @@ VALUE
 rb_shift(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  if(!(seq->total > 0)){
+  if(seq->total == 0)
     return Qnil;
+
+  VALUE object;
+  if (seqblock_class(seq) == rb_cFixnum) {
+    int n = 0;
+    cvSeqPopFront(seq, &n);
+    object = INT2FIX(n);
   }
-  VALUE object = GENERIC_OBJECT(seqblock_class(seq), malloc(seq->elem_size));
-  cvSeqPopFront(seq, DATA_PTR(object));
+  else {
+    object = GENERIC_OBJECT(seqblock_class(seq), malloc(seq->elem_size));
+    cvSeqPopFront(seq, DATA_PTR(object));
+  }
+
   return object;
 }
 
@@ -436,11 +461,14 @@ VALUE
 rb_each(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  if(seq->total > 0){
+  if (seq->total > 0) {
     VALUE klass = seqblock_class(seq);
-    for(int i = 0; i < seq->total; i++){
-      rb_yield(REFER_OBJECT(klass, cvGetSeqElem(seq, i), self));
-    }
+    if (klass == rb_cFixnum)
+      for (int i = 0; i < seq->total; ++i)
+      	rb_yield(INT2FIX(*CV_GET_SEQ_ELEM(int, seq, i)));
+    else
+      for (int i = 0; i < seq->total; ++i)
+	rb_yield(REFER_OBJECT(klass, cvGetSeqElem(seq, i), self));
   }
   return self;
 }
@@ -455,7 +483,7 @@ VALUE
 rb_each_index(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  for(int i = 0; i < seq->total; i++)
+  for(int i = 0; i < seq->total; ++i)
     rb_yield(INT2FIX(i));
   return self;
 }
@@ -473,9 +501,14 @@ rb_insert(VALUE self, VALUE index, VALUE object)
   Check_Type(index, T_FIXNUM);
   CvSeq *seq = CVSEQ(self);
   VALUE klass = seqblock_class(seq);
-  if(CLASS_OF(object) != klass)
+  if (CLASS_OF(object) != klass)
     rb_raise(rb_eTypeError, "arguments should be %s.", rb_class2name(klass));
-  cvSeqInsert(seq, FIX2INT(index), DATA_PTR(object));
+  if (klass == rb_cFixnum) {
+    int n = NUM2INT(object);
+    cvSeqInsert(seq, FIX2INT(index), &n);
+  }
+  else
+    cvSeqInsert(seq, FIX2INT(index), DATA_PTR(object));
   return self;
 }
 

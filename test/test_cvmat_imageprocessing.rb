@@ -269,7 +269,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.warp_affine(map_matrix, :nn)
     mat3 = mat0.warp_affine(map_matrix, :linear, :fill_outliers, CvColor::Yellow)
     mat4 = mat0.warp_affine(map_matrix, :linear, :inverse_map)
-
+    
     assert_equal('da3d7cdefabbaf84c4080ecd40d00897', hash_img(mat1))
     assert_equal('b4abcd12c4e1103c3de87bf9ad854936', hash_img(mat2))
     assert_equal('26f6b10e955125c91fd7e63a63cc06a3', hash_img(mat3))
@@ -324,72 +324,6 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     assert_raise(TypeError) {
       mat0.warp_perspective("foobar")
-    }
-  end
-
-  def test_find_homography
-    # Nx2
-    src = CvMat.new(4, 2, :cv32f, 1)
-    dst = CvMat.new(4, 2, :cv32f, 1)
-
-    # Nx3 (Homogeneous coordinates)
-    src2 = CvMat.new(4, 3, :cv32f, 1)
-    dst2 = CvMat.new(4, 3, :cv32f, 1)
-    
-    # Homography
-    #   <src>     =>    <dst>
-    # (0, 0)      =>  (50, 0)
-    # (255, 0)    =>  (205, 0)
-    # (255, 255)  =>  (255, 220)
-    # (0, 255)    =>  (0, 275)
-    [[0, 0], [255, 0], [255, 255], [0, 255]].each_with_index { |coord, i|
-      src[i, 0] = coord[0]
-      src[i, 1] = coord[1]
-
-      src2[i, 0] = coord[0] * 2
-      src2[i, 1] = coord[1] * 2
-      src2[i, 2] = 2
-    }
-    [[50, 0], [205, 0], [255, 220], [0, 275]].each_with_index { |coord, i|
-      dst[i, 0] = coord[0]
-      dst[i, 1] = coord[1]
-
-      dst2[i, 0] = coord[0] * 2
-      dst2[i, 1] = coord[1] * 2
-      dst2[i, 2] = 2
-    }
-
-    mat1 = CvMat.find_homography(src, dst)
-    mat2 = CvMat.find_homography(src, dst, :all)
-    mat3 = CvMat.find_homography(src, dst, :ransac)
-    mat4 = CvMat.find_homography(src, dst, :lmeds)
-    mat5, status5 = CvMat.find_homography(src, dst, :ransac, 5, true)
-    mat6, status6 = CvMat.find_homography(src, dst, :ransac, 5, true)
-    mat7 = CvMat.find_homography(src, dst, :ransac, 5, false)
-    mat8 = CvMat.find_homography(src, dst, :ransac, 5, nil)
-    mat9 = CvMat.find_homography(src, dst, :all, 5, true)
-    mat10, status10 = CvMat.find_homography(src2, dst2, :ransac, 5, true)
-
-    [mat1, mat2, mat3, mat4, mat5, mat6, mat7, mat8, mat9, mat10].each { |mat|
-      assert_equal(3, mat.rows)
-      assert_equal(3, mat.cols)
-      assert_equal(:cv32f, mat.depth)
-      assert_equal(1, mat.channel)
-      [0.72430, -0.19608, 50.0,
-       0.0, 0.62489, 0.0,
-       0.00057, -0.00165, 1.0].each_with_index { |x, i|
-        assert_in_delta(x, mat[i][0], 0.0001)
-      }
-    }
-    
-    [status5, status6, status10].each { |status|
-      assert_equal(1, status.rows)
-      assert_equal(4, status.cols)
-      assert_equal(:cv8u, status.depth)      
-      assert_equal(1, status.channel)
-      4.times { |i|
-        assert_in_delta(1.0, status[i][0], 0.0001)
-      }
     }
   end
 
@@ -1565,6 +1499,222 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     assert_in_delta(0, mat_cv.match_shapes_i3(mat_cv_rotated), 0.00001)
     assert_in_delta(0.0033327, mat_cv.match_shapes_i3(mat_ov), 0.00001)
+  end
+
+  def test_mean_shift
+    flunk('FIXME: CvMat#mean_shift is not tested yet.')
+  end
+
+  def test_cam_shift
+    flunk('FIXME: CvMat#cam_shift is not tested yet.')
+  end
+
+  def test_snake_image
+    mat = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_GRAYSCALE)
+    num_points = 10
+    alpha = 0.45
+    beta = 0.35
+    gamma = 0.2
+    arr_alpha = [alpha] * num_points
+    arr_beta = [beta] * num_points
+    arr_gamma = [gamma] * num_points
+
+    size = CvSize.new(15, 15)
+    term_criteria = CvTermCriteria.new(100, 0.0)
+    
+    # initialize contours
+    points = []
+    center = CvPoint.new(mat.cols / 2, mat.rows / 2)
+    num_points.times { |i|
+      x = center.x * Math.cos(2 * Math::PI * i / num_points) + center.x
+      y = center.y * Math.sin(2 * Math::PI * i / num_points) + center.y
+      points << CvPoint.new(x, y)
+    }
+
+    # test snake_image
+    # calc_gradient = true
+    [mat.snake_image(points, alpha, beta, gamma, size, term_criteria),
+     mat.snake_image(points, alpha, beta, gamma, size, term_criteria, true),
+     mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria),
+     mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria, true)].each { |result|
+      expected_points = [[147, 101], [138, 144], [95, 142], [56, 123], [17, 104],
+                         [25, 62], [62, 40], [99, 18], [142, 18], [157, 59]]
+      assert_equal(num_points, result.size)
+      result.zip(expected_points) { |pair|
+        actual = pair[0]
+        expected = pair[1]
+        assert_equal(expected[0], actual.x)
+        assert_equal(expected[1], actual.y)
+      }
+    }
+
+    # calc_gradient = false
+    [mat.snake_image(points, alpha, beta, gamma, size, term_criteria, false),
+     mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria, false)].each { |result|
+      expected_points = [[149, 102], [139, 144], [95, 144], [56, 124], [17, 105],
+                         [25, 61], [63, 39], [101, 17], [145, 17], [158, 59]]
+      assert_equal(num_points, result.size)
+      result.zip(expected_points) { |pair|
+        actual = pair[0]
+        expected = pair[1]
+        assert_equal(expected[0], actual.x)
+        assert_equal(expected[1], actual.y)
+      }
+    }
+
+    # raise error
+    assert_raise(TypeError) {
+      mat.snake_image(points, alpha, arr_beta, gamma, size, term_criteria)
+    }
+
+    assert_raise(ArgumentError) {
+      mat.snake_image(points, arr_alpha[0 .. num_points / 2], arr_beta, arr_gamma, size, term_criteria)
+    }
+  end
+
+  def test_optical_flow_hs
+    size = 128
+    prev = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2)) ** 2 ) + ((j - (size / 2)) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+    curr = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2) - 10) ** 2) + ((j - (size / 2) - 7) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+    
+    [curr.optical_flow_hs(prev, nil, nil, :lambda => 0.0005, :criteria => CvTermCriteria.new(1, 0.001)),
+     curr.optical_flow_hs(prev)].each { |velx, vely|
+      assert_equal('d437cd896365c509b5d16fd5f2d7e498', hash_img(velx))
+      assert_equal('36ccbcafcd58b4d07dab058fb60eede6', hash_img(vely))
+    }
+
+    velx, vely = curr.optical_flow_hs(prev, nil, nil, :lambda => 0.001)
+    assert_equal('6a0133bcfa5057ef3d607429753d1f27', hash_img(velx))
+    assert_equal('dffbc0e267b08f3ca0098f27ecf61f6e', hash_img(vely))
+
+    velx, vely = curr.optical_flow_hs(prev, nil, nil, :criteria => CvTermCriteria.new(10, 0.01))
+    assert_equal('5dc2bb2aaee70383da8b12c99cbf388b', hash_img(velx))
+    assert_equal('b53cec7a363ba7491cde61540813b827', hash_img(vely))
+
+    prev_velx, prev_vely = curr.optical_flow_hs(prev)
+    velx, vely = curr.optical_flow_hs(prev, prev_velx, prev_vely)
+    assert_equal('08b50f3d4cb4cbbe443fada293e6af02', hash_img(velx))
+    assert_equal('4d302c8267388995ec85a4a26da5ffcc', hash_img(vely))
+
+    velx, vely = curr.optical_flow_hs(prev, prev_velx, prev_vely, :lambda => 0.001)
+    assert_equal('8bb08ee394719a70e24bfb8b428662cd', hash_img(velx))
+    assert_equal('f6c09e73160f0792e4527cdeea0e5573', hash_img(vely))
+
+    velx, vely = curr.optical_flow_hs(prev, prev_velx, prev_vely, :criteria => CvTermCriteria.new(10, 0.01))
+    assert_equal('c32a8483e3aec3cd6c33bceeefb8d2f2', hash_img(velx))
+    assert_equal('da33e266aece70ed69dcf074acd8fd4e', hash_img(vely))
+
+    assert_raise(TypeError) {
+      curr.optical_flow_hs('foobar')
+    }
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_hs(prev, 'foo', prev_vely)
+    }
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_hs(prev, prev_velx, 'bar')
+    }
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_hs(prev, 'foo', 'bar')
+    }
+  end
+
+  def test_optical_flow_lk
+    size = 128
+    prev = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2)) ** 2 ) + ((j - (size / 2)) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+    curr = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2) - 10) ** 2) + ((j - (size / 2) - 7) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+    
+    velx, vely = curr.optical_flow_lk(prev, CvSize.new(3, 3))
+    assert_equal('bea0c4c2b4b89ed1bb5e9ef5b68b8759', hash_img(velx))
+    assert_equal('aa643584d4eb175ab48896ff44646e06', hash_img(vely))
+
+    velx, vely = curr.optical_flow_lk(prev, CvSize.new(5, 5))
+    assert_equal('00d5889a8e62f7c5fc695ba3556cc374', hash_img(velx))
+    assert_equal('e7524c292e95e374fdb588f0b516938e', hash_img(vely))
+
+    assert_raise(TypeError) {
+      curr.optical_flow_lk('foobar', CvSize.new(3, 3))
+    }
+  end
+
+  def test_optical_flow_bm
+    size = 128
+    prev = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2)) ** 2 ) + ((j - (size / 2)) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+    curr = create_cvmat(size, size, :cv8u, 1) { |j, i|
+      if ((i - (size / 2) - 10) ** 2) + ((j - (size / 2) - 7) ** 2 ) < size
+        CvColor::Black
+      else
+        CvColor::White
+      end
+    }
+
+    [curr.optical_flow_bm(prev, nil, nil, :block_size => CvSize.new(4, 4),
+                          :shift_size => CvSize.new(1, 1), :max_range => CvSize.new(4, 4)),
+     curr.optical_flow_bm(prev)].each { |velx, vely|
+      assert_equal('08e73a6fa9af7684a5eddc4f30fd46e7', hash_img(velx))
+      assert_equal('aabaf1b7393b950c2297f567b6f57d5d', hash_img(vely))
+    }
+    
+    velx, vely = curr.optical_flow_bm(prev, nil, nil, :block_size => CvSize.new(3, 3))
+    assert_equal('fe540dc1f0aec2d70b774286eafa3602', hash_img(velx))
+    assert_equal('c7cc0f055fe4708396ba6046c0f1c6b5', hash_img(vely))
+
+    velx, vely = curr.optical_flow_bm(prev, nil, nil, :shift_size => CvSize.new(2, 2))
+    assert_equal('00ad7854afb6eb4e46f0fb31c312c5eb', hash_img(velx))
+    assert_equal('33215ec0bfa7f6b1424d6fadb2a48e0f', hash_img(vely))
+
+    velx, vely = curr.optical_flow_bm(prev, nil, nil, :max_range => CvSize.new(5, 5))
+    assert_equal('ac10837eeee45fd80a24695cfaf9cfc7', hash_img(velx))
+    assert_equal('8c7011c26ac53eaf1fae1aa9324e5979', hash_img(vely))
+    
+    prev_velx, prev_vely = curr.optical_flow_bm(prev)
+    velx, vely = curr.optical_flow_bm(prev, prev_velx, prev_vely)
+    assert_equal('6ad6b7a5c935379c0df4b9ec5666f3de', hash_img(velx))
+    assert_equal('b317b0b9d4fdb0e5cd40beb0dd4143b4', hash_img(vely))
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_bm(prev, 'foo', prev_vely)
+    }
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_bm(prev, prev_velx, 'bar')
+    }
+
+    assert_raise(ArgumentError) {
+      curr.optical_flow_bm(prev, 'foo', 'bar')
+    }
   end
 end
 

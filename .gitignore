@@ -1,4 +1,5 @@
 .DS_Store
+.project
 examples/data
 *.o
 *.so
@@ -10,4 +11,6 @@ GRTAGS
 GSYMS
 GTAGS
 OpenCV-2.2.0
-ruby-1.9.2-p136
+ruby-1.9.2-p180
+ext/opencv/test.txt
+pkg/

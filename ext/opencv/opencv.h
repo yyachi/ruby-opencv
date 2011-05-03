@@ -104,7 +104,6 @@ extern "C"{
 #include "cvhistogram.h"
 #include "cvcapture.h"
 
-#include "cvindex.h"
 #include "cvline.h"
 #include "cvtwopoints.h"
 #include "cvcircle32f.h"
@@ -122,7 +121,7 @@ extern "C"{
 #include "mouseevent.h"
 
 // memory management wrapper
-#define CVALLOC(type) (type*)cvAlloc(sizeof(type))
+#define RB_CVALLOC(type) (type*)rb_cvAlloc(sizeof(type))
 
 // useful macros
 #define IF_INT(val, ifnone) NIL_P(val) ? ifnone : NUM2INT(val)
@@ -171,6 +170,12 @@ void release_iplconvkernel_object(void *ptr);
 
 VALUE rb_module_opencv();
 void define_ruby_module();
+
+void* rb_cvAlloc(size_t size);
+CvMat* rb_cvCreateMat(int height, int width, int type);
+IplImage* rb_cvCreateImage(CvSize size, int depth, int channels);
+IplConvKernel* rb_cvCreateStructuringElementEx(int cols, int rows, int anchorX, int anchorY, int shape, int *values);
+CvMemStorage* rb_cvCreateMemStorage(int block_size);
 
 // Ruby/OpenCV inline functions  
 inline CvArr*

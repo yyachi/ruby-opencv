@@ -104,7 +104,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     storage = CVMEMSTORAGE(storage_value);
   }
   else
-    storage = cvCreateMemStorage(0);
+    storage = rb_cvCreateMemStorage(0);
   
   DATA_PTR(self) = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
 					   sizeof(CvPoint), storage);
