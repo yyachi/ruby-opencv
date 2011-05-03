@@ -4,7 +4,7 @@ require 'rubygems'
 require 'hoe'
 
 require 'rake/extensiontask'
-require './ext/opencv/lib/version'
+require './ext/opencv/lib/opencv/version'
 
 Hoe.plugin :gemspec
 

@@ -107,7 +107,7 @@ images/CvMat_sub_rect.png
 images/CvSeq_relationmap.png
 images/face_detect_from_lena.jpg
 ext/opencv/lib/opencv.rb
-ext/opencv/lib/version.rb
+ext/opencv/lib/opencv/version.rb
 setup/setup.cygwin.rb
 setup/setup.mingw.rb
 setup/setup.mswin32.rb
