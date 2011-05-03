@@ -72,4 +72,4 @@ else
 end
 
 # step-final. create Makefile
-create_makefile("opencv/opencv")
+create_makefile("opencv", "./ext/opencv")

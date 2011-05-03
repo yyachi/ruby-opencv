@@ -3,6 +3,7 @@ License.txt
 Manifest.txt
 README.rdoc
 Rakefile
+extconf.rb
 examples/convexhull.rb
 examples/face_detect.rb
 examples/houghcircle.rb
@@ -45,8 +46,6 @@ ext/opencv/cvhistogram.cpp
 ext/opencv/cvhistogram.h
 ext/opencv/cvhumoments.cpp
 ext/opencv/cvhumoments.h
-ext/opencv/cvindex.cpp
-ext/opencv/cvindex.h
 ext/opencv/cvline.cpp
 ext/opencv/cvline.h
 ext/opencv/cvmat.cpp
@@ -85,7 +84,6 @@ ext/opencv/cvtwopoints.cpp
 ext/opencv/cvtwopoints.h
 ext/opencv/cvvideowriter.cpp
 ext/opencv/cvvideowriter.h
-ext/opencv/extconf.rb
 ext/opencv/gui.cpp
 ext/opencv/gui.h
 ext/opencv/iplconvkernel.cpp
@@ -108,8 +106,8 @@ images/CvMat_sobel.png
 images/CvMat_sub_rect.png
 images/CvSeq_relationmap.png
 images/face_detect_from_lena.jpg
-lib/opencv.rb
-lib/version.rb
+ext/opencv/lib/opencv.rb
+ext/opencv/lib/version.rb
 setup/setup.cygwin.rb
 setup/setup.mingw.rb
 setup/setup.mswin32.rb

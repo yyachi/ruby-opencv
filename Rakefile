@@ -4,7 +4,7 @@ require 'rubygems'
 require 'hoe'
 
 require 'rake/extensiontask'
-require './lib/version'
+require './ext/opencv/lib/version'
 
 Hoe.plugin :gemspec
 
@@ -24,7 +24,7 @@ EOF
   p.readme_file  = 'README.rdoc'
   p.history_file = 'History.txt'
   p.spec_extras = {
-    :extensions => %w{ext/opencv/extconf.rb}
+    :extensions => %w{extconf.rb}
   }
   p.summary = 'OpenCV wrapper for Ruby.'
   p.test_globs = ['test/test_*.rb']
