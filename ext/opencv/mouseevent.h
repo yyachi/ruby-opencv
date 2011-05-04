@@ -24,7 +24,7 @@ __NAMESPACE_BEGIN_MOUSEEVENT
 typedef struct MouseEvent {
   CvPoint point;
   int event;
-  int flag;
+  int flags;
 } MouseEvent;
 
 VALUE rb_class();

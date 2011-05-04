@@ -72,7 +72,7 @@ else
 end
 
 # Quick fix for 1.8.7
-$CFLAGS << "-I#{File.dirname(__FILE__)}/ext/opencv"
+$CFLAGS << " -I#{File.dirname(__FILE__)}/ext/opencv"
 
 # step-final. create Makefile
 create_makefile("opencv", "./ext/opencv")

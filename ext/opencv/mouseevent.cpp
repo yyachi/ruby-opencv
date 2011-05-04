@@ -117,7 +117,7 @@ VALUE rb_event(VALUE self)
 VALUE
 rb_left_button_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_LBUTTON ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_LBUTTON ? Qtrue : Qfalse;
 }
 
 /*
@@ -126,7 +126,7 @@ rb_left_button_q(VALUE self)
 VALUE
 rb_right_button_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_RBUTTON ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_RBUTTON ? Qtrue : Qfalse;
 }
 
 /*
@@ -135,7 +135,7 @@ rb_right_button_q(VALUE self)
 VALUE
 rb_middle_button_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_MBUTTON ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_MBUTTON ? Qtrue : Qfalse;
 }
 
 /*
@@ -144,7 +144,7 @@ rb_middle_button_q(VALUE self)
 VALUE
 rb_ctrl_key_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_CTRLKEY ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_CTRLKEY ? Qtrue : Qfalse;
 }
 
 /*
@@ -153,7 +153,7 @@ rb_ctrl_key_q(VALUE self)
 VALUE
 rb_shift_key_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_SHIFTKEY ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_SHIFTKEY ? Qtrue : Qfalse;
 }
 
 /*
@@ -162,18 +162,18 @@ rb_shift_key_q(VALUE self)
 VALUE
 rb_alt_key_q(VALUE self)
 {
-  return MOUSEEVENT(self)->flag & CV_EVENT_FLAG_ALTKEY ? Qtrue : Qfalse;
+  return MOUSEEVENT(self)->flags & CV_EVENT_FLAG_ALTKEY ? Qtrue : Qfalse;
 }
 
 VALUE
-new_object(int flag, int y, int x, int event)
+new_object(int event, int x, int y, int flags)
 {
   VALUE object = rb_allocate(rb_class());
   MouseEvent *mouseevent = MOUSEEVENT(object);
   mouseevent->point.x = x;
   mouseevent->point.y = y;
   mouseevent->event = event;
-  mouseevent->flag = flag;
+  mouseevent->flags = flags;
   return object;
 }
 

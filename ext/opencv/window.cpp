@@ -30,8 +30,7 @@ GET_WINDOW_NAME(VALUE object)
   void *handle = DATA_PTR(object);
   if (!handle)
     rb_raise(rb_eStandardError, "window handle error"); 
-  const char *window_name = cvGetWindowName(handle);
-  return window_name;
+  return (const char*)cvGetWindowName(handle);
 }
 
 st_table *windows = st_init_numtable();
@@ -64,10 +63,10 @@ define_ruby_class()
   rb_define_singleton_method(rb_klass, "destroy_all", RUBY_METHOD_FUNC(rb_destroy_all), 0);
   rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
   rb_define_method(rb_klass, "move", RUBY_METHOD_FUNC(rb_move), -1);
-  rb_define_method(rb_klass, "show_image", RUBY_METHOD_FUNC(rb_show_image), 1);
+  rb_define_method(rb_klass, "show_image", RUBY_METHOD_FUNC(rb_show_image), -1);
   rb_define_alias(rb_klass, "show", "show_image");
   rb_define_method(rb_klass, "set_trackbar", RUBY_METHOD_FUNC(rb_set_trackbar), -1);
-  rb_define_method(rb_klass, "set_mouse_callback", RUBY_METHOD_FUNC(rb_set_mouse_callback), 0);
+  rb_define_method(rb_klass, "set_mouse_callback", RUBY_METHOD_FUNC(rb_set_mouse_callback), -1);
   rb_define_alias(rb_klass, "on_mouse", "set_mouse_callback");
 }
 
@@ -121,34 +120,26 @@ rb_aref(VALUE klass, VALUE name)
 
 /*
  * call-seq:
- *   new(<i>name[,autosize]</i>)
+ *   new(<i>name[,flags]</i>)
  *
  * Create new window named <i>name</i>.
- * If <i>autoresize</i> is true(default), window size automatically resize when image given.
+ * If <i>flags</i> is CV_WINDOW_AUTOSIZE (default), window size automatically resize when image given.
  */
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE name, autosize;
-  rb_scan_args(argc, argv, "11", &name, &autosize);
+  VALUE name, flags;
+  rb_scan_args(argc, argv, "11", &name, &flags);
   Check_Type(name, T_STRING);
-  int mode;
-  if (argc < 2)
-    mode = CV_WINDOW_AUTOSIZE;
-  else{
-    switch (TYPE(autosize)) {
-    case T_TRUE:
-      mode = CV_WINDOW_AUTOSIZE;
-      break;
-    case T_FALSE:
-      mode = 0;
-      break;
-    default:
-      rb_raise(rb_eTypeError, "argument 2 (auto-size) should be true or false.");
-    }
+  int mode = CV_WINDOW_AUTOSIZE;
+  if (argc == 2) {
+    Check_Type(flags, T_FIXNUM);
+    mode = FIX2INT(flags);
   }
-  cvNamedWindow(StringValueCStr(name), mode);
-  void *handle = cvGetWindowHandle(StringValueCStr(name));
+
+  char* name_str = StringValueCStr(name);
+  cvNamedWindow(name_str, mode);
+  void *handle = cvGetWindowHandle(name_str);
   if (st_lookup(windows, (st_data_t)handle, 0)) {
     rb_raise(rb_eStandardError, "window name should be unique.");
   }
@@ -217,7 +208,8 @@ rb_resize(int argc, VALUE *argv, VALUE self)
     size = cvSize(FIX2INT(argv[0]), FIX2INT(argv[1]));
     break;
   default:
-    rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");          
+    rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");
+    break;
   }
   cvResizeWindow(GET_WINDOW_NAME(self), size.width, size.height);
   return self;
@@ -242,7 +234,8 @@ rb_move(int argc, VALUE *argv, VALUE self)
     point = cvPoint(FIX2INT(argv[0]), FIX2INT(argv[1]));
     break;
   default:
-    rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");          
+    rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");
+    break;
   }
   cvMoveWindow(GET_WINDOW_NAME(self), point.x, point.y);
   return self;
@@ -252,22 +245,27 @@ rb_move(int argc, VALUE *argv, VALUE self)
  * call-seq:
  *   show_image(<i>image</i>)
  *
- * Show the image. If the window was created with <i>autosize</i> = true then the image is shown
+ * Show the image. If the window was created with <i>flags</i> = CV_WINDOW_AUTOSIZE then the image is shown
  * with its original size, otherwize the image is scaled to fit the window.
  */
 VALUE
-rb_show_image(VALUE self, VALUE image)
+rb_show_image(int argc, VALUE *argv, VALUE self)
 {
-  if (!rb_obj_is_kind_of(image, cCvMat::rb_class())) {
-    rb_raise(rb_eTypeError, "argument should be %s.", rb_class2name(cCvMat::rb_class()));
+  CvArr* image = NULL;
+  if (argc > 0) {
+    if (!rb_obj_is_kind_of(argv[0], cCvMat::rb_class()))
+      rb_raise(rb_eTypeError, "argument should be %s.", rb_class2name(cCvMat::rb_class()));
+    else
+      image = CVARR(argv[0]);
+
+    st_table *holder;
+    if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
+      st_insert(holder, cCvMat::rb_class(), argv[0]);
+    }else
+      rb_raise(rb_eFatal, "invalid window operation.");
   }
-  cvShowImage(GET_WINDOW_NAME(self), CVARR(image));
-  st_table *holder;
-  if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
-    st_insert(holder, cCvMat::rb_class(), image);
-    return self;
-  }else
-    rb_raise(rb_eFatal, "invalid window operation.");
+  cvShowImage(GET_WINDOW_NAME(self), image);
+  
   return self;
 }
 
@@ -291,7 +289,8 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
   }
   Trackbar *trackbar = TRACKBAR(instance);
   void *callback = (void *)alloc_callback(&trackbar_callback, trackbar->block);
-  cvCreateTrackbar(trackbar->name, GET_WINDOW_NAME(self), &trackbar->val, trackbar->maxval, (CvTrackbarCallback)callback);
+  cvCreateTrackbar(trackbar->name, GET_WINDOW_NAME(self), &(trackbar->val), trackbar->maxval,
+		   (CvTrackbarCallback)callback);
   st_table *holder;
   if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
     st_insert(holder, (st_data_t)&trackbar->name, (st_data_t)instance);
@@ -326,10 +325,13 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
  *   OpenCV::GUI::wait_key
  */
 VALUE
-rb_set_mouse_callback(VALUE self)
-{  
-  VALUE block = rb_block_given_p() ? rb_block_proc() : 0;
-  if (!block) {rb_raise(rb_eArgError, "block not given.");}
+rb_set_mouse_callback(int argc, VALUE* argv, VALUE self)
+{
+  if (!rb_block_given_p())
+    rb_raise(rb_eArgError, "block not given.");
+
+  VALUE block = Qnil;
+  rb_scan_args(argc, argv, "0&", &block);
   void *callback = (void *)alloc_callback(&mouse_callback, block);  
   cvSetMouseCallback(GET_WINDOW_NAME(self), (CvMouseCallback)callback);
   st_table *holder;
@@ -353,11 +355,11 @@ void
 mouse_callback(VALUE block, va_alist ap)
 {
   va_start_void(ap);
-  //VALUE ary = rb_ary_new2(4);
-  //for (int i = 0; i < 4; i++)
-  //  rb_ary_store(ary, i, INT2FIX(va_arg_int(ap)));
-  //rb_apply(block, rb_intern("call"), ary);
-  rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(va_arg_int(ap),va_arg_int(ap),va_arg_int(ap),va_arg_int(ap)));
+  int event = va_arg_int(ap);
+  int x = va_arg_int(ap);
+  int y = va_arg_int(ap);
+  int flags = va_arg_int(ap);
+  rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(event, x, y, flags));
   va_return_void(ap);
 }
 

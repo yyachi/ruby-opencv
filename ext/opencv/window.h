@@ -40,9 +40,9 @@ VALUE rb_destroy(VALUE self);
 VALUE rb_destroy_all(VALUE klass);
 VALUE rb_resize(int argc, VALUE *argv, VALUE self);
 VALUE rb_move(int argc, VALUE *argv, VALUE self);
-VALUE rb_show_image(VALUE self, VALUE image);
+VALUE rb_show_image(int argc, VALUE *argv, VALUE self);
 VALUE rb_set_trackbar(int argc, VALUE *argv, VALUE self);
-VALUE rb_set_mouse_callback(VALUE self);
+VALUE rb_set_mouse_callback(int argc, VALUE* argv, VALUE self);
 
 void trackbar_callback(VALUE block, va_alist ap);
 void mouse_callback(VALUE block, va_alist ap);
