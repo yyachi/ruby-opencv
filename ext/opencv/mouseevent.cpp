@@ -56,7 +56,7 @@ VALUE
 rb_allocate(VALUE klass)
 {
   MouseEvent *ptr;
-  return Data_Make_Struct(klass, MouseEvent, 0, -1, ptr);
+  return Data_Make_Struct(klass, MouseEvent, 0, 0, ptr);
 }
 
 /*

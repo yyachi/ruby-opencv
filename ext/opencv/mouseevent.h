@@ -21,11 +21,11 @@ __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI
 __NAMESPACE_BEGIN_MOUSEEVENT
 
-typedef struct MouseEvent{
+typedef struct MouseEvent {
   CvPoint point;
   int event;
   int flag;
-}MouseEvent;
+} MouseEvent;
 
 VALUE rb_class();
 
@@ -44,7 +44,7 @@ VALUE rb_alt_key_q(VALUE self);
 
 VALUE new_object(int event, int x, int y, int flag);
 
-inline MouseEvent *MOUSEEVENT(VALUE object){
+inline MouseEvent *MOUSEEVENT(VALUE object) {
   MouseEvent *ptr;
   Data_Get_Struct(object, MouseEvent, ptr);
   return ptr;
