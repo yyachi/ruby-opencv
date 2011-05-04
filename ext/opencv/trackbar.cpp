@@ -9,7 +9,7 @@
 ************************************************************/
 #ifdef HAVE_CALLBACK_H
 
-#include"trackbar.h"
+#include "trackbar.h"
 /*
  * Document-class: OpenCV::GUI::Trackbar
  *
@@ -23,12 +23,12 @@ __NAMESPACE_BEGIN_TRACKBAR
 
 VALUE rb_klass;
 
-VALUE rb_class(){
+VALUE rb_class() {
   return rb_klass;
 }
 
-void define_ruby_class(){
-  if(rb_klass)
+void define_ruby_class() {
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
@@ -46,18 +46,13 @@ void define_ruby_class(){
   rb_define_method(rb_klass, "value=", RUBY_METHOD_FUNC(rb_set_value), 1);
 }
 
-VALUE rb_allocate(VALUE klass){
+VALUE rb_allocate(VALUE klass) {
   Trackbar *ptr;
-  return Data_Make_Struct(klass, Trackbar, mark, free, ptr);
+  return Data_Make_Struct(klass, Trackbar, trackbar_mark, 0, ptr);
 }
 
-void mark(void *ptr){
+void trackbar_mark(void *ptr) {
   rb_gc_mark(((Trackbar*)ptr)->block);
-}
-
-void free(void *ptr){
-  //::free(((Trackbar*)ptr)->name);
-  ::free(ptr);
 }
 
 /*
@@ -70,10 +65,11 @@ void free(void *ptr){
  * <i>maxval</i> and <i>val</i> should be Fixnum.
  * When Trackbar adjuster changed, block will be called.
  */
-VALUE rb_initialize(int argc, VALUE *argv, VALUE self){
+VALUE rb_initialize(int argc, VALUE *argv, VALUE self) {
   VALUE name, maxval, val, block;
   rb_scan_args(argc, argv, "21&", &name, &maxval, &val, &block);
-  if(NIL_P(block)){rb_raise(rb_eArgError, "block not given.");}
+  if (NIL_P(block))
+    rb_raise(rb_eArgError, "block not given.");
   Check_Type(name, T_STRING);
   Trackbar *trackbar = TRACKBAR(self);
   trackbar->name = strcpy(ALLOC_N(char, RSTRING_LEN(name)), StringValueCStr(name));
@@ -86,21 +82,21 @@ VALUE rb_initialize(int argc, VALUE *argv, VALUE self){
 /*
  * Return trackbar name.
  */
-VALUE rb_name(VALUE self){
+VALUE rb_name(VALUE self) {
   return rb_str_new2(TRACKBAR(self)->name);
 }
 
 /*
  * Return the maximum value that can be taken this trackbar.
  */
-VALUE rb_max(VALUE self){
+VALUE rb_max(VALUE self) {
   return INT2FIX(TRACKBAR(self)->maxval);
 }
 
 /*
  * Return the value of this trackbar.
  */
-VALUE rb_value(VALUE self){
+VALUE rb_value(VALUE self) {
   return INT2FIX(TRACKBAR(self)->val);
 }
 
@@ -110,7 +106,7 @@ VALUE rb_value(VALUE self){
  *
  * Set trackbar value.
  */
-VALUE rb_set_value(VALUE self, VALUE val){
+VALUE rb_set_value(VALUE self, VALUE val) {
   TRACKBAR(self)->val = NUM2INT(val);
   return self;
 }

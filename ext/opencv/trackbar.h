@@ -24,12 +24,12 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI
 
-typedef struct Trackbar{
+typedef struct Trackbar {
   char *name;
   int maxval;
   int val;
   VALUE block;
-}Trackbar;
+} Trackbar;
 
 __NAMESPACE_BEGIN_TRACKBAR
 
@@ -38,8 +38,7 @@ VALUE rb_class();
 void define_ruby_class();
 VALUE rb_allocate(VALUE klass);
 
-void mark(void *ptr);
-void free(void *ptr);
+void trackbar_mark(void *ptr);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_name(VALUE self);
@@ -50,7 +49,7 @@ VALUE rb_set_value(VALUE self, VALUE val);
 __NAMESPACE_END_TRACKBAR
 
 
-inline Trackbar *TRACKBAR(VALUE object){
+inline Trackbar *TRACKBAR(VALUE object) {
   Trackbar *ptr;
   Data_Get_Struct(object, Trackbar, ptr);
   return ptr;
