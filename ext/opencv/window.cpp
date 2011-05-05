@@ -298,6 +298,13 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
   return instance;
 }
 
+void
+on_mouse(int event, int x, int y, int flags, void* param) {
+  VALUE block = (VALUE)param;
+  if (rb_obj_is_kind_of(block, rb_cProc))
+    rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(event, x, y, flags));
+}
+
 /*
  * call-seq:
  *   set_mouse_callback(&block)
@@ -332,12 +339,12 @@ rb_set_mouse_callback(int argc, VALUE* argv, VALUE self)
 
   VALUE block = Qnil;
   rb_scan_args(argc, argv, "0&", &block);
-  void *callback = (void *)alloc_callback(&mouse_callback, block);  
-  cvSetMouseCallback(GET_WINDOW_NAME(self), (CvMouseCallback)callback);
+  cvSetMouseCallback(GET_WINDOW_NAME(self), on_mouse, (void*)block);
   st_table *holder;
   if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
     st_insert(holder, rb_cProc, block);
-  }else{
+  }
+  else {
     rb_raise(rb_eStandardError, "window is destroied.");
   }
   return block;
@@ -348,18 +355,6 @@ trackbar_callback(VALUE block, va_alist ap)
 {
   va_start_void(ap);
   rb_funcall(block, rb_intern("call"), 1, INT2FIX(va_arg_int(ap)));
-  va_return_void(ap);
-}
-
-void
-mouse_callback(VALUE block, va_alist ap)
-{
-  va_start_void(ap);
-  int event = va_arg_int(ap);
-  int x = va_arg_int(ap);
-  int y = va_arg_int(ap);
-  int flags = va_arg_int(ap);
-  rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(event, x, y, flags));
   va_return_void(ap);
 }
 
