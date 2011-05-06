@@ -7,8 +7,6 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #define __NAMESPACE_BEGIN_MOUSEEVENT namespace cMouseEvent{
 #define __NAMESPACE_END_MOUSEEVENT }
 
@@ -56,4 +54,3 @@ __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_GUI_MOUSEEVENT_H
 
-#endif // HAVE_CALLBACK_H

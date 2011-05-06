@@ -7,8 +7,6 @@
    Copyright (C) 2005 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #include "trackbar.h"
 /*
  * Document-class: OpenCV::GUI::Trackbar
@@ -115,4 +113,3 @@ __NAMESPACE_END_TRACKBAR
 __NAMESPACE_END_GUI
 __NAMESPACE_END_OPENCV
 
-#endif // HAVE_CALLBACK_H

@@ -7,8 +7,6 @@
   Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #include "gui.h"
 /*
  * Document-module: OpenCV::GUI
@@ -62,4 +60,3 @@ rb_wait_key(int argc, VALUE *argv, VALUE self)
 __NAMESPACE_END_GUI
 __NAMESPACE_END_OPENCV
 
-#endif // HAVE_CALLBACK_H

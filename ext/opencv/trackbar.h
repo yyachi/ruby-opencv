@@ -7,8 +7,6 @@
    Copyright (C) 2005 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #ifndef RUBY_OPENCV_GUI_H
 #include "gui.h"
 #endif
@@ -61,4 +59,3 @@ __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_GUI_TRACKBAR_H
 
-#endif // HAVE_CALLBACK_H

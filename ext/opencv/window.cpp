@@ -7,8 +7,6 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #include "window.h"
 /*
  * Document-class: OpenCV::GUI::Window
@@ -278,6 +276,15 @@ rb_show_image(int argc, VALUE *argv, VALUE self)
  * Create Trackbar on this window. Return new Trackbar.
  * see Trackbar.new
  */
+#ifdef HAVE_CALLBACK_H
+void
+trackbar_callback(VALUE block, va_alist ap)
+{
+  va_start_void(ap);
+  rb_funcall(block, rb_intern("call"), 1, INT2FIX(va_arg_int(ap)));
+  va_return_void(ap);
+}
+
 VALUE
 rb_set_trackbar(int argc, VALUE *argv, VALUE self)
 {
@@ -297,6 +304,14 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
   }
   return instance;
 }
+#else
+VALUE
+rb_set_trackbar(int argc, VALUE *argv, VALUE self)
+{
+  rb_raise(rb_eFatal, "ffcall is required to use Window#set_trackbar");
+  return Qnil;
+}
+#endif // HAVE_CALLBACK_H
 
 void
 on_mouse(int event, int x, int y, int flags, void* param) {
@@ -350,16 +365,7 @@ rb_set_mouse_callback(int argc, VALUE* argv, VALUE self)
   return block;
 }
 
-void
-trackbar_callback(VALUE block, va_alist ap)
-{
-  va_start_void(ap);
-  rb_funcall(block, rb_intern("call"), 1, INT2FIX(va_arg_int(ap)));
-  va_return_void(ap);
-}
-
 __NAMESPACE_END_WINDOW
 __NAMESPACE_END_GUI
 __NAMESPACE_END_OPENCV
 
-#endif // HAVE_CALLBACK_H

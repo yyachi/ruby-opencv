@@ -773,12 +773,10 @@ extern "C"{
     mOpenCV::cCvConnectedComp::define_ruby_class();
     mOpenCV::cCvAvgComp::define_ruby_class();
     mOpenCV::cCvHaarClassifierCascade::define_ruby_class();
-#ifdef HAVE_CALLBACK_H
     mOpenCV::mGUI::define_ruby_module();
     mOpenCV::mGUI::cWindow::define_ruby_class();
     mOpenCV::mGUI::cTrackbar::define_ruby_class();
     mOpenCV::mGUI::cMouseEvent::define_ruby_class();
-#endif
 
 #ifdef HAVE_ML_H
     /* feature support.

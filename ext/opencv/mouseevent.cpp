@@ -7,8 +7,6 @@
    Copyright (C) 2005-2007 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #include "mouseevent.h"
 /*
  * Document-module: OpenCV::GUI::MouseEvent
@@ -181,4 +179,3 @@ __NAMESPACE_END_MOUSEEVENT
 __NAMESPACE_END_GUI
 __NAMESPACE_END_OPENCV
 
-#endif // HAVE_CALLBACK_H
