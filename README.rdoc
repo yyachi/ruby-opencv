@@ -19,7 +19,7 @@ OpenCV Ruby Wrapper
 == FEATURES/PROBLEMS:
 
 * First release rubygems, Some OpenCV functions wrapped.
-* Ruby 1.8.7, 1.9.2 and OpenCV 2.0, 2.1 are supported.
+* Ruby 1.8.7, 1.9.2 and OpenCV 2.1 are supported.
 
 == DEPENDENCIES:
 
@@ -80,7 +80,7 @@ subfolder called data.
 
 == REQUIREMENTS:
 
-* OpenCV 2.2 or later
+* OpenCV 2.1
   http://opencv.willowgarage.com/wiki/
 * ffcall (optional)
   http://www.haible.de/bruno/packages-ffcall.html
