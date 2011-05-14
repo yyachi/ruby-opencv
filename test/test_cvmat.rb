@@ -127,7 +127,6 @@ class TestCvMat < OpenCVTestCase
     assert((not m1.has_parent?))
     assert_nil(m1.parent)
 
-    flunk('FIXME: resolve unexpected ABORT of CvMat#to_CvMat')
     m2 = m1.to_CvMat
     assert(m2.has_parent?)
     assert_same(m1, m2.parent)
@@ -253,10 +252,14 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_to_CvMat
-    m1 = CvMat.new(2, 2)
-    flunk('FIXME: resolve unexpected ABORT of CvMat#to_CvMat')
+    m1 = CvMat.new(2, 3, :cv32f, 4)
     m2 = m1.to_CvMat
-    assert_same(m1, m2.parent)
+    assert_equal(CvMat, m2.class)
+    assert_equal(m1.rows, m2.rows)
+    assert_equal(m1.cols, m2.cols)
+    assert_equal(m1.depth, m2.depth)
+    assert_equal(m1.channel, m2.channel)
+    assert_equal(m1.data, m2.data)
   end
 
   def test_sub_rect

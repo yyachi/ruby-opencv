@@ -923,6 +923,10 @@ rb_square_q(VALUE self)
 VALUE
 rb_to_CvMat(VALUE self)
 {
+  // CvMat#to_CvMat aborts when self's class is CvMat. (I don't know why...)
+  if (CLASS_OF(self) == rb_klass)
+    return self;
+  
   return DEPEND_OBJECT(rb_klass, cvGetMat(CVARR(self), RB_CVALLOC(CvMat)), self);
 }
 
