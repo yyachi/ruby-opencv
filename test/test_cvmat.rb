@@ -122,17 +122,6 @@ class TestCvMat < OpenCVTestCase
     assert_equal('<OpenCV::CvMat:20x10,depth=cv32f,channel=1>', m.to_s)
   end
 
-  def test_parent
-    m1 = CvMat.new(10, 20)
-    assert((not m1.has_parent?))
-    assert_nil(m1.parent)
-
-    flunk('FIXME: resolve unexpected ABORT of CvMat#to_CvMat')
-    m2 = m1.to_CvMat
-    assert(m2.has_parent?)
-    assert_same(m1, m2.parent)
-  end
-
   def test_inside
     m = CvMat.new(20, 10)
     assert(m.inside? CvPoint.new(0, 0))
@@ -210,19 +199,8 @@ class TestCvMat < OpenCVTestCase
     }
     assert_nil(m1.copy(-1))
 
-    flunk('FIXME: CvUnmatchedSizes and CvUnmatchedFormats are not implemented yet')
-    m2 = CvMat.new(1, 2, CV_32F, 1)
-    assert_raise(CvUnmatchedSizes) {
-      m1.copy(m2)
-    }
-
-    m2 = CvMat.new(10, 20, CV_32F, 3)
-    assert_raise(CvUnmatchedFormats) {
-      m1.copy(m2)
-    }
-    m2 = CvMat.new(10, 20, CV_8U, 1)
-    assert_raise(CvUnmatchedFormats) {
-      m1.copy(m2)
+    assert_raise(ArgumentError) {
+      m1.copy('foobar')
     }
   end
 
@@ -253,10 +231,14 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_to_CvMat
-    m1 = CvMat.new(2, 2)
-    flunk('FIXME: resolve unexpected ABORT of CvMat#to_CvMat')
+    m1 = CvMat.new(2, 3, :cv32f, 4)
     m2 = m1.to_CvMat
-    assert_same(m1, m2.parent)
+    assert_equal(CvMat, m2.class)
+    assert_equal(m1.rows, m2.rows)
+    assert_equal(m1.cols, m2.cols)
+    assert_equal(m1.depth, m2.depth)
+    assert_equal(m1.channel, m2.channel)
+    assert_equal(m1.data, m2.data)
   end
 
   def test_sub_rect

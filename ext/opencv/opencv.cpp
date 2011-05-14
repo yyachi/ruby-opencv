@@ -409,6 +409,9 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_FM_8POINT", INT2FIX(CV_FM_8POINT));
   rb_define_const(rb_module, "CV_FM_RANSAC", INT2FIX(CV_FM_RANSAC));
   rb_define_const(rb_module, "CV_FM_LMEDS", INT2FIX(CV_FM_LMEDS));
+
+  /* Flags of window */
+  rb_define_const(rb_module, "CV_WINDOW_AUTOSIZE", INT2FIX(CV_WINDOW_AUTOSIZE));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
@@ -770,12 +773,10 @@ extern "C"{
     mOpenCV::cCvConnectedComp::define_ruby_class();
     mOpenCV::cCvAvgComp::define_ruby_class();
     mOpenCV::cCvHaarClassifierCascade::define_ruby_class();
-#ifdef HAVE_CALLBACK_H
     mOpenCV::mGUI::define_ruby_module();
     mOpenCV::mGUI::cWindow::define_ruby_class();
     mOpenCV::mGUI::cTrackbar::define_ruby_class();
     mOpenCV::mGUI::cMouseEvent::define_ruby_class();
-#endif
 
 #ifdef HAVE_ML_H
     /* feature support.

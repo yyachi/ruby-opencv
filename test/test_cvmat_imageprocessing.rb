@@ -877,8 +877,8 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   def test_threshold
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
     test_proc = lambda { |type, type_sym, expected_mat, expected_threshold|
-      mat1 = mat0.threshold(4, 7, type)
-      mat2 = mat0.threshold(4, 7, type_sym)
+      mat1 = mat0.threshold(expected_threshold, 7, type)
+      mat2 = mat0.threshold(expected_threshold, 7, type_sym)
       mat3, th3 = mat0.threshold(5, 7, type | CV_THRESH_OTSU)
       mat4, th4 = mat0.threshold(4, 7, type_sym, true)
       mat5, th5 = mat0.threshold(5, 7, type | CV_THRESH_OTSU, true)
@@ -929,9 +929,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
   def test_threshold_binary
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
-    mat1 = mat0.threshold_binary(3, 7)
+    mat1 = mat0.threshold_binary(4, 7)
     expected = [0, 0, 0,
-                0, 7, 7,
+                0, 0, 7,
                 7, 7, 7]
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
@@ -946,9 +946,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
   def test_threshold_binary_inverse
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
-    mat1 = mat0.threshold_binary_inverse(3, 7)
+    mat1 = mat0.threshold_binary_inverse(4, 7)
     expected = [7, 7, 7,
-                7, 0, 0,
+                7, 7, 0,
                 0, 0, 0]
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
@@ -963,10 +963,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
   def test_threshold_trunc
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
-    mat1 = mat0.threshold_trunc(3)
+    mat1 = mat0.threshold_trunc(4)
     expected = [0, 1, 2,
-                3, 3, 3,
-                3, 3, 3]
+                3, 4, 4,
+                4, 4, 4]
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
     }
@@ -980,9 +980,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
   def test_threshold_to_zero
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
-    mat1 = mat0.threshold_to_zero(3)
+    mat1 = mat0.threshold_to_zero(4)
     expected = [0, 0, 0,
-                0, 4, 5,
+                0, 0, 5,
                 6, 7, 8]
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])
@@ -997,9 +997,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
   def test_threshold_to_zero_inverse
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
-    mat1 = mat0.threshold_to_zero_inverse(3)
+    mat1 = mat0.threshold_to_zero_inverse(4)
     expected = [0, 1, 2,
-                3, 0, 0,
+                3, 4, 0,
                 0, 0, 0]
     expected.each_with_index { |x, i|
       assert_equal(x, mat1[i][0])

@@ -47,6 +47,7 @@ define_ruby_class()
   
   rb_klass = rb_define_class_under(opencv, "CvConnectedComp", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "area", RUBY_METHOD_FUNC(rb_area), 0);
   rb_define_method(rb_klass, "value", RUBY_METHOD_FUNC(rb_value), 0);
   rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);
@@ -73,6 +74,22 @@ rb_allocate(VALUE klass)
 {
   CvConnectedComp *ptr;
   return Data_Make_Struct(klass, CvConnectedComp, 0, cvconnectedcomp_free, ptr);
+}
+
+VALUE
+rb_initialize(int argc, VALUE *argv, VALUE self)
+{
+  VALUE area, value, rect, contour;
+  rb_scan_args(argc, argv, "04", &area, &value, &rect, &contour);
+
+  if (!NIL_P(area))
+    CVCONNECTEDCOMP(self)->area = NUM2DBL(area);
+  if (!NIL_P(value))
+    CVCONNECTEDCOMP(self)->value = *CVSCALAR(value);
+  if (!NIL_P(rect))
+    CVCONNECTEDCOMP(self)->rect = *CVRECT(rect);
+  if (!NIL_P(contour))
+    CVCONNECTEDCOMP(self)->contour = CVSEQ(contour);
 }
 
 /*

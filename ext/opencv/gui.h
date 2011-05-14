@@ -7,13 +7,11 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
+#ifndef RUBY_OPENCV_GUI_H
+#define RUBY_OPENCV_GUI_H
 
 #define __NAMESPACE_BEGIN_GUI namespace mGUI{
 #define __NAMESPACE_END_GUI }
-
-#ifndef RUBY_OPENCV_GUI_H
-#define RUBY_OPENCV_GUI_H
 
 #include "opencv.h"
 
@@ -30,4 +28,3 @@ __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_GUI_H
 
-#endif // HAVE_CALLBACK_H

@@ -7,8 +7,6 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#ifdef HAVE_CALLBACK_H
-
 #define __NAMESPACE_BEGIN_MOUSEEVENT namespace cMouseEvent{
 #define __NAMESPACE_END_MOUSEEVENT }
 
@@ -21,11 +19,11 @@ __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI
 __NAMESPACE_BEGIN_MOUSEEVENT
 
-typedef struct MouseEvent{
+typedef struct MouseEvent {
   CvPoint point;
   int event;
-  int flag;
-}MouseEvent;
+  int flags;
+} MouseEvent;
 
 VALUE rb_class();
 
@@ -44,7 +42,7 @@ VALUE rb_alt_key_q(VALUE self);
 
 VALUE new_object(int event, int x, int y, int flag);
 
-inline MouseEvent *MOUSEEVENT(VALUE object){
+inline MouseEvent *MOUSEEVENT(VALUE object) {
   MouseEvent *ptr;
   Data_Get_Struct(object, MouseEvent, ptr);
   return ptr;
@@ -56,4 +54,3 @@ __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_GUI_MOUSEEVENT_H
 
-#endif // HAVE_CALLBACK_H

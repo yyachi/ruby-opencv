@@ -24,6 +24,7 @@ void define_ruby_class();
 
 VALUE rb_allocate(VALUE klass);
 
+VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_area(VALUE self);
 VALUE rb_value(VALUE self);
 VALUE rb_rect(VALUE self);

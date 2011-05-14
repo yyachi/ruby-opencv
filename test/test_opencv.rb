@@ -99,6 +99,9 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(2, CV_FM_8POINT)
     assert_equal(8, CV_FM_RANSAC)
     assert_equal(4, CV_FM_LMEDS)
+
+    # Flags of window
+    assert_equal(1, CV_WINDOW_AUTOSIZE)
   end
 
   def test_symbols

@@ -55,11 +55,15 @@ puts ">> ----- optional -----"
 puts ">> check ffcall..."
 # check ffcall
 if have_library("callback") && have_header("callback.h")
-  puts ">> support OpenCV::GUI"
+  puts ">> support OpenCV::GUI::Window#set_trackbar"
 else
-  puts ">> ! unsupport OpenCV::GUI (if need it. install ffcall)"
+  puts ">> ! unsupport OpenCV::GUI::Window#set_trackbar (if need it. install ffcall)"
   puts "http://www.haible.de/bruno/packages-ffcall.html"
 end
 
+# Quick fix for 1.8.7
+$CFLAGS << " -I#{File.dirname(__FILE__)}/ext/opencv"
+
 # step-final. create Makefile
 create_makefile("opencv", "./ext/opencv")
+
