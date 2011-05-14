@@ -46,7 +46,7 @@ define_ruby_class()
   rb_klass = rb_define_class_under(opencv, "CvSize2D32f", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
   rb_define_singleton_method(rb_klass, "compatible?", RUBY_METHOD_FUNC(rb_compatible_q), 1);
-  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_width), 0);
   rb_define_method(rb_klass, "width=", RUBY_METHOD_FUNC(rb_set_width), 1);
   rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_height), 0);

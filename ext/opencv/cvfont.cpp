@@ -58,7 +58,7 @@ define_ruby_class()
   rb_hash_aset(default_option, ID2SYM(rb_intern("thickness")), INT2FIX(1));
   rb_hash_aset(default_option, ID2SYM(rb_intern("line_type")), INT2FIX(8));
   
-  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "face", RUBY_METHOD_FUNC(rb_face), 0);
   rb_define_method(rb_klass, "hscale", RUBY_METHOD_FUNC(rb_hscale), 0);
   rb_define_method(rb_klass, "vscale", RUBY_METHOD_FUNC(rb_vscale), 0);
