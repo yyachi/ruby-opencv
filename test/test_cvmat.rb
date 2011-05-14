@@ -122,16 +122,6 @@ class TestCvMat < OpenCVTestCase
     assert_equal('<OpenCV::CvMat:20x10,depth=cv32f,channel=1>', m.to_s)
   end
 
-  def test_parent
-    m1 = CvMat.new(10, 20)
-    assert((not m1.has_parent?))
-    assert_nil(m1.parent)
-
-    m2 = m1.to_CvMat
-    assert(m2.has_parent?)
-    assert_same(m1, m2.parent)
-  end
-
   def test_inside
     m = CvMat.new(20, 10)
     assert(m.inside? CvPoint.new(0, 0))

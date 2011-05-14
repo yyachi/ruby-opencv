@@ -29,8 +29,6 @@ VALUE rb_load_imageM(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_method_missing(int argc, VALUE *argv, VALUE self);
 VALUE rb_to_s(VALUE self);
-VALUE rb_has_parent_q(VALUE self);
-VALUE rb_parent(VALUE self);
 VALUE rb_inside_q(VALUE self, VALUE object);
 VALUE rb_to_IplConvKernel(VALUE self, VALUE anchor);
 VALUE rb_create_mask(VALUE self);

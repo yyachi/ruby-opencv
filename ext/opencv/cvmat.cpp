@@ -159,8 +159,6 @@ void define_ruby_class()
   // Ruby/OpenCV original functions
   rb_define_method(rb_klass, "method_missing", RUBY_METHOD_FUNC(rb_method_missing), -1);
   rb_define_method(rb_klass, "to_s", RUBY_METHOD_FUNC(rb_to_s), 0);
-  rb_define_method(rb_klass, "has_parent?", RUBY_METHOD_FUNC(rb_has_parent_q), 0);
-  rb_define_method(rb_klass, "parent", RUBY_METHOD_FUNC(rb_parent), 0);
   rb_define_method(rb_klass, "inside?", RUBY_METHOD_FUNC(rb_inside_q), 1);
   rb_define_method(rb_klass, "to_IplConvKernel", RUBY_METHOD_FUNC(rb_to_IplConvKernel), 1);
   rb_define_method(rb_klass, "create_mask", RUBY_METHOD_FUNC(rb_create_mask), 0);
@@ -537,31 +535,6 @@ rb_to_s(VALUE self)
 
 /*
  * call-seq:
- *   has_parent? -> true or false
- *
- * Return <tt>true</tt> if this matrix has parent object, otherwise <tt>false</tt>.
- */
-VALUE
-rb_has_parent_q(VALUE self)
-{
-  return lookup_root_object(CVMAT(self)) ? Qtrue : Qfalse;
-}
-
-/*
- * call-seq:
- *   parent -> obj or nil
- *
- * Return root object that refer this object.
- */
-VALUE
-rb_parent(VALUE self)
-{
-  VALUE root = lookup_root_object(CVMAT(self));
-  return root ? root : Qnil;
-}
-
-/*
- * call-seq:
  *   inside?(obj) -> true or false
  *
  *
@@ -679,7 +652,7 @@ rb_data(VALUE self)
  * call-seq:
  *   clone -> cvmat
  *
- * Clone matrix. The parent and child relation is not succeeded.
+ * Clone matrix.
  * Instance-specific method is succeeded.
  *
  *   module M
@@ -709,7 +682,7 @@ rb_clone(VALUE self)
  *   copy(<i>mat</i>) -> mat
  *   copy(<i>val</i>) -> array(include cvmat)
  *
- * Copy matrix. The parent and child relation is not succeeded.
+ * Copy matrix.
  * Instance-specific method is *NOT* succeeded. see also #clone.
  *
  * There are 3 kind behavior depending on the argument.
@@ -740,11 +713,13 @@ rb_copy(int argc, VALUE *argv, VALUE self)
     copied = new_object(cvGetSize(src), cvGetElemType(src));
     cvCopy(src, CVMAT(copied));
     return copied;
-  }else{
+  }
+  else {
     if (rb_obj_is_kind_of(value, rb_klass)) {
       cvCopy(src, CVMAT(value));
       return Qnil;
-    }else if (rb_obj_is_kind_of(value, rb_cFixnum)) {
+    }
+    else if (rb_obj_is_kind_of(value, rb_cFixnum)) {
       int n = FIX2INT(value);
       if (n > 0) {
         copied = rb_ary_new2(n);
@@ -754,7 +729,8 @@ rb_copy(int argc, VALUE *argv, VALUE self)
           rb_ary_store(copied, i, tmp);
         }
         return copied;
-      }else{
+      }
+      else {
         return Qnil;
       }
     }else
@@ -909,16 +885,9 @@ rb_square_q(VALUE self)
  * Return CvMat object with reference to caller-object.
  *
  *   src = CvMat.new(10, 10)
- *   src.has_parent?          #=> false
- *   src.parent               #=> nil
  *   mat = src.to_CvMat
- *   mat.has_parent?          #=> true
- *   mat.parent               #=> CvMat object "src"
  *
- * This case, 'src' is root-object. and 'mat' is child-object refer to 'src'.
- *   src <=refer= mat
- * In C, 'src->data' and 'mat->data' is common. Therefore, they cause the change each other.
- * object 'src' don't GC.
+ * In C, src->data and mat->data are common. Therefore, they cause changes with each other.
  */
 VALUE
 rb_to_CvMat(VALUE self)
