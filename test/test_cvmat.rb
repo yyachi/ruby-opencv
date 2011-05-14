@@ -199,19 +199,8 @@ class TestCvMat < OpenCVTestCase
     }
     assert_nil(m1.copy(-1))
 
-    flunk('FIXME: CvUnmatchedSizes and CvUnmatchedFormats are not implemented yet')
-    m2 = CvMat.new(1, 2, CV_32F, 1)
-    assert_raise(CvUnmatchedSizes) {
-      m1.copy(m2)
-    }
-
-    m2 = CvMat.new(10, 20, CV_32F, 3)
-    assert_raise(CvUnmatchedFormats) {
-      m1.copy(m2)
-    }
-    m2 = CvMat.new(10, 20, CV_8U, 1)
-    assert_raise(CvUnmatchedFormats) {
-      m1.copy(m2)
+    assert_raise(ArgumentError) {
+      m1.copy('foobar')
     }
   end
 

@@ -705,7 +705,7 @@ rb_clone(VALUE self)
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
 {
-  VALUE value, copied, tmp;
+  VALUE value, copied;
   CvMat *src = CVMAT(self);
   rb_scan_args(argc, argv, "01", &value);
   if (argc == 0) {
@@ -724,7 +724,7 @@ rb_copy(int argc, VALUE *argv, VALUE self)
       if (n > 0) {
         copied = rb_ary_new2(n);
         for (int i = 0; i < n; i++) {
-	  tmp = new_object(src->rows, src->cols, cvGetElemType(src));
+	  VALUE tmp = new_object(src->rows, src->cols, cvGetElemType(src));
 	  cvCopy(src, CVMAT(tmp));
           rb_ary_store(copied, i, tmp);
         }
@@ -733,8 +733,9 @@ rb_copy(int argc, VALUE *argv, VALUE self)
       else {
         return Qnil;
       }
-    }else
-      rb_raise(rb_eArgError, "");
+    }
+    else
+      rb_raise(rb_eArgError, "Argument should be CvMat or Fixnum");
   }
 }
 
