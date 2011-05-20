@@ -52,6 +52,15 @@ rb_allocate(VALUE klass)
   return OPENCV_OBJECT(klass, 0);
 }
 
+VALUE
+cvhaarclassifiercascade_free(void* ptr)
+{
+  if (ptr) {
+    CvHaarClassifierCascade* cascade = (CvHaarClassifierCascade*)ptr;
+    cvReleaseHaarClassifierCascade(&cascade);
+  }
+}
+
 /*
  * call-seq:
  *   CvHaarClassiferCascade.load(<i>path</i>) -> object-detector
@@ -71,14 +80,8 @@ rb_load(VALUE klass, VALUE path)
 {
   CvHaarClassifierCascade *cascade = (CvHaarClassifierCascade*)cvLoad(StringValueCStr(path), 0, 0, 0);
   if(!CV_IS_HAAR_CLASSIFIER(cascade))
-    rb_raise(rb_eTypeError, "invalid format haar classifier cascade file.");
-  return OPENCV_OBJECT(rb_klass, cascade);
-}
-
-VALUE
-rb_save(VALUE self, VALUE path)
-{
-  rb_raise(rb_eNotImpError, "");
+    rb_raise(rb_eArgError, "invalid format haar classifier cascade file.");
+  return Data_Wrap_Struct(klass, 0, cvhaarclassifiercascade_free, cascade);
 }
 
 /*
