@@ -8,8 +8,6 @@ include OpenCV
 
 # Tests for OpenCV::CvHaarClassifierCascade
 class TestCvHaarClassifierCascade < OpenCVTestCase
-  FILENAME_LENA256x256 = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-256x256.jpg'
-  HAARCASCADE_FRONTALFACE_ALT = File.expand_path(File.dirname(__FILE__)) + '/samples/haarcascade_frontalface_alt.xml.gz'
   def setup
     @cascade = CvHaarClassifierCascade.load(HAARCASCADE_FRONTALFACE_ALT)
   end

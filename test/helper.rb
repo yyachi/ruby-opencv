@@ -6,7 +6,10 @@ require 'opencv'
 include OpenCV
 
 class OpenCVTestCase < Test::Unit::TestCase
-  FILENAME_CAT = File.expand_path(File.dirname(__FILE__)) + '/samples/cat.jpg'
+  SAMPLE_DIR = File.expand_path(File.dirname(__FILE__)) + '/samples/'
+  FILENAME_CAT = SAMPLE_DIR + 'cat.jpg'
+  FILENAME_LENA256x256 = SAMPLE_DIR + 'lena-256x256.jpg'
+  HAARCASCADE_FRONTALFACE_ALT = SAMPLE_DIR + 'haarcascade_frontalface_alt.xml.gz'
   
   CvMat.class_eval do
     # Range check for debug
