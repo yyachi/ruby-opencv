@@ -36,6 +36,7 @@ class TestCurve < OpenCVTestCase
 
   def test_arc_length
     assert_in_delta(211.480, @contour2.arc_length, 0.001)
+    assert_in_delta(18.071, @contour2.arc_length(CvSlice.new(0, 9), true), 0.001)
     assert_in_delta(18.071, @contour2.arc_length(0..10, true), 0.001)
   end
 end
