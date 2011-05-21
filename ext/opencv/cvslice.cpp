@@ -41,20 +41,11 @@ define_ruby_class()
   VALUE opencv = rb_module_opencv();
   rb_klass = rb_define_class_under(opencv, "CvSlice", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_singleton_method(rb_klass, "compatible?", RUBY_METHOD_FUNC(rb_compatible_q), 1);
   rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), 2);
-}
-
-/*
- * call-seq:
- *   compatible?(<i>obj</i>)
- *
- * same Object#kind_of(Range)
- */
-VALUE
-rb_compatible_q(VALUE klass, VALUE object)
-{
-  return rb_obj_is_kind_of(object, rb_cRange);
+  rb_define_method(rb_klass, "start_index", RUBY_METHOD_FUNC(rb_start_index_aref), 0);
+  rb_define_method(rb_klass, "end_index", RUBY_METHOD_FUNC(rb_end_index_aref), 0);
+  rb_define_method(rb_klass, "start_index=", RUBY_METHOD_FUNC(rb_start_index_aset), 1);
+  rb_define_method(rb_klass, "end_index=", RUBY_METHOD_FUNC(rb_end_index_aset), 1);
 }
 
 VALUE
@@ -75,6 +66,52 @@ rb_initialize(VALUE self, VALUE start, VALUE end)
 {
   CVSLICE(self)->start_index = NUM2INT(start);
   CVSLICE(self)->end_index = NUM2INT(end);
+  return self;
+}
+
+/*
+ * call-seq:
+ *   start_index
+ *
+ */
+VALUE
+rb_start_index_aref(VALUE self)
+{
+  return INT2NUM(CVSLICE(self)->start_index);
+}
+
+/*
+ * call-seq:
+ *   end_index
+ *
+ */
+VALUE
+rb_end_index_aref(VALUE self)
+{
+  return INT2NUM(CVSLICE(self)->end_index);
+}
+
+/*
+ * call-seq:
+ *   start_index = index
+ *
+ */
+VALUE
+rb_start_index_aset(VALUE self, VALUE index)
+{
+  CVSLICE(self)->start_index = FIX2INT(index);
+  return self;
+}
+
+/*
+ * call-seq:
+ *   end_index = index
+ *
+ */
+VALUE
+rb_end_index_aset(VALUE self, VALUE index)
+{
+  CVSLICE(self)->end_index = FIX2INT(index);
   return self;
 }
 

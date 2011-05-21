@@ -22,10 +22,12 @@ VALUE rb_class();
 
 void define_ruby_class();
 
-VALUE rb_compatible_q(VALUE klass, VALUE object);
-
 VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(VALUE self, VALUE start, VALUE end);
+VALUE rb_start_index_aref(VALUE self);
+VALUE rb_end_index_aref(VALUE self);
+VALUE rb_start_index_aset(VALUE self, VALUE index);
+VALUE rb_end_index_aset(VALUE self, VALUE index);
 
 __NAMESPACE_END_CVSLICE
 
@@ -40,10 +42,15 @@ CVSLICE(VALUE object)
 inline CvSlice
 VALUE_TO_CVSLICE(VALUE object)
 {
-  if(cCvSlice::rb_compatible_q(cCvSlice::rb_class(), object)){
+  if (rb_obj_is_kind_of(object, cCvSlice::rb_class())) {
+    CvSlice* ptr = CVSLICE(object);
+    return *ptr;
+  }
+  else if (rb_obj_is_kind_of(object, rb_cRange)) {
     return cvSlice(NUM2INT(rb_funcall(object, rb_intern("begin"), 0)),
                    rb_funcall(object, rb_intern("exclude_end?"), 0) ? NUM2INT(rb_funcall(object, rb_intern("end"), 0)) : NUM2INT(rb_funcall(object, rb_intern("end"), 0)) - 1);
-  }else{
+  }
+  else {
     rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvSlice::rb_class()));
   }
 }
