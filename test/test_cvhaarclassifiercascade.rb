@@ -42,6 +42,22 @@ class TestCvHaarClassifierCascade < OpenCVTestCase
     assert_equal(CvSeq, detected.class)
     assert_equal(1, detected.size)
     assert_equal(CvAvgComp, detected[0].class)
+
+    detected = @cascade.detect_objects(img, :scale_factor => 2.0, :flags => CV_HAAR_DO_CANNY_PRUNING,
+                                       :min_neighbors => 5, :min_size => CvSize.new(10, 10),
+                                       :max_size => CvSize.new(100, 100))
+    assert_equal(CvSeq, detected.class)
+    assert_equal(1, detected.size)
+    assert_equal(CvAvgComp, detected[0].class)
+    assert_equal(109, detected[0].x)
+    assert_equal(102, detected[0].y)
+    assert_equal(80, detected[0].width)
+    assert_equal(80, detected[0].height)
+    assert_equal(7, detected[0].neighbors)
+
+    assert_raise(TypeError) {
+      @cascade.detect_objects('foo')
+    }
   end
 end
 

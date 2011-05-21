@@ -43,7 +43,6 @@ void define_ruby_class()
   rb_define_alloc_func(rb_klass, rb_allocate);
   rb_define_singleton_method(rb_klass, "load", RUBY_METHOD_FUNC(rb_load), 1);
   rb_define_method(rb_klass, "detect_objects", RUBY_METHOD_FUNC(rb_detect_objects), -1);
-  rb_define_method(rb_klass, "detect_objects_with_pruning", RUBY_METHOD_FUNC(rb_detect_objects_with_pruning), -1);
 }
 
 VALUE
@@ -86,74 +85,72 @@ rb_load(VALUE klass, VALUE path)
 
 /*
  * call-seq:
- *   detect_objects(image[,scale_factor = 1.1, min_neighbor = 3, min_size = CvSize.new(0,0)]) -> cvseq(include CvAvgComp object)
- *   detect_objects(image[,scale_factor = 1.1, min_neighbor = 3, min_size = CvSize.new(0,0)]){|cmp| ... } -> cvseq(include CvAvgComp object)
+ *   detect_objects(image[, options]) -> cvseq(include CvAvgComp object)
+ *   detect_objects(image[, options]){|cmp| ... } -> cvseq(include CvAvgComp object)
  *
  * Detects objects in the image. This method finds rectangular regions in the
  * given image that are likely to contain objects the cascade has been trained
  * for and return those regions as a sequence of rectangles.
  *
- * * scale_factor (should be > 1.0)
- *     The factor by which the search window is scaled between the subsequent scans, for example, 1.1 mean increasing window by 10%.
- * * min_neighbors
- *     Minimum number (minus 1) of neighbor rectangles that makes up an object.
- *     All the groups of a smaller number of rectangles than min_neighbors - 1 are rejected.
- *     If min_neighbors is 0, the function does not any grouping at all and returns all the detected
- *     candidate rectangles, whitch many be useful if the user wants to apply a customized grouping procedure.
- * * min_size
- *     Minimum window size. By default, it is set to size of samples the classifier has been trained on.
+ * * <i>option</i> should be Hash include these keys.
+ *   :scale_factor (should be > 1.0)
+ *      The factor by which the search window is scaled between the subsequent scans,
+ *      1.1 mean increasing window by 10%.
+ *   :storage
+ *      Memory storage to store the resultant sequence of the object candidate rectangles
+ *   :flags
+ *      Mode of operation. Currently the only flag that may be specified is CV_HAAR_DO_CANNY_PRUNING .
+ *      If it is set, the function uses Canny edge detector to reject some image regions that contain
+ *      too few or too much edges and thus can not contain the searched object. The particular threshold
+ *      values are tuned for face detection and in this case the pruning speeds up the processing
+ *   :min_neighbors
+ *      Minimum number (minus 1) of neighbor rectangles that makes up an object.
+ *      All the groups of a smaller number of rectangles than min_neighbors - 1 are rejected.
+ *      If min_neighbors is 0, the function does not any grouping at all and returns all the detected
+ *      candidate rectangles, whitch many be useful if the user wants to apply a customized grouping procedure.
+ *   :min_size
+ *      Minimum window size. By default, it is set to size of samples the classifier has been
+ *      trained on (~20x20 for face detection).
+ *   :max_size
+ *      aximum window size to use. By default, it is set to the size of the image.
  */
-VALUE 
+VALUE
 rb_detect_objects(int argc, VALUE *argv, VALUE self)
 { 
-  VALUE image, storage, scale_factor, min_neighbors, min_size, result;
-  rb_scan_args(argc, argv, "14", &image, &storage, &scale_factor, &min_neighbors, &min_size);
-  if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1(target-image) should be %s.", rb_class2name(cCvMat::rb_class()));
-  double scale = IF_DBL(scale_factor, 1.1);
-  if (!(scale > 1.0))
-    rb_raise(rb_eArgError, "argument 2 (scale factor) must > 1.0.");
-  storage = CHECK_CVMEMSTORAGE(storage);
-  CvSeq *seq = cvHaarDetectObjects(CVMAT(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage),
-                                   scale, IF_INT(min_neighbors, 3), 0, NIL_P(min_size) ? cvSize(0,0) : VALUE_TO_CVSIZE(min_size));
-  result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage);
-  if (rb_block_given_p()) {
-    for(int i = 0; i < seq->total; i++)
-      rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage));      
-  }
-  return result;
-}
+  VALUE image, options;
+  rb_scan_args(argc, argv, "11", &image, &options);
 
-/*
- * call-seq:
- *   detect_objects_with_pruning(image[,scale_factor = 1.1, min_neighbor = 3, min_size = CvSize.new(0,0)]) -> cvseq(include CvAvgComp object)
- *   detect_objects_with_pruning(image[,scale_factor = 1.1, min_neighbor = 3, min_size = CvSize.new(0,0)]){|cmp| ... } -> cvseq(include CvAvgComp object)
- *
- * Almost same to #detect_objects (Return detected objects).
- * 
- * Before scanning to image, Canny edge detector to reject some image regions
- * that contain too few or too much edges, and thus can not contain the searched object.
- *
- *   note: The particular threshold values are tuned for face detection.
- *         And in this case the pruning speeds up the processing.
- */ 
-VALUE
-rb_detect_objects_with_pruning(int argc, VALUE *argv, VALUE self)
-{
-  VALUE image, storage, scale_factor, min_neighbors, min_size, result;
-  rb_scan_args(argc, argv, "14", &image, &storage, &scale_factor, &min_neighbors, &min_size);
   if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))
     rb_raise(rb_eTypeError, "argument 1(target-image) should be %s.", rb_class2name(cCvMat::rb_class()));
-  double scale = IF_DBL(scale_factor, 1.1);
-  if (!(scale > 1.0))
-    rb_raise(rb_eArgError, "argument 2 (scale factor) must > 1.0.");
-  storage = CHECK_CVMEMSTORAGE(storage);
-  CvSeq *seq = cvHaarDetectObjects(CVMAT(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage),
-                                   scale, IF_INT(min_neighbors, 3), CV_HAAR_DO_CANNY_PRUNING, NIL_P(min_size) ? cvSize(0,0) : VALUE_TO_CVSIZE(min_size));
-  result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage);
+
+  double scale_factor;
+  int flags, min_neighbors;
+  CvSize min_size, max_size;
+  VALUE storage_val;
+  if (NIL_P(options)) {
+    scale_factor = 1.1;
+    flags = 0;
+    min_neighbors = 3;
+    min_size = max_size = cvSize(0, 0);
+    storage_val = cCvMemStorage::new_object();
+  }
+  else {
+    scale_factor = IF_DBL(LOOKUP_CVMETHOD(options, "scale_factor"), 1.1);
+    flags = IF_INT(LOOKUP_CVMETHOD(options, "flags"), 0);
+    min_neighbors = IF_INT(LOOKUP_CVMETHOD(options, "min_neighbors"), 3);
+    VALUE min_size_val = LOOKUP_CVMETHOD(options, "min_size");
+    min_size = NIL_P(min_size_val) ? cvSize(0, 0) : VALUE_TO_CVSIZE(min_size_val);
+    VALUE max_size_val = LOOKUP_CVMETHOD(options, "max_size");
+    max_size = NIL_P(max_size_val) ? cvSize(0, 0) : VALUE_TO_CVSIZE(max_size_val);
+    storage_val = CHECK_CVMEMSTORAGE(LOOKUP_CVMETHOD(options, "storage"));
+  }
+
+  CvSeq *seq = cvHaarDetectObjects(CVMAT(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
+                                   scale_factor, min_neighbors, flags, min_size, max_size);
+  VALUE result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
   if (rb_block_given_p()) {
-    for(int i = 0; i < seq->total; i++)
-      rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage));      
+    for(int i = 0; i < seq->total; ++i)
+      rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage_val));
   }
   return result;
 }

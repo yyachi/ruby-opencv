@@ -412,6 +412,9 @@ define_ruby_module()
 
   /* Flags of window */
   rb_define_const(rb_module, "CV_WINDOW_AUTOSIZE", INT2FIX(CV_WINDOW_AUTOSIZE));
+
+  /* Object detection mode */
+  rb_define_const(rb_module, "CV_HAAR_DO_CANNY_PRUNING", INT2FIX(CV_HAAR_DO_CANNY_PRUNING));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
