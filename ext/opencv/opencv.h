@@ -106,7 +106,6 @@ extern "C"{
 #include "point3dset.h"
 #include "cvset.h"
 #include "cvchain.h"
-#include "cvchaincode.h"
 #include "cvcontour.h"
 #include "cvcontourtree.h"
 

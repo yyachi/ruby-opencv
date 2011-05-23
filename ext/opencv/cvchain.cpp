@@ -210,8 +210,8 @@ VALUE
 new_object()
 {
   VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(CvChainCode), CVMEMSTORAGE(storage));
-  VALUE object = cCvSeq::new_sequence(cCvChain::rb_class(), seq, cCvChainCode::rb_class(), storage);
+  CvSeq *seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
+  VALUE object = cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
   return object;
 }
 

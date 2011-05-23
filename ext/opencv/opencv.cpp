@@ -756,7 +756,6 @@ extern "C"{
     mOpenCV::mPoint3DSet::define_ruby_module();
     mOpenCV::cCvSet::define_ruby_class();
     mOpenCV::cCvChain::define_ruby_class();
-    mOpenCV::cCvChainCode::define_ruby_class();
     mOpenCV::cCvContour::define_ruby_class();
     mOpenCV::cCvContourTree::define_ruby_class();
 

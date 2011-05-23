@@ -4247,7 +4247,6 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_find_contours(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   return rb_find_contours_bang(argc, argv, copy(self));
 }
 
@@ -4273,23 +4272,22 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
   find_contours_option = FIND_CONTOURS_OPTION(find_contours_option);
   int mode = FC_MODE(find_contours_option);
   int method = FC_METHOD(find_contours_option);
-  int header_size, element_size;
+  int header_size;
   if (method == CV_CHAIN_CODE) {
     klass = cCvChain::rb_class();
-    element_klass = cCvChainCode::rb_class();
+    element_klass = T_FIXNUM;
     header_size = sizeof(CvChain);
-    element_size = sizeof(CvChainCode);
   }
   else {
     klass = cCvContour::rb_class();
     element_klass = cCvPoint::rb_class();
     header_size = sizeof(CvContour);
-    element_size = sizeof(CvPoint);
   }
   storage = cCvMemStorage::new_object();
   if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
-  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0)
+  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0) {
     return Qnil;
+  }
   return cCvSeq::new_sequence(klass, contour, element_klass, storage);
 }
 
