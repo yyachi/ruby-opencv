@@ -134,10 +134,10 @@ rb_codes(VALUE self)
 {
   CvChain *chain = CVCHAIN(self);
   CvChainPtReader reader;
-  CvPoint p = chain->origin;
-  VALUE ary = rb_ary_new2(chain->total);
+  int total = chain->total;
+  VALUE ary = rb_ary_new2(total);
   cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < chain->total; i++) {
+  for (int i = 0; i < total; ++i) {
     CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
     rb_ary_store(ary, i, CHR2FIX(reader.code));
   }
@@ -156,9 +156,10 @@ rb_points(VALUE self)
   CvChain *chain = CVCHAIN(self);
   CvChainPtReader reader;
   CvPoint p = chain->origin;
-  VALUE ary = rb_ary_new2(chain->total);
+  int total = chain->total;
+  VALUE ary = rb_ary_new2(total);
   cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < chain->total; i++) {
+  for (int i = 0; i < total; ++i) {
     CV_READ_CHAIN_POINT(p, reader);
     rb_ary_store(ary, i, cCvPoint::new_object(p));
   }
