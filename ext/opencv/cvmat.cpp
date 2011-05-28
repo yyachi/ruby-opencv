@@ -742,10 +742,7 @@ rb_copy(int argc, VALUE *argv, VALUE self)
 VALUE
 copy(VALUE mat)
 {
-  CvMat *src = CVMAT(mat);
-  VALUE copied = new_object(cvGetSize(src), cvGetElemType(src));
-  cvCopy(src, CVMAT(copied));
-  return copied;
+  return rb_clone(mat);
 }
 
 
