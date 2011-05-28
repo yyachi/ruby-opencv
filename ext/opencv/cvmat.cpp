@@ -1671,12 +1671,14 @@ rb_convert_scale(VALUE self, VALUE hash)
 {
   if (TYPE(hash) != T_HASH)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  CvMat* self_ptr = CVMAT(self);
   VALUE depth = rb_hash_aref(hash, ID2SYM(rb_intern("depth"))),
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
     shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
-    // TODO: adapt IplImage
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(CVMAT(self)->type)), CV_MAT_CN(CVMAT(self)->type)));
-  cvConvertScale(CVARR(self), CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self,
+			       CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(self_ptr->type)),
+			       CV_MAT_CN(self_ptr->type));
+  cvConvertScale(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
   return dest;
 }
 
@@ -1693,12 +1695,12 @@ rb_convert_scale_abs(VALUE self, VALUE hash)
 {
   if (TYPE(hash) != T_HASH)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  CvMat* self_ptr = CVMAT(self);
   VALUE
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
     shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
-    // TODO: adapt IplImage
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_8U, CV_MAT_CN(CVMAT(self)->type)));
-  cvConvertScaleAbs(CVARR(self), CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, CV_MAT_CN(CVMAT(self)->type));
+  cvConvertScaleAbs(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
   return dest;
 }
 
@@ -1931,16 +1933,17 @@ rb_not_bang(VALUE self)
 VALUE
 rb_cmp_internal(VALUE self, VALUE val, int operand)
 {
-  // TODO: adapt IplImage
-  VALUE dest = new_object(cvGetSize(CVARR(self)), CV_8U);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, 1);
   if (rb_obj_is_kind_of(val, rb_klass))
-    cvCmp(CVARR(self), CVARR(val), CVARR(dest), operand);
-  else if (CV_MAT_CN(cvGetElemType(CVARR(self))) == 1 && rb_obj_is_kind_of(val, rb_cNumeric)) {
-    cvCmpS(CVARR(self), NUM2DBL(val), CVARR(dest), operand);
-  }else{
-    VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+    cvCmp(self_ptr, CVARR(val), CVARR(dest), operand);
+  else if (CV_MAT_CN(cvGetElemType(self_ptr)) == 1 && rb_obj_is_kind_of(val, rb_cNumeric)) {
+    cvCmpS(self_ptr, NUM2DBL(val), CVARR(dest), operand);
+  }
+  else {
+    VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
     cvSet(CVARR(mat), VALUE_TO_CVSCALAR(val));
-    cvCmp(CVARR(self), CVARR(mat), CVARR(dest), operand);
+    cvCmp(self_ptr, CVARR(mat), CVARR(dest), operand);
   }
   return dest;
 }
@@ -3059,18 +3062,19 @@ rb_sobel(int argc, VALUE *argv, VALUE self)
   VALUE xorder, yorder, aperture_size, dest;
   if (rb_scan_args(argc, argv, "21", &xorder, &yorder, &aperture_size) < 3)
     aperture_size = INT2FIX(3);
-  switch(CV_MAT_DEPTH(CVMAT(self)->type)) {
+  CvMat* self_ptr = CVMAT(self);
+  switch(CV_MAT_DEPTH(self_ptr->type)) {
   case CV_8U:
-    // TODO: adapt IplImage
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_16S, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_16S, 1);
     break;
   case CV_32F:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
     rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    break;
   }
-  cvSobel(CVARR(self), CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
+  cvSobel(self_ptr, CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
   return dest;
 }
 
@@ -3087,18 +3091,18 @@ rb_laplace(int argc, VALUE *argv, VALUE self)
   VALUE aperture_size, dest;
   if (rb_scan_args(argc, argv, "01", &aperture_size) < 1)
     aperture_size = INT2FIX(3);
-  switch(CV_MAT_DEPTH(CVMAT(self)->type)) {
+  CvMat* self_ptr = CVMAT(self);
+  switch(CV_MAT_DEPTH(self_ptr->type)) {
   case CV_8U:
-    // TODO: adapt IplImage
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_16S, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_16S, 1);
     break;
   case CV_32F:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
-    rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    rb_raise(rb_eArgError, "source depth should be CV_8U or CV_32F.");
   }
-  cvLaplace(CVARR(self), CVARR(dest), NUM2INT(aperture_size));
+  cvLaplace(self_ptr, CVARR(dest), NUM2INT(aperture_size));
   return dest;
 }
 
@@ -3759,7 +3763,8 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  int type = cvGetElemType(CVARR(self)), dest_type;
+  CvArr* self_ptr = CVARR(self);
+  int type = cvGetElemType(self_ptr), dest_type;
   switch (CV_MAT_DEPTH(type)) {
   case CV_8U:
     dest_type = CV_16U;
@@ -3770,9 +3775,8 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
   default:
     rb_raise(rb_eNotImpError, "unsupport format. (support 8bit unsigned/signed or 32bit floating point only)");
   }
-  // TODO: adapt IplImage
-  dest = new_object(cvGetSize(CVARR(self)), dest_type);
-  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 3));
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self, dest_type, CV_MAT_CN(type));
+  cvSmooth(self_ptr, CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
@@ -5270,6 +5274,22 @@ new_mat_kind_object(CvSize size, VALUE ref_obj)
   }
   else if (rb_obj_is_kind_of(ref_obj, rb_klass)) // CvMat
     return OPENCV_OBJECT(return_type, rb_cvCreateMat(size.height, size.width, cvGetElemType(CVMAT(ref_obj))));
+  else
+    rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
+
+  return Qnil;
+}
+
+VALUE
+new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel)
+{
+  VALUE return_type = CLASS_OF(ref_obj);
+  if (rb_obj_is_kind_of(ref_obj, cIplImage::rb_class())) {
+    return OPENCV_OBJECT(return_type, rb_cvCreateImage(size, CV2IPL_DEPTH(cvmat_depth), channel));
+  }
+  else if (rb_obj_is_kind_of(ref_obj, rb_klass)) // CvMat
+    return OPENCV_OBJECT(return_type, rb_cvCreateMat(size.height, size.width,
+						     CV_MAKETYPE(cvmat_depth, channel)));
   else
     rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
 

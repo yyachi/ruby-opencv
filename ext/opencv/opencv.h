@@ -285,6 +285,35 @@ TRUE_OR_FALSE(VALUE object, int ifnone)
   return value;
 }
 
+inline int
+CV2IPL_DEPTH(int depth)
+{
+  switch (depth) {
+  case CV_8U:
+    return IPL_DEPTH_8U;
+    break;
+  case CV_8S:
+    return IPL_DEPTH_8S;
+    break;
+  case CV_16U:
+    return IPL_DEPTH_16U;
+    break;
+  case CV_32F:
+    return IPL_DEPTH_32F;
+    break;
+  case CV_32S:
+    return IPL_DEPTH_32S;
+    break;
+  case CV_64F:
+    return IPL_DEPTH_64F;
+    break;
+  default:
+    rb_raise(rb_eArgError, "Invalid depth: %d", depth);
+    break;
+  }
+  return 0;
+}
+
 VALUE rb_BGR2BGRA(VALUE klass, VALUE image);
 VALUE rb_RGB2RGBA(VALUE klass, VALUE image);
 VALUE rb_BGRA2BGR(VALUE klass, VALUE image);

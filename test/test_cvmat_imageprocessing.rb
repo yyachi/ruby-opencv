@@ -63,7 +63,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(:cv32f, CvMat.new(16, 16, :cv32f, 1).laplace.depth)
 
     (DEPTH.keys - [:cv8u, :cv32f]).each { |depth|
-      assert_raise(RuntimeError) {
+      assert_raise(ArgumentError) {
         CvMat.new(3, 3, depth).laplace
       }
     }
