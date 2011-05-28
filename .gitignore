@@ -15,3 +15,4 @@ ruby-1.9.2-p180
 ext/opencv/test.txt
 pkg/
 log.txt
+*.avi
