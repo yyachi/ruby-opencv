@@ -5250,6 +5250,21 @@ new_object(CvSize size, int type)
   return OPENCV_OBJECT(rb_klass, rb_cvCreateMat(size.height, size.width, type));
 }
 
+VALUE
+new_mat_kind_object(CvSize size, VALUE ref_obj)
+{
+  VALUE return_type = CLASS_OF(ref_obj);
+  if (rb_obj_is_kind_of(ref_obj, cIplImage::rb_class())) {
+    IplImage* img = IPLIMAGE(ref_obj);
+    return OPENCV_OBJECT(return_type, rb_cvCreateImage(size, img->depth, img->nChannels));
+  }
+  else if (rb_obj_is_kind_of(ref_obj, rb_klass)) // CvMat
+    return OPENCV_OBJECT(return_type, rb_cvCreateMat(size.height, size.width, cvGetElemType(CVMAT(ref_obj))));
+  else
+    rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
+
+  return Qnil;
+}
 
 __NAMESPACE_END_OPENCV
 __NAMESPACE_END_CVMAT
