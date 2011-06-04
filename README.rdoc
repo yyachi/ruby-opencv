@@ -48,9 +48,20 @@ You can also add ruby-opencv in your Gemfile:
   echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
   bundle install # or bundle update
 
-== SYNOPSIS:
+=== Installing ruby-opencv with all dependencies on Mac OS X using macports
 
-Once installed it is possible to show images via GUI Window.
+  sudo port install ffcall
+  sudo port install opencv
+
+Follow INSTALLATION but use this command when compiling the gem:
+  ruby extconf.rb --with-opencv-lib=/opt/local/lib --with-opencv-include=/opt/local/include/opencv2
+  make
+  make install
+
+Installing ffcall might not work (that's because ffcall at the moment can't be compiled on 64bit systems).
+That's ok.
+
+== SYNOPSIS:
 
   require "opencv"
 

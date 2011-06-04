@@ -39,11 +39,23 @@ VALUE rb_height(VALUE self);
 VALUE rb_fps(VALUE self);
 VALUE rb_fourcc(VALUE self);
 VALUE rb_frame_count(VALUE self);
+VALUE rb_format(VALUE self);
+VALUE rb_mode(VALUE self);
+VALUE rb_brightness(VALUE self);
+VALUE rb_contrast(VALUE self);
+VALUE rb_saturation(VALUE self);
+VALUE rb_hue(VALUE self);
+VALUE rb_gain(VALUE self);
+VALUE rb_exposure(VALUE self);
+VALUE rb_convert_rgb(VALUE self);
+VALUE rb_white_balance(VALUE self);
+VALUE rb_rectification(VALUE self);
 
 __NAMESPACE_END_CVCAPTURE
 
 
-inline CvCapture *CVCAPTURE(VALUE object){
+inline CvCapture*
+CVCAPTURE(VALUE object) {
   CvCapture *ptr;
   Data_Get_Struct(object, CvCapture, ptr);
   return ptr;

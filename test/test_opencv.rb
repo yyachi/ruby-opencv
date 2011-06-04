@@ -102,6 +102,9 @@ class TestOpenCV < OpenCVTestCase
 
     # Flags of window
     assert_equal(1, CV_WINDOW_AUTOSIZE)
+
+    # Object detection mode
+    assert_equal(1, CV_HAAR_DO_CANNY_PRUNING)
   end
 
   def test_symbols

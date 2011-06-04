@@ -7,7 +7,7 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#include"cvcapture.h"
+#include "cvcapture.h"
 /*
  * Document-class: OpenCV::CvCapture
  *
@@ -67,18 +67,30 @@ define_ruby_class()
   rb_define_method(rb_klass, "query", RUBY_METHOD_FUNC(rb_query), 0);
   rb_define_method(rb_klass, "millisecond", RUBY_METHOD_FUNC(rb_millisecond), 0);
   rb_define_method(rb_klass, "frames", RUBY_METHOD_FUNC(rb_frames), 0);
+  rb_define_method(rb_klass, "avi_ratio", RUBY_METHOD_FUNC(rb_avi_ratio), 0);
   rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_size), 0);
   rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_width), 0);
   rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_height), 0);
   rb_define_method(rb_klass, "fps", RUBY_METHOD_FUNC(rb_fps), 0);
   rb_define_method(rb_klass, "fourcc", RUBY_METHOD_FUNC(rb_fourcc), 0);
   rb_define_method(rb_klass, "frame_count", RUBY_METHOD_FUNC(rb_frame_count), 0);
+  rb_define_method(rb_klass, "format", RUBY_METHOD_FUNC(rb_format), 0);
+  rb_define_method(rb_klass, "mode", RUBY_METHOD_FUNC(rb_mode), 0);
+  rb_define_method(rb_klass, "brightness", RUBY_METHOD_FUNC(rb_brightness), 0);
+  rb_define_method(rb_klass, "contrast", RUBY_METHOD_FUNC(rb_contrast), 0);
+  rb_define_method(rb_klass, "saturation", RUBY_METHOD_FUNC(rb_saturation), 0);
+  rb_define_method(rb_klass, "hue", RUBY_METHOD_FUNC(rb_hue), 0);
+  rb_define_method(rb_klass, "gain", RUBY_METHOD_FUNC(rb_gain), 0);
+  rb_define_method(rb_klass, "exposure", RUBY_METHOD_FUNC(rb_exposure), 0);
+  rb_define_method(rb_klass, "convert_rgb", RUBY_METHOD_FUNC(rb_convert_rgb), 0);
+  rb_define_method(rb_klass, "white_balance", RUBY_METHOD_FUNC(rb_white_balance), 0);
+  rb_define_method(rb_klass, "rectification", RUBY_METHOD_FUNC(rb_rectification), 0);
 }
 
 void
 free(void *ptr)
 { 
-  if(ptr)
+  if (ptr)
     cvReleaseCapture((CvCapture**)&ptr);
 }
 
@@ -147,7 +159,7 @@ rb_grab(VALUE self)
 
 /*
  * call-seq:
- *   retrieve -> CvMat or nil
+ *   retrieve -> IplImage or nil
  *
  * Gets the image grabbed with grab.
  */
@@ -168,7 +180,7 @@ rb_retrieve(VALUE self)
 
 /*
  * call-seq:
- *   query -> CvMat or nil
+ *   query -> IplImage or nil
  *
  * Grabs and returns a frame camera or file. Just a combination of grab and retrieve in one call.
  */
@@ -181,7 +193,8 @@ rb_query(VALUE self)
   VALUE image = cIplImage::new_object(cvSize(frame->width, frame->height), CV_MAKETYPE(CV_8U, frame->nChannels));
   if (frame->origin == IPL_ORIGIN_TL) {
     cvCopy(frame, CVARR(image));
-  } else {
+  }
+  else {
     cvFlip(frame, CVARR(image));
   }
   return image;
@@ -220,7 +233,8 @@ rb_avi_ratio(VALUE self)
 VALUE
 rb_size(VALUE self)
 {
-  return cCvSize::new_object(cvSize((int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_WIDTH), (int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_HEIGHT))); 
+  return cCvSize::new_object(cvSize((int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_WIDTH),
+				    (int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_HEIGHT))); 
 }
 
 /*
@@ -271,6 +285,105 @@ rb_frame_count(VALUE self)
   return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_COUNT));
 }
 
+/*
+ * The format of the Mat objects returned by CvCapture#retrieve
+ */
+VALUE
+rb_format(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FORMAT));
+}
+
+/*
+ * A backend-specific value indicating the current capture mode
+ */
+VALUE
+rb_mode(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_MODE));
+}
+
+/*
+ * Brightness of the image (only for cameras)
+ */
+VALUE
+rb_brightness(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_BRIGHTNESS));
+}
+
+/*
+ * Contrast of the image (only for cameras)
+ */
+VALUE
+rb_contrast(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_CONTRAST));
+}
+
+/*
+ * Saturation of the image (only for cameras)
+ */
+VALUE
+rb_saturation(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_SATURATION));
+}
+
+/*
+ * Hue of the image (only for cameras)
+ */
+VALUE
+rb_hue(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_HUE));
+}
+
+/*
+ * Gain of the image (only for cameras)
+ */
+VALUE
+rb_gain(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_GAIN));
+}
+
+/*
+ * Exposure (only for cameras)
+ */
+VALUE
+rb_exposure(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_EXPOSURE));
+}
+
+/*
+ * Boolean flags indicating whether images should be converted to RGB
+ */
+VALUE
+rb_convert_rgb(VALUE self)
+{
+  int flag = (int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_CONVERT_RGB);
+  return (flag == 1) ? Qtrue : Qfalse;
+}
+
+/*
+ * Currently unsupported
+ */
+VALUE
+rb_white_balance(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_WHITE_BALANCE));
+}
+
+/*
+ * TOWRITE (note: only supported by DC1394 v 2.x backend currently)
+ */
+VALUE
+rb_rectification(VALUE self)
+{
+  return rb_dbl2big(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_RECTIFICATION));
+}
 
 __NAMESPACE_END_CVCAPTURE
 __NAMESPACE_END_OPENCV

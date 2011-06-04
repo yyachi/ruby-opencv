@@ -36,7 +36,7 @@ define_ruby_module()
    */
   VALUE opencv = rb_module_opencv();
   module = rb_define_module_under(opencv, "Curve");
-  rb_define_method(module, "close?", RUBY_METHOD_FUNC(rb_closed_q), 0);
+  rb_define_method(module, "closed?", RUBY_METHOD_FUNC(rb_closed_q), 0);
   rb_define_method(module, "convex?", RUBY_METHOD_FUNC(rb_convex_q), 0);
   rb_define_method(module, "hole?", RUBY_METHOD_FUNC(rb_hole_q), 0);
   rb_define_method(module, "simple?", RUBY_METHOD_FUNC(rb_simple_q), 0);
@@ -95,7 +95,9 @@ rb_arc_length(int argc, VALUE *argv, VALUE self)
 {
   VALUE slice, is_closed;
   rb_scan_args(argc, argv, "02", &slice, &is_closed);
-  return rb_float_new(cvArcLength(CVARR(self), NIL_P(slice) ? CV_WHOLE_SEQ : VALUE_TO_CVSLICE(slice), TRUE_OR_FALSE(is_closed, -1)));
+  return rb_float_new(cvArcLength(CVARR(self),
+				  NIL_P(slice) ? CV_WHOLE_SEQ : VALUE_TO_CVSLICE(slice),
+				  TRUE_OR_FALSE(is_closed, -1)));
 }
 
 __NAMESPACE_END_CURVE

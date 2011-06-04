@@ -270,7 +270,8 @@ VALUE rb_save_image(VALUE self, VALUE filename);
 
 VALUE new_object(int rows, int cols, int type);
 VALUE new_object(CvSize size, int type);
-
+VALUE new_mat_kind_object(CvSize size, VALUE ref_obj);
+VALUE new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel);
 
 __NAMESPACE_END_CVMAT
 

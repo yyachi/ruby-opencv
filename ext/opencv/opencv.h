@@ -93,7 +93,6 @@ extern "C"{
 #include "point3dset.h"
 #include "cvset.h"
 #include "cvchain.h"
-#include "cvchaincode.h"
 #include "cvcontour.h"
 #include "cvcontourtree.h"
 
@@ -132,6 +131,7 @@ extern "C"{
 #define IF_DEPTH(val, ifnone) NIL_P(val) ? ifnone : FIX2INT(val)
 
 #define RESIST_CVMETHOD(hash, str, value) rb_hash_aset(hash, ID2SYM(rb_intern(str)), INT2FIX(value))
+#define LOOKUP_CVMETHOD(hash, key_as_cstr) (rb_hash_lookup(hash, ID2SYM(rb_intern(key_as_cstr))))
 
 #define maxint(a,b) ({int _a = (a), _b = (b); _a > _b ? _a : _b; })
 
@@ -270,6 +270,35 @@ TRUE_OR_FALSE(VALUE object, int ifnone)
     rb_warn("argument should be true or false.");
   }
   return value;
+}
+
+inline int
+CV2IPL_DEPTH(int depth)
+{
+  switch (depth) {
+  case CV_8U:
+    return IPL_DEPTH_8U;
+    break;
+  case CV_8S:
+    return IPL_DEPTH_8S;
+    break;
+  case CV_16U:
+    return IPL_DEPTH_16U;
+    break;
+  case CV_32F:
+    return IPL_DEPTH_32F;
+    break;
+  case CV_32S:
+    return IPL_DEPTH_32S;
+    break;
+  case CV_64F:
+    return IPL_DEPTH_64F;
+    break;
+  default:
+    rb_raise(rb_eArgError, "Invalid depth: %d", depth);
+    break;
+  }
+  return 0;
 }
 
 VALUE rb_BGR2BGRA(VALUE klass, VALUE image);

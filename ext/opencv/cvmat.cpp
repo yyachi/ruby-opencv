@@ -707,10 +707,10 @@ rb_copy(int argc, VALUE *argv, VALUE self)
 {
   VALUE value, copied;
   CvMat *src = CVMAT(self);
+  CvSize size = cvGetSize(src);
   rb_scan_args(argc, argv, "01", &value);
   if (argc == 0) {
-    CvSize size = cvGetSize(src);
-    copied = new_object(cvGetSize(src), cvGetElemType(src));
+    copied = new_mat_kind_object(size, self);
     cvCopy(src, CVMAT(copied));
     return copied;
   }
@@ -724,7 +724,7 @@ rb_copy(int argc, VALUE *argv, VALUE self)
       if (n > 0) {
         copied = rb_ary_new2(n);
         for (int i = 0; i < n; i++) {
-	  VALUE tmp = new_object(src->rows, src->cols, cvGetElemType(src));
+	  VALUE tmp = new_mat_kind_object(size, self);
 	  cvCopy(src, CVMAT(tmp));
           rb_ary_store(copied, i, tmp);
         }
@@ -742,10 +742,7 @@ rb_copy(int argc, VALUE *argv, VALUE self)
 VALUE
 copy(VALUE mat)
 {
-  CvMat *src = CVMAT(mat);
-  VALUE copied = new_object(cvGetSize(src), cvGetElemType(src));
-  cvCopy(src, CVMAT(copied));
-  return copied;
+  return rb_clone(mat);
 }
 
 
@@ -1584,6 +1581,7 @@ rb_merge(VALUE klass, VALUE args)
     }else
       rb_raise(rb_eTypeError, "argument should be CvMat or subclass of it.");
   }
+  // TODO: adapt IplImage
   dest = new_object(cvGetSize(tmp), CV_MAKETYPE(CV_MAT_DEPTH(tmp->type), len));
   cvMerge(src[0], src[1], src[2], src[3], CVARR(dest));
   return dest;
@@ -1673,11 +1671,14 @@ rb_convert_scale(VALUE self, VALUE hash)
 {
   if (TYPE(hash) != T_HASH)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  CvMat* self_ptr = CVMAT(self);
   VALUE depth = rb_hash_aref(hash, ID2SYM(rb_intern("depth"))),
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
     shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(CVMAT(self)->type)), CV_MAT_CN(CVMAT(self)->type)));
-  cvConvertScale(CVARR(self), CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self,
+			       CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(self_ptr->type)),
+			       CV_MAT_CN(self_ptr->type));
+  cvConvertScale(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
   return dest;
 }
 
@@ -1694,11 +1695,12 @@ rb_convert_scale_abs(VALUE self, VALUE hash)
 {
   if (TYPE(hash) != T_HASH)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  CvMat* self_ptr = CVMAT(self);
   VALUE
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
     shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_8U, CV_MAT_CN(CVMAT(self)->type)));
-  cvConvertScaleAbs(CVARR(self), CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, CV_MAT_CN(CVMAT(self)->type));
+  cvConvertScaleAbs(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
   return dest;
 }
 
@@ -1769,7 +1771,7 @@ rb_mul(int argc, VALUE *argv, VALUE self)
   VALUE val, scale, dest;
   if (rb_scan_args(argc, argv, "11", &val, &scale) < 2)
     scale = rb_float_new(1.0);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvMul(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
   }else{
@@ -1795,7 +1797,7 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, shiftvec, dest;
   rb_scan_args(argc, argv, "11", &val, &shiftvec);
-  dest = new_object(CVMAT(self)->rows, CVMAT(val)->cols, cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (NIL_P(shiftvec))
     cvMatMul(CVARR(self), CVARR(val), CVARR(dest));
   else
@@ -1819,12 +1821,12 @@ rb_div(int argc, VALUE *argv, VALUE self)
   VALUE val, scale, dest;
   if (rb_scan_args(argc, argv, "11", &val, &scale) < 2)
     scale = rb_float_new(1.0);
-  dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvDiv(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
   }else{
     CvScalar scl = VALUE_TO_CVSCALAR(val);
-    VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+    VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
     cvSet(CVARR(mat), scl);
     cvDiv(CVARR(self), CVARR(mat), CVARR(dest), NUM2DBL(scale));
   }
@@ -1931,15 +1933,17 @@ rb_not_bang(VALUE self)
 VALUE
 rb_cmp_internal(VALUE self, VALUE val, int operand)
 {
-  VALUE dest = new_object(cvGetSize(CVARR(self)), CV_8U);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, 1);
   if (rb_obj_is_kind_of(val, rb_klass))
-    cvCmp(CVARR(self), CVARR(val), CVARR(dest), operand);
-  else if (CV_MAT_CN(cvGetElemType(CVARR(self))) == 1 && rb_obj_is_kind_of(val, rb_cNumeric)) {
-    cvCmpS(CVARR(self), NUM2DBL(val), CVARR(dest), operand);
-  }else{
-    VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+    cvCmp(self_ptr, CVARR(val), CVARR(dest), operand);
+  else if (CV_MAT_CN(cvGetElemType(self_ptr)) == 1 && rb_obj_is_kind_of(val, rb_cNumeric)) {
+    cvCmpS(self_ptr, NUM2DBL(val), CVARR(dest), operand);
+  }
+  else {
+    VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
     cvSet(CVARR(mat), VALUE_TO_CVSCALAR(val));
-    cvCmp(CVARR(self), CVARR(mat), CVARR(dest), operand);
+    cvCmp(self_ptr, CVARR(mat), CVARR(dest), operand);
   }
   return dest;
 }
@@ -2034,7 +2038,7 @@ rb_ne(VALUE self, VALUE val)
 VALUE
 rb_in_range(VALUE self, VALUE min, VALUE max)
 {
-  VALUE dest = dest = new_object(cvGetSize(CVARR(self)), CV_8UC1), tmp;
+  VALUE dest = new_object(cvGetSize(CVARR(self)), CV_8UC1), tmp;
   if (rb_obj_is_kind_of(min, rb_klass) && rb_obj_is_kind_of(max, rb_klass)) {
     cvInRange(CVARR(self), CVARR(min), CVARR(max), CVARR(dest));
   }else if (rb_obj_is_kind_of(min, rb_klass)) {
@@ -2061,7 +2065,7 @@ rb_in_range(VALUE self, VALUE min, VALUE max)
 VALUE
 rb_abs_diff(VALUE self, VALUE val)
 {
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvAbsDiff(CVARR(self), CVARR(val), CVARR(dest));
   }else{
@@ -2203,7 +2207,7 @@ rb_cross_product(VALUE self, VALUE mat)
 {
   if (!rb_obj_is_kind_of(mat, rb_klass))
     rb_raise(rb_eTypeError, "argument should be CvMat.");
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvCrossProduct(CVARR(self), CVARR(mat), CVARR(dest));
   return dest;
 }
@@ -2220,7 +2224,7 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 {
   VALUE transmat, shiftvec;
   rb_scan_args(argc, argv, "11", &transmat, &shiftvec);
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (NIL_P(shiftvec))
     cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), NULL);
   else
@@ -2246,7 +2250,7 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_perspective_transform(VALUE self, VALUE mat)
 {
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvPerspectiveTransform(CVARR(self), CVARR(dest), CVMAT(mat));
   return dest;
 }
@@ -2303,8 +2307,7 @@ rb_trace(VALUE self)
 VALUE
 rb_transpose(VALUE self)
 {
-  CvSize size = cvGetSize(CVARR(self));
-  VALUE dest = new_object(size.width, size.height, cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvTranspose(CVARR(self), CVARR(dest));
   return dest;
 }
@@ -2361,7 +2364,7 @@ rb_invert(int argc, VALUE *argv, VALUE self)
   VALUE symbol;
   rb_scan_args(argc, argv, "01", &symbol);
   int method = CVMETHOD("INVERSION_METHOD", symbol, CV_LU);
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvInvert(CVARR(self), CVARR(dest), method);
   return dest;
 }
@@ -2390,7 +2393,7 @@ rb_solve(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "11", &mat, &symbol);
   if (!rb_obj_is_kind_of(mat, rb_klass))
     rb_raise(rb_eTypeError, "argument 1 (right-hand part of the linear system) should be %s.)", rb_class2name(rb_klass));
-  VALUE dest = new_object(CVMAT(self)->rows, CVMAT(mat)->cols, cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(mat)), self);
   cvSolve(CVARR(self), CVARR(mat), CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   return dest;
 }
@@ -2519,7 +2522,7 @@ rb_dft(int argc, VALUE *argv, VALUE self)
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvDFT(CVARR(self), CVARR(dest), type, num_rows);
   return dest;
 }
@@ -2547,7 +2550,7 @@ rb_dct(int argc, VALUE *argv, VALUE self)
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvDCT(CVARR(self), CVARR(dest), type);
   return dest;
 }
@@ -3059,17 +3062,19 @@ rb_sobel(int argc, VALUE *argv, VALUE self)
   VALUE xorder, yorder, aperture_size, dest;
   if (rb_scan_args(argc, argv, "21", &xorder, &yorder, &aperture_size) < 3)
     aperture_size = INT2FIX(3);
-  switch(CV_MAT_DEPTH(CVMAT(self)->type)) {
+  CvMat* self_ptr = CVMAT(self);
+  switch(CV_MAT_DEPTH(self_ptr->type)) {
   case CV_8U:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_16S, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_16S, 1);
     break;
   case CV_32F:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
     rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    break;
   }
-  cvSobel(CVARR(self), CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
+  cvSobel(self_ptr, CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
   return dest;
 }
 
@@ -3086,17 +3091,18 @@ rb_laplace(int argc, VALUE *argv, VALUE self)
   VALUE aperture_size, dest;
   if (rb_scan_args(argc, argv, "01", &aperture_size) < 1)
     aperture_size = INT2FIX(3);
-  switch(CV_MAT_DEPTH(CVMAT(self)->type)) {
+  CvMat* self_ptr = CVMAT(self);
+  switch(CV_MAT_DEPTH(self_ptr->type)) {
   case CV_8U:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_16S, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_16S, 1);
     break;
   case CV_32F:
-    dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
-    rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    rb_raise(rb_eArgError, "source depth should be CV_8U or CV_32F.");
   }
-  cvLaplace(CVARR(self), CVARR(dest), NUM2INT(aperture_size));
+  cvLaplace(self_ptr, CVARR(dest), NUM2INT(aperture_size));
   return dest;
 }
 
@@ -3112,7 +3118,7 @@ rb_canny(int argc, VALUE *argv, VALUE self)
   VALUE thresh1, thresh2, aperture_size;
   if (rb_scan_args(argc, argv, "21", &thresh1, &thresh2, &aperture_size) < 3)
     aperture_size = INT2FIX(3);
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvCanny(CVARR(self), CVARR(dest), NUM2INT(thresh1), NUM2INT(thresh2), NUM2INT(aperture_size));
   return dest;
 }
@@ -3380,7 +3386,7 @@ rb_resize(int argc, VALUE *argv, VALUE self)
 {
   VALUE size, interpolation;
   rb_scan_args(argc, argv, "11", &size, &interpolation);
-  VALUE dest = new_object(VALUE_TO_CVSIZE(size), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
   cvResize(CVARR(self), CVARR(dest), CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR));
   return dest;
 }
@@ -3399,7 +3405,7 @@ rb_warp_affine(int argc, VALUE *argv, VALUE self)
     fill_value = INT2FIX(0);
   if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
     rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (2x3).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvWarpAffine(CVARR(self), CVARR(dest), CVMAT(map_matrix),
                CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fill_value));
   return dest;
@@ -3482,9 +3488,10 @@ rb_warp_perspective(int argc, VALUE *argv, VALUE self)
     fillval = INT2FIX(0);
   if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
     rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (3x3).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvWarpPerspective(CVARR(self), CVARR(dest), CVMAT(map_matrix),
-                    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
+                    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
+		    | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
   return dest;
 }
 
@@ -3508,7 +3515,7 @@ rb_remap(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eTypeError, "argument 1 (map of x-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
   if (!rb_obj_is_kind_of(mapy, cCvMat::rb_class()))
     rb_raise(rb_eTypeError, "argument 2 (map of y-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvRemap(CVARR(self), CVARR(dest), CVARR(mapx), CVARR(mapy),
           CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
   return dest;
@@ -3602,7 +3609,7 @@ rb_morphology_internal(VALUE element, VALUE iteration, int operation, VALUE self
 {
   CvArr* self_ptr = CVARR(self);
   CvSize size = cvGetSize(self_ptr);
-  VALUE dest = new_object(size, cvGetElemType(self_ptr));
+  VALUE dest = new_mat_kind_object(size, self);
   if (operation == CV_MOP_GRADIENT) {
     CvMat* temp = rb_cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
     cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
@@ -3756,7 +3763,8 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  int type = cvGetElemType(CVARR(self)), dest_type;
+  CvArr* self_ptr = CVARR(self);
+  int type = cvGetElemType(self_ptr), dest_type;
   switch (CV_MAT_DEPTH(type)) {
   case CV_8U:
     dest_type = CV_16U;
@@ -3767,8 +3775,8 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
   default:
     rb_raise(rb_eNotImpError, "unsupport format. (support 8bit unsigned/signed or 32bit floating point only)");
   }
-  dest = new_object(cvGetSize(CVARR(self)), dest_type);
-  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 3));
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self, dest_type, CV_MAT_CN(type));
+  cvSmooth(self_ptr, CVARR(dest), CV_BLUR_NO_SCALE, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
@@ -3785,7 +3793,7 @@ rb_smooth_blur(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvSmooth(CVARR(self), CVARR(dest), CV_BLUR, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
@@ -3811,7 +3819,7 @@ rb_smooth_gaussian(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, p3, p4, dest;
   rb_scan_args(argc, argv, "04", &p1, &p2, &p3, &p4);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvSmooth(CVARR(self), CVARR(dest), CV_GAUSSIAN, IF_INT(p1, 3), IF_INT(p2, 3), IF_DBL(p3, 0.0), IF_DBL(p4, 0.0));
   return dest;
 }
@@ -3830,7 +3838,7 @@ rb_smooth_median(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1C3_ONLY(self);
   VALUE p1, dest;
   rb_scan_args(argc, argv, "01", &p1);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvSmooth(CVARR(self), CVARR(dest), CV_MEDIAN, IF_INT(p1, 3));
   return dest;
 }
@@ -3849,7 +3857,7 @@ rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
   SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvSmooth(CVARR(self), CVARR(dest), CV_BILATERAL, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
@@ -3871,7 +3879,7 @@ rb_filter2d(int argc, VALUE *argv, VALUE self)
   if (!rb_obj_is_kind_of(kernel, cCvMat::rb_class()))
     rb_raise(rb_eTypeError, "argument 1 (kernel) should be %s.", rb_class2name(cCvMat::rb_class()));
   int type = cvGetElemType(CVARR(kernel));
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvFilter2D(CVARR(self), CVARR(dest), CVMAT(kernel), NIL_P(anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(anchor));
   return dest;
 }
@@ -3888,7 +3896,7 @@ rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self)
 {
   VALUE size, offset, value, dest;
   rb_scan_args(argc, argv, "21", &size, &offset, &value);
-  dest = cCvMat::new_object(VALUE_TO_CVSIZE(size), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
   cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_CONSTANT, NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
   return dest;
 }
@@ -3906,7 +3914,7 @@ rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self)
 {
   VALUE size, offset, dest;
   rb_scan_args(argc, argv, "20", &size, &offset);
-  dest = cCvMat::new_object(VALUE_TO_CVSIZE(size), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
   cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_REPLICATE);
   return dest;
 }
@@ -3935,7 +3943,8 @@ rb_integral(int argc, VALUE *argv, VALUE self)
   sum = cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn));
   sqsum = (sqsum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
   tilted_sum = (tilted_sum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
-  cvIntegral(CVARR(self), CVARR(sum), NIL_P(sqsum) ? NULL : CVARR(sqsum), NIL_P(tilted_sum) ? NULL : CVARR(tilted_sum));
+  cvIntegral(CVARR(self), CVARR(sum), NIL_P(sqsum) ? NULL : CVARR(sqsum),
+	     NIL_P(tilted_sum) ? NULL : CVARR(tilted_sum));
   dest = rb_ary_new3(1, sum);
   if(sqsum)
     rb_ary_push(dest, sqsum);
@@ -3948,7 +3957,7 @@ VALUE
 rb_threshold_internal(int threshold_type, VALUE threshold, VALUE max_value, VALUE use_otsu, VALUE self)
 {
   CvArr* self_ptr = CVARR(self);
-  VALUE dest = cCvMat::new_object(cvGetSize(self_ptr), cvGetElemType(self_ptr));
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
   int otsu = (use_otsu == Qtrue) && ((threshold_type & CV_THRESH_OTSU) == 0);
   int type = threshold_type | (otsu ? CV_THRESH_OTSU : 0);
   double otsu_threshold = cvThreshold(self_ptr, CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), type);
@@ -4090,8 +4099,9 @@ rb_pyr_down(int argc, VALUE *argv, VALUE self)
       rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
     }
   }
-  CvSize size = cvGetSize(CVARR(self));
-  dest = cCvMat::new_object(size.height / 2, size.width / 2, cvGetElemType(CVARR(self)));
+  CvSize original_size = cvGetSize(CVARR(self));
+  CvSize size = { original_size.width >> 1, original_size.height >> 1 };
+  dest = new_mat_kind_object(size, self);
   cvPyrDown(CVARR(self), CVARR(dest), filter);
   return dest;
 }
@@ -4123,8 +4133,9 @@ rb_pyr_up(int argc, VALUE *argv, VALUE self)
       rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
     }
   }
-  CvSize size = cvGetSize(CVARR(self));
-  dest = cCvMat::new_object(size.height * 2, size.width * 2, cvGetElemType(CVARR(self)));
+  CvSize original_size = cvGetSize(CVARR(self));
+  CvSize size = { original_size.width << 1, original_size.height << 1 };
+  dest = new_mat_kind_object(size, self);
   cvPyrUp(CVARR(self), CVARR(dest), filter);
   return dest;
 }
@@ -4247,7 +4258,6 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_find_contours(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   return rb_find_contours_bang(argc, argv, copy(self));
 }
 
@@ -4273,23 +4283,22 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
   find_contours_option = FIND_CONTOURS_OPTION(find_contours_option);
   int mode = FC_MODE(find_contours_option);
   int method = FC_METHOD(find_contours_option);
-  int header_size, element_size;
+  int header_size;
   if (method == CV_CHAIN_CODE) {
     klass = cCvChain::rb_class();
-    element_klass = cCvChainCode::rb_class();
+    element_klass = T_FIXNUM;
     header_size = sizeof(CvChain);
-    element_size = sizeof(CvChainCode);
   }
   else {
     klass = cCvContour::rb_class();
     element_klass = cCvPoint::rb_class();
     header_size = sizeof(CvContour);
-    element_size = sizeof(CvPoint);
   }
   storage = cCvMemStorage::new_object();
   if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
-  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0)
+  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0) {
     return Qnil;
+  }
   return cCvSeq::new_sequence(klass, contour, element_klass, storage);
 }
 
@@ -4380,7 +4389,7 @@ rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self)
 {
   VALUE spatial_window_radius, color_window_radius, max_level, termcrit, dest;
   rb_scan_args(argc, argv, "22", &spatial_window_radius, &color_window_radius, &max_level, &termcrit);
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvPyrMeanShiftFiltering(CVARR(self), CVARR(dest),
 			  NUM2DBL(spatial_window_radius),
 			  NUM2DBL(color_window_radius),
@@ -4599,7 +4608,7 @@ rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius)
   int method = CVMETHOD("INPAINT_METHOD", inpaint_method, INVALID_TYPE);
   if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
     rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), method);
   return dest;
 }
@@ -4620,7 +4629,7 @@ rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius)
   VALUE dest;
   if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
     rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_NS);
   return dest;
 }
@@ -4640,7 +4649,7 @@ rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius)
   VALUE dest;
   if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
     rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_TELEA);
   return dest;
 }
@@ -4665,7 +4674,7 @@ VALUE
 rb_equalize_hist(VALUE self)
 {
   SUPPORT_8UC1_ONLY(self);
-  VALUE dest = cCvMat::new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvEqualizeHist(CVARR(self), CVARR(dest));
   return dest;
 }
@@ -5255,6 +5264,37 @@ new_object(CvSize size, int type)
   return OPENCV_OBJECT(rb_klass, rb_cvCreateMat(size.height, size.width, type));
 }
 
+VALUE
+new_mat_kind_object(CvSize size, VALUE ref_obj)
+{
+  VALUE return_type = CLASS_OF(ref_obj);
+  if (rb_obj_is_kind_of(ref_obj, cIplImage::rb_class())) {
+    IplImage* img = IPLIMAGE(ref_obj);
+    return OPENCV_OBJECT(return_type, rb_cvCreateImage(size, img->depth, img->nChannels));
+  }
+  else if (rb_obj_is_kind_of(ref_obj, rb_klass)) // CvMat
+    return OPENCV_OBJECT(return_type, rb_cvCreateMat(size.height, size.width, cvGetElemType(CVMAT(ref_obj))));
+  else
+    rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
+
+  return Qnil;
+}
+
+VALUE
+new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel)
+{
+  VALUE return_type = CLASS_OF(ref_obj);
+  if (rb_obj_is_kind_of(ref_obj, cIplImage::rb_class())) {
+    return OPENCV_OBJECT(return_type, rb_cvCreateImage(size, CV2IPL_DEPTH(cvmat_depth), channel));
+  }
+  else if (rb_obj_is_kind_of(ref_obj, rb_klass)) // CvMat
+    return OPENCV_OBJECT(return_type, rb_cvCreateMat(size.height, size.width,
+						     CV_MAKETYPE(cvmat_depth, channel)));
+  else
+    rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
+
+  return Qnil;
+}
 
 __NAMESPACE_END_OPENCV
 __NAMESPACE_END_CVMAT

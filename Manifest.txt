@@ -22,8 +22,6 @@ ext/opencv/cvcapture.cpp
 ext/opencv/cvcapture.h
 ext/opencv/cvchain.cpp
 ext/opencv/cvchain.h
-ext/opencv/cvchaincode.cpp
-ext/opencv/cvchaincode.h
 ext/opencv/cvcircle32f.cpp
 ext/opencv/cvcircle32f.h
 ext/opencv/cvcondensation.cpp
