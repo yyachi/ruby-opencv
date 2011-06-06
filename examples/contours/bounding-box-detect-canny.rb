@@ -50,7 +50,7 @@ while contour
 
     # You can also detect the "minimal rectangle" which has an angle, width, height and center coordinates
     # and is not neccessarily horizonally or vertically aligned.
-    # The corner of the rectangle with the lowest y and x position is the achor (see imagehere: http://bit.ly/lT1XvB)
+    # The corner of the rectangle with the lowest y and x position is the anchor (see image here: http://bit.ly/lT1XvB)
     # The zero angle position is always straight up. 
     # Positive angle values are clockwise and negative values counter clockwise (so -60 means 60 degree counter clockwise)
     box = contour.min_area_rect
