@@ -10,6 +10,7 @@ include OpenCV
 class TestCvCapture < OpenCVTestCase
   def setup
     @cap = CvCapture.open(AVI_SAMPLE)
+    @cap.query
   end
 
   def teardown
@@ -65,31 +66,69 @@ class TestCvCapture < OpenCVTestCase
   end
 
   def test_millisecond
+    @cap.millisecond = 10
     assert(@cap.millisecond.is_a? Numeric)
+    # assert_equal(10, @cap.millisecond)
+    @cap.millisecond = 20
+    assert(@cap.millisecond.is_a? Numeric)
+    # assert_equal(20, @cap.millisecond)
   end
 
   def test_frames
+    @cap.frames = 10
     assert(@cap.frames.is_a? Numeric)
+    # assert_equal(10, @cap.frames)
+    @cap.frames = 20
+    assert(@cap.frames.is_a? Numeric)
+    # assert_equal(20, @cap.frames)
   end
 
   def test_avi_ratio
+    @cap.avi_ratio = 0.1
     assert(@cap.avi_ratio.is_a? Numeric)
+    # assert_equal(0.1, @cap.avi_ratio)
+    @cap.avi_ratio = 0.8
+    assert(@cap.avi_ratio.is_a? Numeric)
+    # assert_equal(0.8, @cap.avi_ratio)
   end
 
   def test_size
+    @cap.size = CvSize.new(320, 240)
     assert_equal(CvSize, @cap.size.class)
+    # assert_equal(320, @cap.size.width)
+    # assert_equal(240, @cap.size.height)
+
+    @cap.size = CvSize.new(640, 480)
+    assert_equal(CvSize, @cap.size.class)
+    # assert_equal(640, @cap.size.width)
+    # assert_equal(480, @cap.size.height)
   end
 
   def test_width
+    @cap.width = 320
     assert(@cap.width.is_a? Numeric)
+    # assert_equal(320, @cap.width)
+    @cap.width = 640
+    assert(@cap.width.is_a? Numeric)
+    # assert_equal(640, @cap.width)
   end
 
   def test_height
+    @cap.height = 240
     assert(@cap.height.is_a? Numeric)
+    # assert_equal(240, @cap.height)
+    @cap.height = 480
+    assert(@cap.height.is_a? Numeric)
+    # assert_equal(480, @cap.height)
   end
 
   def test_fps
+    @cap.fps = 15
     assert(@cap.fps.is_a? Numeric)
+    # assert_equal(15, @cap.fps)
+    @cap.fps = 30
+    assert(@cap.fps.is_a? Numeric)
+    # assert_equal(30, @cap.fps)
   end
 
   def test_fourcc
