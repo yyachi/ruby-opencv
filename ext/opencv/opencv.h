@@ -115,6 +115,7 @@ extern "C"{
 #include "cvsparsemat.h"
 #include "cvhistogram.h"
 #include "cvcapture.h"
+#include "cvvideowriter.h"
 
 #include "cvline.h"
 #include "cvtwopoints.h"
