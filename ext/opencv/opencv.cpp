@@ -747,7 +747,8 @@ extern "C"{
     mOpenCV::cCvMoments::define_ruby_class();
     mOpenCV::cCvHuMoments::define_ruby_class();
     mOpenCV::cCvConvexityDefect::define_ruby_class();
-
+    mOpenCV::cCvSURFPoint::define_ruby_class();
+    
     mOpenCV::cCvMemStorage::define_ruby_class();
 
     mOpenCV::cCvSeq::define_ruby_class();

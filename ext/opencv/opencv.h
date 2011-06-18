@@ -127,6 +127,8 @@ extern "C"{
 #include "cvavgcomp.h"
 #include "cvhaarclassifiercascade.h"
 
+#include "cvsurfpoint.h"
+
 // GUI
 #include "gui.h"
 #include "window.h"
