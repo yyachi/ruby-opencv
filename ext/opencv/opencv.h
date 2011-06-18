@@ -151,6 +151,15 @@ extern "C"{
 
 #define maxint(a,b) ({int _a = (a), _b = (b); _a > _b ? _a : _b; })
 
+#ifndef BOOL2INT
+#define BOOL2INT(x)  ((x == Qtrue) ? 1 : 0)
+#endif
+
+#ifndef INT2BOOL
+#define INT2BOOL(x)  (x ? Qtrue : Qfalse)
+#endif
+
+
 // wrapper for <= 1.8
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(arg) (RARRAY(arg)->len)
