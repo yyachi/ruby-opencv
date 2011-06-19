@@ -406,6 +406,8 @@ void define_ruby_class()
   rb_define_singleton_method(rb_klass, "compute_correspond_epilines",
 			     RUBY_METHOD_FUNC(rb_compute_correspond_epilines), 3);
 
+  rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
+
   rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
 }
 
@@ -5251,6 +5253,75 @@ rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VAL
   return correspondent_lines;
 }
 
+/*
+ * call-seq:
+ *   extract_surf(params[,mask,keypoints]) -> [cvseq(cvsurfpoint), array(float)]
+ * Extracts Speeded Up Robust Features from an image
+ *
+ * <i>params</i> (CvSURFParams) - Various algorithm parameters put to the structure CvSURFParams.
+ * <i>mask</i> (CvMat) - The optional input 8-bit mask. The features are only found in the areas that contain more than 50% of non-zero mask pixels.
+ * <i>keypoints</i> (CvSeq which includes CvSURFPoint) - Provided keypoints
+ */
+VALUE
+rb_extract_surf(int argc, VALUE *argv, VALUE self)
+{
+  VALUE _params, _mask, _keypoints;
+  rb_scan_args(argc, argv, "12", &_params, &_mask, &_keypoints);
+
+  // Prepare arguments
+  if (!rb_obj_is_kind_of(_params, cCvSURFParams::rb_class())) {
+    rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
+	     rb_class2name(CLASS_OF(_params)), rb_class2name(cCvSURFParams::rb_class()));
+  }
+  CvSURFParams params = *CVSURFPARAMS(_params);
+  CvMat* mask;
+  if (NIL_P(_mask))
+    mask = NULL;
+  else {
+    if (!rb_obj_is_kind_of(_mask, cCvMat::rb_class())) {
+      rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
+	       rb_class2name(CLASS_OF(_mask)), rb_class2name(cCvMat::rb_class()));
+    }
+    mask = CVMAT(_mask);
+  }
+  CvSeq* keypoints;
+  if (NIL_P(_keypoints)) {
+    keypoints = NULL;
+  }
+  else {
+    if (!rb_obj_is_kind_of(_keypoints, cCvSeq::rb_class())) {
+      rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
+	       rb_class2name(CLASS_OF(_keypoints)), rb_class2name(cCvSeq::rb_class()));
+    }
+    keypoints = CVSEQ(_keypoints);
+  }
+
+  int use_provided = (keypoints == NULL) ? 0 : 1;
+  
+  VALUE storage = cCvMemStorage::new_object();
+  CvSeq* descriptors = NULL;
+
+  // Compute SURF keypoints and descriptors
+  cvExtractSURF(CVARR(self), mask, &keypoints, &descriptors, CVMEMSTORAGE(storage),
+		params, use_provided);
+  _keypoints = cCvSeq::new_sequence(cCvSeq::rb_class(), keypoints, cCvSURFPoint::rb_class(), storage);
+  
+  // Create descriptor array
+  const int DIM_SIZE = (params.extended) ? 128 : 64;
+  const int NUM_KEYPOINTS = keypoints->total;
+  VALUE _descriptors = rb_ary_new2(NUM_KEYPOINTS);
+  int m, n;
+  for (m = 0; m < NUM_KEYPOINTS; ++m) {
+    VALUE elem = rb_ary_new2(DIM_SIZE);
+    float *descriptor = (float*)cvGetSeqElem(descriptors, m);
+    for (n = 0; n < DIM_SIZE; ++n) {
+      rb_ary_store(elem, n, rb_float_new(descriptor[n]));
+    }
+    rb_ary_store(_descriptors, m, elem);
+  }
+  
+  return rb_assoc_new(_keypoints, _descriptors);
+}
 
 VALUE
 new_object(int rows, int cols, int type)

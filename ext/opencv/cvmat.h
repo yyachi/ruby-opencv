@@ -264,7 +264,10 @@ VALUE rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass);
 VALUE rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass);
 VALUE rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass);
 VALUE rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix);
-  
+
+/* Feature detection and description */
+VALUE rb_extract_surf(int argc, VALUE *argv, VALUE self);
+
 // HighGUI function
 VALUE rb_save_image(VALUE self, VALUE filename);
 

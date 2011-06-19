@@ -1714,5 +1714,63 @@ class TestCvMat_imageprocessing < OpenCVTestCase
       curr.optical_flow_bm(prev, 'foo', 'bar')
     }
   end
+
+  def test_extract_surf
+    mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
+
+    # simple
+    keypoints1, descriptors1 = mat0.extract_surf(CvSURFParams.new(500, true, 2, 3))
+    assert_equal(CvSeq, keypoints1.class)
+    assert_equal(254, keypoints1.size)
+    assert_equal(Array, descriptors1.class)
+    assert_equal(254, descriptors1.size)
+    assert_equal(Array, descriptors1[0].class)
+    assert_equal(128, descriptors1[0].size)
+    
+    # use mask
+    mask = create_cvmat(mat0.rows, mat0.cols, :cv8u, 1) { |j, i|
+      if i < mat0.cols / 2
+        CvScalar.new(1)
+      else
+        CvScalar.new(0)
+      end
+    }
+    keypoints2, descriptors2 = mat0.extract_surf(CvSURFParams.new(500, false), mask)
+    assert_equal(CvSeq, keypoints2.class)
+    assert_equal(170, keypoints2.size)
+    assert_equal(Array, descriptors2.class)
+    assert_equal(170, descriptors2.size)
+    assert_equal(Array, descriptors2[0].class)
+    assert_equal(64, descriptors2[0].size)
+
+    # use provided keypoints
+    keypoints3, descriptors3 = mat0.extract_surf(CvSURFParams.new(500, true), mask, keypoints1)
+    assert_equal(CvSeq, keypoints3.class)
+    assert_equal(254, keypoints3.size)
+    assert_equal(Array, descriptors3.class)
+    assert_equal(254, descriptors3.size)
+
+    # raise exceptions because of invalid arguments
+    assert_raise(TypeError) {
+      mat0.extract_surf(CvMat.new(1, 1, :cv8u))
+    }
+    assert_raise(TypeError) {
+      mat0.extract_surf(CvSURFParams.new(500), 'foobar')
+    }
+    assert_raise(TypeError) {
+      mat0.extract_surf(CvSURFParams.new(500), mask, mat0)
+    }
+
+    ## Uncomment the following lines to show the result
+    # results = []
+    # [keypoints1, keypoints2, keypoints3].each { |kpts|
+    #   tmp = mat0.GRAY2BGR
+    #   kpts.each { |kp|
+    #     tmp.circle!(kp.pt, 3, :color => CvColor::Red, :thickness => 1, :line_type => :aa)
+    #   }
+    #   results << tmp
+    # }
+    # snap mat0, *results
+  end
 end
 
