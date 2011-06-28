@@ -50,12 +50,15 @@ CVSCALAR(VALUE object)
 inline CvScalar
 VALUE_TO_CVSCALAR(VALUE object)
 {
-  if(FIXNUM_P(object))
+  if (FIXNUM_P(object))
     return cvScalarAll(FIX2INT(object));
-  return cvScalar(NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(0))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(1))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(2))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(3))));
+  else if (rb_respond_to(object, rb_intern("[]")))
+    return cvScalar(NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(0))),
+		    NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(1))),
+		    NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(2))),
+		    NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(3))));
+  else
+    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvScalar::rb_class()));
 }
 
 __NAMESPACE_END_OPENCV

@@ -12,17 +12,19 @@ class OpenCVTestCase < Test::Unit::TestCase
   HAARCASCADE_FRONTALFACE_ALT = SAMPLE_DIR + 'haarcascade_frontalface_alt.xml.gz'
   AVI_SAMPLE = SAMPLE_DIR + 'movie_sample.avi'
   
+  DUMMY_OBJ = Digest::MD5.new # dummy object for argument type check test
+
   CvMat.class_eval do
     # Range check for debug
     alias original_aref []
     alias original_aset []=;
     
     def [](*idx)
-      if idx.size == 1
+      if idx.size == 1 and idx[0].is_a? Numeric
         n = idx[0]
         throw ArgumentError.new("index #{n} is out of range") if n >= rows * cols
-      else
-        j, i = *idx
+      elsif idx.all? { |elem| elem.is_a? Numeric }
+        j, i = *(idx.map { |x| x.to_i })
         throw ArgumentError.new("index for row #{j} is out of range") if j >= rows
         throw ArgumentError.new("index for column #{i} is out of range") if i >= cols
       end
@@ -30,13 +32,13 @@ class OpenCVTestCase < Test::Unit::TestCase
     end
 
     def []=(*args)
-      if args.size == 2
+      if args.size == 2 and args[0].is_a? Numeric
         n = args[0] # index
         throw ArgumentError.new("index #{n} is out of range") if n >= rows * cols
-      else
+      elsif args[0..1].all? { |elem| elem.is_a? Numeric }
         j, i = *args
-        throw ArgumentError.new("index for row #{j} is out of range") if j >= rows
-        throw ArgumentError.new("index for column #{i} is out of range") if i >= cols
+        throw ArgumentError.new("index for row #{j} is out of range") if j.to_i >= rows
+        throw ArgumentError.new("index for column #{i} is out of range") if i.to_i >= cols
       end
       original_aset(*args)
     end

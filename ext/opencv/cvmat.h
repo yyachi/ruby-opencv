@@ -288,6 +288,15 @@ CVMAT(VALUE object)
 }
 
 inline CvMat*
+CVMAT_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvMat::rb_class()))
+    rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
+	     rb_class2name(CLASS_OF(object)), rb_class2name(cCvMat::rb_class()));
+  return CVMAT(object);
+}
+
+inline CvMat*
 MASK(VALUE object)
 {
   if(NIL_P(object))

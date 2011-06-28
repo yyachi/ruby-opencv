@@ -435,8 +435,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE row, column, depth, channel;
   rb_scan_args(argc, argv, "22", &row, &column, &depth, &channel);
 
-  CvMat *ptr = rb_cvCreateMat(FIX2INT(row), FIX2INT(column),
-			      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
+  int ch = (argc < 4) ? 3 : NUM2INT(channel);
+  CvMat *ptr = rb_cvCreateMat(NUM2INT(row), NUM2INT(column),
+			      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), ch));
   free(DATA_PTR(self));
   DATA_PTR(self) = ptr;
 
@@ -721,11 +722,11 @@ rb_copy(int argc, VALUE *argv, VALUE self)
       cvCopy(src, CVMAT(value));
       return Qnil;
     }
-    else if (rb_obj_is_kind_of(value, rb_cFixnum)) {
+    else if (FIXNUM_P(value)) {
       int n = FIX2INT(value);
       if (n > 0) {
         copied = rb_ary_new2(n);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ++i) {
 	  VALUE tmp = new_mat_kind_object(size, self);
 	  cvCopy(src, CVMAT(tmp));
           rb_ary_store(copied, i, tmp);
@@ -962,13 +963,15 @@ VALUE
 rb_slice_width(VALUE self, VALUE num)
 {
   int n = NUM2INT(num);
-  if (n < 1) {rb_raise(rb_eArgError, "number of piece should be > 0");}
+  if (n < 1) 
+    rb_raise(rb_eArgError, "number of piece should be > 0");
   CvSize size = cvGetSize(CVARR(self));
-  if (size.width % n != 0) {rb_warn("width does not div correctly.");}
+  if (size.width % n != 0)
+    rb_warn("width does not div correctly.");
   int div_x = size.width / n;
   VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; i++) {
-    CvRect rect = {div_x * i, 0, div_x, size.height};
+  for (int i = 0; i < n; ++i) {
+    CvRect rect = { div_x * i, 0, div_x, size.height };
     rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
   }
   return ary;
@@ -987,13 +990,15 @@ VALUE
 rb_slice_height(VALUE self, VALUE num)
 {
   int n = NUM2INT(num);
-  if (n < 1) {rb_raise(rb_eArgError, "number of piece should be > 0");}
+  if (n < 1)
+    rb_raise(rb_eArgError, "number of piece should be > 0");
   CvSize size = cvGetSize(CVARR(self));
-  if (size.height % n != 0) {rb_warn("height does not div correctly.");}
+  if (size.height % n != 0)
+    rb_warn("height does not div correctly.");
   int div_y = size.height / n;
   VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; i++) {
-    CvRect rect = {0, div_y * i, size.width, div_y};
+  for (int i = 0; i < n; ++i) {
+    CvRect rect = { 0, div_y * i, size.width, div_y };
     rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
   }
   return ary;
@@ -1011,13 +1016,15 @@ VALUE
 rb_row(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
-  if (len < 1) {rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");}
+  if (len < 1)
+    rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");
   VALUE ary = rb_ary_new2(len);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; ++i) {
     VALUE value = rb_ary_entry(args, i);
     if (FIXNUM_P(value)) {
       rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
-    }else{
+    }
+    else {
       CvSlice slice = VALUE_TO_CVSLICE(value);
       rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRows(CVARR(self), RB_CVALLOC(CvMat),
 							     slice.start_index, slice.end_index), self));
@@ -1038,13 +1045,15 @@ VALUE
 rb_col(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
-  if (len < 1) {rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");}
+  if (len < 1)
+    rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");
   VALUE ary = rb_ary_new2(len);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; ++i) {
     VALUE value = rb_ary_entry(args, i);
     if (FIXNUM_P(value)) {
       rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
-    }else{
+    }
+    else {
       CvSlice slice = VALUE_TO_CVSLICE(value);
       rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCols(CVARR(self), RB_CVALLOC(CvMat),
 							     slice.start_index, slice.end_index), self));
@@ -1065,7 +1074,7 @@ VALUE
 rb_each_row(VALUE self)
 {
   int rows = CVMAT(self)->rows;
-  for (int i = 0; i < rows; i++) {
+  for (int i = 0; i < rows; ++i) {
     rb_yield(DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), i), self));
   }
   return self;
@@ -1083,7 +1092,7 @@ VALUE
 rb_each_col(VALUE self)
 {
   int cols = CVMAT(self)->cols;
-  for (int i = 0; i < cols; i++) {
+  for (int i = 0; i < cols; ++i) {
     rb_yield(DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), i), self));
   }
   return self;
@@ -1094,7 +1103,7 @@ rb_each_col(VALUE self)
  *   diag(<i>[val = 0]</i>) -> cvmat
  *
  * Return one of array diagonals.
- * <i>val</i> is zeo corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
+ * <i>val</i> is zero corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
  *
  */
 VALUE
@@ -1155,7 +1164,7 @@ rb_dims(VALUE self)
 VALUE
 rb_dim_size(VALUE self, VALUE index)
 {
-  return INT2FIX(cvGetDimSize(CVARR(self), FIX2INT(index)));
+  return INT2FIX(cvGetDimSize(CVARR(self), NUM2INT(index)));
 }
 
 /*
@@ -1168,11 +1177,11 @@ VALUE
 rb_aref(VALUE self, VALUE args)
 {
   int index[CV_MAX_DIM];
-  for (int i = 0; i < RARRAY_LEN(args); i++) {
+  for (int i = 0; i < RARRAY_LEN(args); ++i) {
     index[i] = NUM2INT(rb_ary_entry(args, i));
   }
   CvScalar scalar = cvScalarAll(0);
-  switch(RARRAY_LEN(args)) {
+  switch (RARRAY_LEN(args)) {
   case 1:
     scalar = cvGet1D(CVARR(self), index[0]);
     break;
@@ -1198,10 +1207,10 @@ rb_aset(VALUE self, VALUE args)
 {
   CvScalar scalar = VALUE_TO_CVSCALAR(rb_ary_pop(args));
   int index[CV_MAX_DIM];
-  for (int i = 0; i < RARRAY_LEN(args); i++) {
+  for (int i = 0; i < RARRAY_LEN(args); ++i) {
     index[i] = NUM2INT(rb_ary_entry(args, i));
   }
-  switch(RARRAY_LEN(args)) {
+  switch (RARRAY_LEN(args)) {
   case 1:
     cvSet1D(CVARR(self), index[0], scalar);
     break;
@@ -1268,6 +1277,7 @@ rb_set_data(VALUE self, VALUE data)
     break;
   default:
     rb_raise(rb_eTypeError, "Invalid CvMat depth");
+    break;
   }
   cvSetData(self_ptr, array, self_ptr->step);
 
@@ -1386,7 +1396,8 @@ rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
   CvScalar value;
   if (rb_scan_args(argc, argv, "01",  &val) < 1) {
     value = cvRealScalar(1);
-  }else{
+  }
+  else{
     value = VALUE_TO_CVSCALAR(val);
   }
   cvSetIdentity(CVARR(self), value);
@@ -1447,8 +1458,8 @@ rb_reshape(VALUE self, VALUE hash)
     rb_raise(rb_eTypeError, "argument should be Hash that contaion key (:row, :channel).");
   VALUE channel = rb_hash_aref(hash, ID2SYM(rb_intern("channel")));
   VALUE rows = rb_hash_aref(hash, ID2SYM(rb_intern("rows")));
-  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), RB_CVALLOC(CvMat), NIL_P(channel) ? 0 : FIX2INT(channel),
-					   NIL_P(rows) ? 0 : FIX2INT(rows)), self);
+  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), RB_CVALLOC(CvMat), NIL_P(channel) ? 0 : NUM2INT(channel),
+					   NIL_P(rows) ? 0 : NUM2INT(rows)), self);
 }
 
 /*
@@ -1535,12 +1546,12 @@ rb_split(VALUE self)
 {
   int type = CVMAT(self)->type, depth = CV_MAT_DEPTH(type), channel = CV_MAT_CN(type);
   CvSize size = cvGetSize(CVARR(self));
-  CvMat *dest[] = {NULL, NULL, NULL, NULL};
-  for (int i = 0; i < channel; i++)
+  CvMat *dest[] = { NULL, NULL, NULL, NULL };
+  for (int i = 0; i < channel; ++i)
     dest[i] = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
   cvSplit(CVARR(self), dest[0], dest[1], dest[2], dest[3]);
   VALUE ary = rb_ary_new2(channel);
-  for (int i = 0; i < channel; i++)
+  for (int i = 0; i < channel; ++i)
     rb_ary_store(ary, i, OPENCV_OBJECT(rb_klass, dest[i]));
   return ary;
 }
@@ -1560,28 +1571,29 @@ rb_merge(VALUE klass, VALUE args)
 {
   VALUE object, dest;
   int len = RARRAY_LEN(args);
-  if (!(len > 0) || len > CV_CN_MAX) {
+  if (len <= 0 || len > 4) {
     rb_raise(rb_eArgError, "wrong number of argument (%d for 1..4)", len);
   }
-  CvMat *src[] = {NULL, NULL, NULL, NULL}, *tmp = 0;
-  for (int i = 0; i < len; i++) {
+  CvMat *src[] = { NULL, NULL, NULL, NULL }, *tmp = 0;
+  for (int i = 0; i < len; ++i) {
     if (rb_obj_is_kind_of((object = rb_ary_entry(args, i)), rb_klass)) {
       src[i] = CVMAT(object);
-      if (CV_MAT_CN(src[i]->type) != 1) {
+      if (CV_MAT_CN(src[i]->type) != 1)
         rb_raise(rb_eStandardError, "image should be single-channel CvMat.");
-      }
       if (!tmp)
         tmp = src[i];
-      else{
+      else {
         if (!CV_ARE_SIZES_EQ(tmp, src[i]))
           rb_raise(rb_eStandardError, "image size should be same.");
         if (!CV_ARE_DEPTHS_EQ(tmp, src[i]))
           rb_raise(rb_eStandardError, "image depth should be same.");
       }
-    }else if (NIL_P(object)) {
+    }
+    else if (NIL_P(object)) {
       src[i] = NULL;
-    }else
-      rb_raise(rb_eTypeError, "argument should be CvMat or subclass of it.");
+    }
+    else
+      rb_raise(rb_eTypeError, "argument should be CvMat or subclass");
   }
   // TODO: adapt IplImage
   dest = new_object(cvGetSize(tmp), CV_MAKETYPE(CV_MAT_DEPTH(tmp->type), len));
@@ -1632,9 +1644,9 @@ rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
   VALUE seed, iter;
   CvRNG rng;
   rb_scan_args(argc, argv, "02", &seed, &iter);
-  if(NIL_P(seed))
+  if (NIL_P(seed))
     cvRandShuffle(CVARR(self), NULL, IF_INT(iter, 1));
-  else{
+  else {
     rng = cvRNG(rb_num2ll(seed));
     cvRandShuffle(CVARR(self), &rng, IF_INT(iter, 1));
   }
@@ -1657,7 +1669,7 @@ VALUE
 rb_lut(VALUE self, VALUE lut)
 {
   VALUE dest = copy(self);
-  cvLUT(CVARR(self), CVARR(dest), CVARR(lut));
+  cvLUT(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(lut));
   return dest;
 }
 
