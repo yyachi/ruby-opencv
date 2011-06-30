@@ -1815,9 +1815,9 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "11", &val, &shiftvec);
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (NIL_P(shiftvec))
-    cvMatMul(CVARR(self), CVARR(val), CVARR(dest));
+    cvMatMul(CVARR(self), CVMAT_WITH_CHECK(val), CVARR(dest));
   else
-    cvMatMulAdd(CVARR(self), CVARR(val), CVARR(shiftvec), CVARR(dest));
+    cvMatMulAdd(CVARR(self), CVMAT_WITH_CHECK(val), CVMAT_WITH_CHECK(shiftvec), CVARR(dest));
   return dest;
 }
 
@@ -1840,7 +1840,8 @@ rb_div(int argc, VALUE *argv, VALUE self)
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvDiv(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
-  }else{
+  }
+  else {
     CvScalar scl = VALUE_TO_CVSCALAR(val);
     VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
     cvSet(CVARR(mat), scl);
@@ -2057,15 +2058,18 @@ rb_in_range(VALUE self, VALUE min, VALUE max)
   VALUE dest = new_object(cvGetSize(CVARR(self)), CV_8UC1), tmp;
   if (rb_obj_is_kind_of(min, rb_klass) && rb_obj_is_kind_of(max, rb_klass)) {
     cvInRange(CVARR(self), CVARR(min), CVARR(max), CVARR(dest));
-  }else if (rb_obj_is_kind_of(min, rb_klass)) {
+  }
+  else if (rb_obj_is_kind_of(min, rb_klass)) {
     tmp = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
     cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(max));
     cvInRange(CVARR(self), CVARR(min), CVARR(tmp), CVARR(dest));
-  }else if (rb_obj_is_kind_of(max, rb_klass)) {
+  }
+  else if (rb_obj_is_kind_of(max, rb_klass)) {
     tmp = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
     cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(min));
     cvInRange(CVARR(self), CVARR(tmp), CVARR(max), CVARR(dest));
-  }else
+  }
+  else
     cvInRangeS(CVARR(self), VALUE_TO_CVSCALAR(min), VALUE_TO_CVSCALAR(max), CVARR(dest));
   return dest;
 }
@@ -2084,7 +2088,8 @@ rb_abs_diff(VALUE self, VALUE val)
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvAbsDiff(CVARR(self), CVARR(val), CVARR(dest));
-  }else{
+  }
+  else {
     cvAbsDiffS(CVARR(self), CVARR(dest), VALUE_TO_CVSCALAR(val));
   }
   return dest;
@@ -2206,9 +2211,7 @@ rb_min_max_loc(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_dot_product(VALUE self, VALUE mat)
 {
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument should be CvMat.");
-  return rb_float_new(cvDotProduct(CVARR(self), CVARR(mat)));
+  return rb_float_new(cvDotProduct(CVARR(self), CVMAT_WITH_CHECK(mat)));
 }
 
 /*
@@ -2221,10 +2224,8 @@ rb_dot_product(VALUE self, VALUE mat)
 VALUE
 rb_cross_product(VALUE self, VALUE mat)
 {
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument should be CvMat.");
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvCrossProduct(CVARR(self), CVARR(mat), CVARR(dest));
+  cvCrossProduct(CVARR(self), CVMAT_WITH_CHECK(mat), CVARR(dest));
   return dest;
 }
 
@@ -2242,9 +2243,9 @@ rb_transform(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "11", &transmat, &shiftvec);
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   if (NIL_P(shiftvec))
-    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), NULL);
+    cvTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(transmat), NULL);
   else
-    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), CVMAT(shiftvec));
+    cvTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(transmat), CVMAT_WITH_CHECK(shiftvec));
   return dest;
 }
 
@@ -2267,7 +2268,7 @@ VALUE
 rb_perspective_transform(VALUE self, VALUE mat)
 {
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvPerspectiveTransform(CVARR(self), CVARR(dest), CVMAT(mat));
+  cvPerspectiveTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(mat));
   return dest;
 }
 
@@ -2408,7 +2409,8 @@ rb_solve(int argc, VALUE *argv, VALUE self)
   VALUE mat, symbol;
   rb_scan_args(argc, argv, "11", &mat, &symbol);
   if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument 1 (right-hand part of the linear system) should be %s.)", rb_class2name(rb_klass));
+    rb_raise(rb_eTypeError, "argument 1 (right-hand part of the linear system) should be %s.)",
+	     rb_class2name(rb_klass));
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(mat)), self);
   cvSolve(CVARR(self), CVARR(mat), CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   return dest;
@@ -3453,10 +3455,10 @@ rb_find_homograpy(int argc, VALUE *argv, VALUE self)
   double _ransac_reproj_threshold = NIL_P(ransac_reproj_threshold) ? 0.0 : NUM2DBL(ransac_reproj_threshold);
 
   if ((_method != 0) && (!NIL_P(get_status)) && IF_BOOL(get_status, 1, 0, 0)) {
-    CvMat *src = CVMAT(src_points);
+    CvMat *src = CVMAT_WITH_CHECK(src_points);
     int num_points = MAX(src->rows, src->cols);
     VALUE status = new_object(cvSize(num_points, 1), CV_8UC1);
-    cvFindHomography(src, CVMAT(dst_points), CVMAT(homography),
+    cvFindHomography(src, CVMAT_WITH_CHECK(dst_points), CVMAT(homography),
 		     _method, _ransac_reproj_threshold, CVMAT(status));
     return rb_assoc_new(homography, status);
   }
@@ -5079,8 +5081,9 @@ rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2)
 {
-  VALUE fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  int num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix),
+  CvMat* points1_ptr = CVMAT_WITH_CHECK(points1);
+  VALUE fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(points1_ptr->type));
+  int num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix),
 				 CV_FM_7POINT, 0, 0, NULL);
   return (num == 0) ? Qnil : fundamental_matrix;
 }
@@ -5097,8 +5100,9 @@ rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2)
 VALUE
 rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2)
 {
-  VALUE fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  int num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix),
+  CvMat* points1_ptr = CVMAT_WITH_CHECK(points1);
+  VALUE fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
+  int num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix),
 				 CV_FM_8POINT, 0, 0, NULL);
   return (num == 0) ? Qnil : fundamental_matrix;
 }
@@ -5128,16 +5132,17 @@ rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass)
   int num = 0;
   rb_scan_args(argc, argv, "21", &points1, &points2, &option);
   option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  if(FFM_WITH_STATUS(option)){
-    CvMat *points1_ptr = CVMAT(points1);
+  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
+  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
+  if (FFM_WITH_STATUS(option)) {
     int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
     status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
+    num = cvFindFundamentalMat(CVMAT(points1), CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
 			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
     return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }else{
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
+  }
+  else {
+    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
 			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
     return num == 0 ? Qnil : fundamental_matrix;
   }
@@ -5165,16 +5170,17 @@ rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass)
   int num = 0;
   rb_scan_args(argc, argv, "21", &points1, &points2, &option);
   option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
+  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
+  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
   if(FFM_WITH_STATUS(option)){
-    CvMat *points1_ptr = CVMAT(points1);
     int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
     status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
+    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
 			       0, FFM_DESIRABLE_LEVEL(option), CVMAT(status));
     return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }else{
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
+  }
+  else{
+    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
 			       0, FFM_DESIRABLE_LEVEL(option), NULL);
     return num == 0 ? Qnil : fundamental_matrix;
   }
@@ -5212,20 +5218,20 @@ rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass)
   rb_scan_args(argc, argv, "31", &points1, &points2, &method, &option);
   option = FIND_FUNDAMENTAL_MAT_OPTION(option);
   int fm_method = FIX2INT(method);
+  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
   if (fm_method == CV_FM_7POINT)
-    fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
+    fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(points1_ptr->type));
   else
-    fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
+    fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
   if (FFM_WITH_STATUS(option)) {
-    CvMat *points1_ptr = CVMAT(points1);
     int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
     status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), fm_method,
+    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), fm_method,
 			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
     return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
   }
   else {
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), fm_method,
+    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), fm_method,
 			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
     return num == 0 ? Qnil : fundamental_matrix;
   }
@@ -5252,17 +5258,17 @@ VALUE
 rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix)
 {
   VALUE correspondent_lines;
-  CvMat* points_ptr = CVMAT(points);
+  CvMat* points_ptr = CVMAT_WITH_CHECK(points);
   int n;
-  if(points_ptr->cols <= 3 && points_ptr->rows >= 7)
+  if (points_ptr->cols <= 3 && points_ptr->rows >= 7)
     n = points_ptr->rows;
-  else if(points_ptr->rows <= 3 && points_ptr->cols >= 7)
+  else if (points_ptr->rows <= 3 && points_ptr->cols >= 7)
     n = points_ptr->cols;
   else
     rb_raise(rb_eArgError, "input points should 2xN, Nx2 or 3xN, Nx3 matrix(N >= 7).");
   
   correspondent_lines = cCvMat::new_object(n, 3, CV_MAT_DEPTH(points_ptr->type));
-  cvComputeCorrespondEpilines(points_ptr, FIX2INT(which_image), CVMAT(fundamental_matrix),
+  cvComputeCorrespondEpilines(points_ptr, FIX2INT(which_image), CVMAT_WITH_CHECK(fundamental_matrix),
 			      CVMAT(correspondent_lines));
   return correspondent_lines;
 }
