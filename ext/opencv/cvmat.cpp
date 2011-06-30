@@ -1786,9 +1786,11 @@ rb_mul(int argc, VALUE *argv, VALUE self)
   if (rb_scan_args(argc, argv, "11", &val, &scale) < 2)
     scale = rb_float_new(1.0);
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
+  
   if (rb_obj_is_kind_of(val, rb_klass)) {
     cvMul(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
-  }else{
+  }
+  else {
     CvScalar scl = VALUE_TO_CVSCALAR(val);
     VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
     cvSet(CVARR(mat), scl);

@@ -992,6 +992,10 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m4[j, i])
       }
     }
+
+    assert_raise(TypeError) {
+      m0.convert_scale(DUMMY_OBJ)
+    }
   end
 
   def test_convert_scale_abs
@@ -1017,6 +1021,10 @@ class TestCvMat < OpenCVTestCase
         assert_in_delta(a, m3[j, i], 0.001)
         assert_cvscalar_equal(m0[j, i], m4[j, i])
       }
+    }
+
+    assert_raise(TypeError) {
+      m0.convert_scale(DUMMY_OBJ)
     }
   end
 
@@ -1105,6 +1113,13 @@ class TestCvMat < OpenCVTestCase
         n += 1
       }
     }
+
+    assert_raise(TypeError) {
+      m1.add(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.add(CvScalar.new(1), DUMMY_OBJ)
+    }
   end
 
   def test_sub
@@ -1192,6 +1207,13 @@ class TestCvMat < OpenCVTestCase
         n += 1
       }
     }
+
+    assert_raise(TypeError) {
+      m1.sub(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.sub(CvScalar.new(1), DUMMY_OBJ)
+    }
   end
 
   def test_mul
@@ -1236,6 +1258,13 @@ class TestCvMat < OpenCVTestCase
       n = (c + 1) * scale
       CvScalar.new(n * 0.1, n * 0.2, n * 0.3, n * 0.4)
     }
+
+    assert_raise(TypeError) {
+      m1.mul(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.mul(m2, DUMMY_OBJ)
+    }
   end
 
   def test_mat_mul
@@ -1279,6 +1308,13 @@ class TestCvMat < OpenCVTestCase
       assert_in_delta(13.9, m[2, 0][0], 0.001)
       assert_in_delta(17, m[2, 1][0], 0.001)
       assert_in_delta(20.1, m[2, 2][0], 0.001)
+    }
+
+    assert_raise(TypeError) {
+      m0.mat_mul(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.mat_mul(m1, DUMMY_OBJ)
     }
   end
 
