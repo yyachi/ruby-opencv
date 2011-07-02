@@ -113,7 +113,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     if (rb_compatible_q(rb_klass, obj)) {
       CVPOINT(self)->x = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("x"), 0), rb_intern("to_i"), 0));
       CVPOINT(self)->y = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("y"), 0), rb_intern("to_i"), 0));
-    }else{
+    }
+    else {
       rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
     }
     break;

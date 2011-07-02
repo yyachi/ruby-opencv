@@ -468,7 +468,7 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
   Check_Type(filename, T_STRING);
 
   int _iscolor;
-  if (TYPE(iscolor) == T_NIL) {
+  if (NIL_P(iscolor)) {
     _iscolor = CV_LOAD_IMAGE_COLOR;
   }
   else {
@@ -552,9 +552,11 @@ rb_inside_q(VALUE self, VALUE object)
     if (cCvRect::rb_compatible_q(cCvRect::rb_class(), object)) {
       int width = NUM2INT(rb_funcall(object, rb_intern("width"), 0));
       int height = NUM2INT(rb_funcall(object, rb_intern("height"), 0));
-      return x >= 0 && y >= 0 && x < mat->width && x + width < mat->width && y < mat->height && y + height < mat->height ? Qtrue : Qfalse;
-    } else {
-      return x >= 0 && y >= 0 && x < mat->width && y < mat->height ? Qtrue : Qfalse;
+      return (x >= 0) && (y >= 0) && (x < mat->width) && ((x + width) < mat->width)
+	&& (y < mat->height) && ((y + height) < mat->height) ? Qtrue : Qfalse;
+    }
+    else {
+      return (x >= 0) && (y >= 0) && (x < mat->width) && (y < mat->height) ? Qtrue : Qfalse;
     }
   }
   rb_raise(rb_eArgError, "argument 1 should have method \"x\", \"y\"");
@@ -623,7 +625,8 @@ rb_height(VALUE self)
 VALUE
 rb_depth(VALUE self)
 {
-  return rb_hash_aref(rb_funcall(rb_const_get(rb_module_opencv(), rb_intern("DEPTH")), rb_intern("invert"), 0), INT2FIX(CV_MAT_DEPTH(CVMAT(self)->type)));
+  return rb_hash_aref(rb_funcall(rb_const_get(rb_module_opencv(), rb_intern("DEPTH")), rb_intern("invert"), 0),
+		      INT2FIX(CV_MAT_DEPTH(CVMAT(self)->type)));
 }
 
 /*
