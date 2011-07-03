@@ -283,7 +283,7 @@ rb_set_size(VALUE self, VALUE value)
     result = cvSetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_FRAME_HEIGHT, height);
   }
   else
-    raise_compatible_typeerror(object, cCvSize::rb_class());
+    raise_compatible_typeerror(value, cCvSize::rb_class());
   return DBL2NUM(result);
 }
 

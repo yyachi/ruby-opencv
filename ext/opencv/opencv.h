@@ -81,6 +81,7 @@ extern "C"{
 #endif
 
 // Ruby/OpenCV headers
+#include "cvutils.h"
 #include "cverror.h"
 #include "cvpoint.h"
 #include "cvpoint2d32f.h"
@@ -193,17 +194,8 @@ void free_object(void *ptr);
 void release_object(void *ptr);
 void release_iplconvkernel_object(void *ptr);
 
-void raise_typeerror(VALUE object, VALUE expected_class);
-void raise_compatible_typeerror(VALUE object, VALUE expected_class);
-
 VALUE rb_module_opencv();
 void define_ruby_module();
-
-void* rb_cvAlloc(size_t size);
-CvMat* rb_cvCreateMat(int height, int width, int type);
-IplImage* rb_cvCreateImage(CvSize size, int depth, int channels);
-IplConvKernel* rb_cvCreateStructuringElementEx(int cols, int rows, int anchorX, int anchorY, int shape, int *values);
-CvMemStorage* rb_cvCreateMemStorage(int block_size);
 
 // Ruby/OpenCV inline functions  
 inline CvArr*
