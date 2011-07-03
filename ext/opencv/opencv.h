@@ -160,7 +160,6 @@ extern "C"{
 #define INT2BOOL(x)  (x ? Qtrue : Qfalse)
 #endif
 
-
 // wrapper for <= 1.8
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(arg) (RARRAY(arg)->len)
@@ -193,6 +192,9 @@ void unresist_object(void *ptr);
 void free_object(void *ptr);
 void release_object(void *ptr);
 void release_iplconvkernel_object(void *ptr);
+
+void raise_typeerror(VALUE object, VALUE expected_class);
+void raise_compatible_typeerror(VALUE object, VALUE expected_class);
 
 VALUE rb_module_opencv();
 void define_ruby_module();

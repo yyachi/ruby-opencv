@@ -278,7 +278,6 @@ VALUE new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int chann
 
 __NAMESPACE_END_CVMAT
 
-
 inline CvMat*
 CVMAT(VALUE object)
 {
@@ -291,22 +290,21 @@ inline CvMat*
 CVMAT_WITH_CHECK(VALUE object)
 {
   if (!rb_obj_is_kind_of(object, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-	     rb_class2name(CLASS_OF(object)), rb_class2name(cCvMat::rb_class()));
+    raise_typeerror(object, cCvMat::rb_class());
   return CVMAT(object);
 }
 
 inline CvMat*
 MASK(VALUE object)
 {
-  if(NIL_P(object))
+  if (NIL_P(object))
     return NULL;
-  else if(rb_obj_is_kind_of(object, cCvMat::rb_class()) &&
-	  CV_MAT_DEPTH(CVMAT(object)->type) == CV_8UC1 &&
-	  CV_MAT_CN(CVMAT(object)->type) == 1)
+  else if (rb_obj_is_kind_of(object, cCvMat::rb_class()) &&
+	   CV_MAT_DEPTH(CVMAT(object)->type) == CV_8UC1 &&
+	   CV_MAT_CN(CVMAT(object)->type) == 1)
     return CVMAT(object);
   else
-    rb_raise(rb_eTypeError, "object is not mask.");
+    rb_raise(rb_eTypeError, "object is not a mask.");
 }
 
 __NAMESPACE_END_OPENCV

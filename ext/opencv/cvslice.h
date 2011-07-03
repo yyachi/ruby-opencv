@@ -51,7 +51,7 @@ VALUE_TO_CVSLICE(VALUE object)
                    rb_funcall(object, rb_intern("exclude_end?"), 0) ? NUM2INT(rb_funcall(object, rb_intern("end"), 0)) : NUM2INT(rb_funcall(object, rb_intern("end"), 0)) - 1);
   }
   else {
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvSlice::rb_class()));
+    raise_compatible_typeerror(object, cCvSlice::rb_class());
   }
 }
 

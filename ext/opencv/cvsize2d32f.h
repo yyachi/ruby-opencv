@@ -49,11 +49,12 @@ CVSIZE2D32F(VALUE object)
 inline CvSize2D32f
 VALUE_TO_CVSIZE2D32F(VALUE object)
 {
-  if(cCvSize2D32f::rb_compatible_q(cCvSize2D32f::rb_class(), object)){
+  if (cCvSize2D32f::rb_compatible_q(cCvSize2D32f::rb_class(), object)) {
     return cvSize2D32f(NUM2DBL(rb_funcall(object, rb_intern("width"), 0)),
                        NUM2DBL(rb_funcall(object, rb_intern("height"), 0)));
-  }else{
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvSize2D32f::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvSize2D32f::rb_class());
   }
 }
 

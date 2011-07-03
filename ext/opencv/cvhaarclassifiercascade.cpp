@@ -121,7 +121,7 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "11", &image, &options);
 
   if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1(target-image) should be %s.", rb_class2name(cCvMat::rb_class()));
+    raise_typeerror(image, cCvMat::rb_class());
 
   double scale_factor;
   int flags, min_neighbors;

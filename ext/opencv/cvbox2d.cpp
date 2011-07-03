@@ -102,8 +102,6 @@ rb_center(VALUE self)
 VALUE
 rb_set_center(VALUE self, VALUE value)
 {
-  if (!cCvPoint2D32f::rb_compatible_q(rb_klass, value))
-    rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(cCvPoint2D32f::rb_class()));
   CVBOX2D(self)->center = VALUE_TO_CVPOINT2D32F(value);
   return self;
 }

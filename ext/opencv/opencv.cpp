@@ -276,6 +276,18 @@ rb_cvCreateMemStorage(int block_size)
   return ptr;
 }
 
+void
+raise_typeerror(VALUE object, VALUE expected_class) {
+  rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
+	   rb_obj_classname(object), rb_class2name(expected_class));
+}
+
+void
+raise_compatible_typeerror(VALUE object, VALUE expected_class) {
+  rb_raise(rb_eTypeError, "wrong argument type %s (expected %s or compatible object)",
+	   rb_obj_classname(object), rb_class2name(expected_class));
+}
+
 VALUE rb_module;
 VALUE rb_opencv_constants;
 

@@ -58,7 +58,7 @@ VALUE_TO_CVSCALAR(VALUE object)
 		    NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(2))),
 		    NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(3))));
   else
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvScalar::rb_class()));
+    raise_compatible_typeerror(object, cCvScalar::rb_class());
 }
 
 __NAMESPACE_END_OPENCV

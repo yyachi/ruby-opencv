@@ -97,7 +97,10 @@ define_ruby_class()
 VALUE
 rb_compatible_q(VALUE klass, VALUE object)
 {
-  return (rb_respond_to(object, rb_intern("x")) && rb_respond_to(object, rb_intern("y")) && rb_respond_to(object, rb_intern("width")) && rb_respond_to(object, rb_intern("height"))) ? Qtrue : Qfalse;
+  return (rb_respond_to(object, rb_intern("x")) &&
+	  rb_respond_to(object, rb_intern("y")) &&
+	  rb_respond_to(object, rb_intern("width")) &&
+	  rb_respond_to(object, rb_intern("height"))) ? Qtrue : Qfalse;
 }
 
 /*
@@ -153,12 +156,13 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     break;
   case 1:
     object = argv[0];
-    if(rb_compatible_q(rb_klass, object)) {
+    if (rb_compatible_q(rb_klass, object)) {
       CVRECT(self)->x = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("x"), 0), rb_intern("to_i"), 0));
       CVRECT(self)->y = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("y"), 0), rb_intern("to_i"), 0));
       CVRECT(self)->width = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("width"), 0), rb_intern("to_i"), 0));
       CVRECT(self)->height = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("height"), 0), rb_intern("to_i"), 0));
-    }else{
+    }
+    else{
       rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
     }
     break;

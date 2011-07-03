@@ -46,11 +46,12 @@ inline CvPoint *CVPOINT(VALUE object){
 }
 
 inline CvPoint VALUE_TO_CVPOINT(VALUE object){
-  if(cCvPoint::rb_compatible_q(cCvPoint::rb_class(), object)){
+  if (cCvPoint::rb_compatible_q(cCvPoint::rb_class(), object)) {
     return cvPoint(NUM2INT(rb_funcall(object, rb_intern("x"), 0)),
                    NUM2INT(rb_funcall(object, rb_intern("y"), 0)));
-  }else{
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvPoint::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvPoint::rb_class());
   }
 }
 

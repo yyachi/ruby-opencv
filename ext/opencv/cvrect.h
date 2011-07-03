@@ -63,13 +63,14 @@ CVRECT(VALUE object)
 inline CvRect
 VALUE_TO_CVRECT(VALUE object)
 {
-  if(cCvRect::rb_compatible_q(cCvRect::rb_class(), object)){
+  if (cCvRect::rb_compatible_q(cCvRect::rb_class(), object)) {
     return cvRect(NUM2INT(rb_funcall(object, rb_intern("x"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("y"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("width"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("height"), 0)));
-  }else{
-      rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvRect::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvRect::rb_class());
   }
 }
 
