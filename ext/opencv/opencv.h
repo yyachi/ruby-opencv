@@ -146,7 +146,7 @@ extern "C"{
 #define IF_STRING(str) NIL_P(str) ? NULL : TYPE(str) == T_STRING ? rb
 #define IF_BOOL(val, t, f, ifnone) val == Qtrue ? t : val == Qfalse ? f : ifnone
 
-#define IF_DEPTH(val, ifnone) NIL_P(val) ? ifnone : FIX2INT(val)
+#define IF_DEPTH(val, ifnone) NIL_P(val) ? ifnone : NUM2INT(val)
 
 #define RESIST_CVMETHOD(hash, str, value) rb_hash_aset(hash, ID2SYM(rb_intern(str)), INT2FIX(value))
 #define LOOKUP_CVMETHOD(hash, key_as_cstr) (rb_hash_lookup(hash, ID2SYM(rb_intern(key_as_cstr))))
@@ -289,7 +289,7 @@ TRUE_OR_FALSE(VALUE object, int ifnone)
   case T_NIL:
     break;
   default:
-    rb_warn("argument should be true or false.");
+    break;
   }
   return value;
 }

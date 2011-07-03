@@ -38,7 +38,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(:cv32f, CvMat.new(16, 16, :cv32f, 1).sobel(1, 1).depth)
 
     (DEPTH.keys - [:cv8u, :cv32f]).each { |depth|
-      assert_raise(RuntimeError) {
+      assert_raise(ArgumentError) {
         CvMat.new(3, 3, depth).sobel(1, 1)
       }
     }
@@ -46,6 +46,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     # Uncomment the following lines to view the images
     # snap(['original', mat0], ['sobel(1,0)', mat1], ['sobel(0,1)', mat2],
     #      ['sobel(1,1)', mat3], ['sobel(1,1,3)', mat4], ['sobel(1,1,5)', mat5])
+
+    assert_raise(TypeError) {
+      mat0.sobel(DUMMY_OBJ, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.sobel(1, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.sobel(1, 0, DUMMY_OBJ)
+    }
   end
 
   def test_laplace
@@ -70,6 +80,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     # Uncomment the following line to view the images
     # snap(['original', mat0], ['laplace', mat1], ['laplace(3)', mat2], ['laplace(5)', mat3])
+
+    assert_raise(TypeError) {
+      mat0.laplace(DUMMY_OBJ)
+    }
   end
 
   def test_canny
@@ -84,6 +98,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     # Uncomment the following line to view the images
     # snap(['canny(50,200)', mat1], ['canny(50,200,3)', mat2], ['canny(50,200,5)', mat3])
+
+    assert_raise(TypeError) {
+      mat0.canny(DUMMY_OBJ, 200)
+    }
+    assert_raise(TypeError) {
+      mat0.canny(50, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.canny(50, 200, DUMMY_OBJ)
+    }
   end
 
   def test_pre_corner_detect
@@ -99,12 +123,23 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     # Uncomment the following lines to show the images
     # snap(['original', mat0], ['pre_coner_detect', mat1],
     #      ['pre_coner_detect(3)', mat2], ['pre_coner_detect(5)', mat3])
+
+    assert_raise(TypeError) {
+      mat0.pre_corner_detect(DUMMY_OBJ)
+    }
   end
 
   def test_corner_eigenvv
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
     mat1 = mat0.corner_eigenvv(3)
     mat2 = mat0.corner_eigenvv(3, 3)
+
+    assert_raise(TypeError) {
+      mat0.corner_eigenvv(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.corner_eigenvv(3, DUMMY_OBJ)
+    }
 
     flunk('FIXME: CvMat#corner_eigenvv is not tested yet.')
   end
@@ -113,6 +148,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
     mat1 = mat0.corner_min_eigen_val(3)
     mat2 = mat0.corner_min_eigen_val(3, 3)
+
+    assert_raise(TypeError) {
+      mat0.corner_min_eigen_val(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.corner_min_eigen_val(3, DUMMY_OBJ)
+    }
 
     flunk('FIXME: CvMat#corner_min_eigen_val is not tested yet.')
   end
@@ -127,11 +169,22 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat1))
     assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat2))
     assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat3))
-    assert_equal('4e703deb9a418bbf37e3283f4a7d4d32', hash_img(mat4))
+    # assert_equal('4e703deb9a418bbf37e3283f4a7d4d32', hash_img(mat4))
+    assert_equal('d689b19c786c5693da7282ab9fdb7921', hash_img(mat4))
 
     # Uncomment the following lines to show the images
     # snap(['original', mat0], ['corner_harris(3)', mat1], ['corner_harris(3,3)', mat2],
     #      ['corner_harris(3,3,0.04)', mat3], ['corner_harris(3,7,0.01)', mat4])
+
+    assert_raise(TypeError) {
+      mat0.corner_harris(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.corner_harris(3, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.corner_harris(3, 3, DUMMY_OBJ)
+    }
   end
 
   def test_find_corner_sub_pix
@@ -200,6 +253,26 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(ArgumentError) {
       mat0.good_features_to_track(0.2, 5, :max => 0)
     }
+
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(DUMMY_OBJ, 5)
+    }
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(0.2, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(0.2, 5, :mask => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(0.2, 5, :block_size => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(0.2, 5, :k => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.good_features_to_track(0.2, 5, :max => DUMMY_OBJ)
+    }
+    mat0.good_features_to_track(0.2, 5, :use_harris => DUMMY_OBJ)
   end
 
   def test_sample_line
@@ -216,6 +289,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('b3dc0e31260dd42b5341471e23e825d3', hash_img(mat1))
     assert_equal('b3dc0e31260dd42b5341471e23e825d3', hash_img(mat2))
     assert_equal('cc27ce8f4068efedcd31c4c782c3825c', hash_img(mat3))
+
+    assert_raise(TypeError) {
+      mat0.rect_sub_pix(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.rect_sub_pix(center, DUMMY_OBJ)
+    }
   end
 
   def test_quadrangle_sub_pix
@@ -236,15 +316,27 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('f170c05fa50c3ac2a762d7b3f5c4ae2f', hash_img(mat1))
     assert_equal('f170c05fa50c3ac2a762d7b3f5c4ae2f', hash_img(mat2))
     assert_equal('4d949d5083405381ad9ea09dcd95e5a2', hash_img(mat3))
+
+    assert_raise(TypeError) {
+      mat0.quadrangle_sub_pix(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.quadrangle_sub_pix(map_matrix, DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   mat0.quadrangle_sub_pix(CvMat.new(3, 3))
+    # }
   end
 
   def test_resize
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
-    mat1 = mat0.resize(CvSize.new(512, 512))
-    mat2 = mat0.resize(CvSize.new(512, 512), :linear)
-    mat3 = mat0.resize(CvSize.new(512, 512), :nn)
-    mat4 = mat0.resize(CvSize.new(128, 128), :area)
-    mat5 = mat0.resize(CvSize.new(128, 128), :cubic)
+    size_512 = CvSize.new(512, 512)
+    size_128 = CvSize.new(128, 128)
+    mat1 = mat0.resize(size_512)
+    mat2 = mat0.resize(size_512, :linear)
+    mat3 = mat0.resize(size_512, :nn)
+    mat4 = mat0.resize(size_128, :area)
+    mat5 = mat0.resize(size_128, :cubic)
     mat6 = mat0.clone
 
     assert_equal('b2203ccca2c17b042a90b79704c0f535', hash_img(mat1))
@@ -252,6 +344,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('ba8f2dee2329aaa6309de4770fc8fa55', hash_img(mat3))
     assert_equal('8a28a2748b0cfc87205d65c625187867', hash_img(mat4))
     assert_equal('de5c30fcd9e817aa282ab05388de995b', hash_img(mat5))
+
+    assert_raise(TypeError) {
+      mat0.resize(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.resize(size_128, DUMMY_OBJ)
+    }
   end
 
   def test_warp_affine
@@ -276,8 +375,14 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('cc4eb5d8eb7cb2c0b76941bc38fb91b1', hash_img(mat4))
 
     assert_raise(TypeError) {
-      mat0.warp_affine("foobar")
+      mat0.warp_affine(DUMMY_OBJ)
     }
+    assert_raise(TypeError) {
+      mat0.warp_affine(map_matrix, DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   mat0.warp_affine(CvMat.new(3, 3))
+    # }
   end
 
   def test_rotation_matrix2D
@@ -290,6 +395,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(1, mat1.channel)
     expected.each_with_index { |x, i|
       assert_in_delta(x, mat1[i][0], 0.001)
+    }
+
+    assert_raise(TypeError) {
+      CvMat.rotation_matrix2D(DUMMY_OBJ, 60, 2.0)
+    }
+    assert_raise(TypeError) {
+      CvMat.rotation_matrix2D(CvPoint2D32f.new(10, 20), DUMMY_OBJ, 2.0)
+    }
+    assert_raise(TypeError) {
+      CvMat.rotation_matrix2D(CvPoint2D32f.new(10, 20), 60, DUMMY_OBJ)
     }
   end
 
@@ -323,8 +438,14 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('71bd12857d2e4ac0c919652c2963b4e1', hash_img(mat4))
 
     assert_raise(TypeError) {
-      mat0.warp_perspective("foobar")
+      mat0.warp_perspective(DUMMY_OBJ)
     }
+    assert_raise(TypeError) {
+      mat0.warp_perspective(map_matrix, DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   mat0.warp_perspective(CvMat.new(2, 3))
+    # }
   end
 
   def test_remap
@@ -354,11 +475,17 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('1f6b73925056298c566e8e727627d929', hash_img(mat3))
 
     assert_raise(TypeError) {
-      mat0.remap('foo', maty)
+      mat0.remap(DUMMY_OBJ, maty)
     }
     assert_raise(TypeError) {
-      mat0.remap(matx, 'bar')
+      mat0.remap(matx, DUMMY_OBJ)
     }
+    assert_raise(TypeError) {
+      mat0.remap(matx, maty, DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   mat0.remap(CvMat.new(3, 3, :cv8u), maty)
+    # }
   end
 
   def test_log_polar
@@ -402,6 +529,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('9f02fc4438b1d69fea75a10dfd2b66b0', hash_img(mat5))
     assert_equal('9f02fc4438b1d69fea75a10dfd2b66b0', hash_img(mat6))
     assert_equal('075eb0e281328f768eb862735d16979d', hash_img(mat7))
+
+    assert_raise(TypeError) {
+      mat0.erode(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.erode(nil, DUMMY_OBJ)
+    }
   end
 
   def test_dilate
@@ -433,6 +567,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('ebf07f2a0edd2fd0fe26ff5921c6871b', hash_img(mat4))
     assert_equal('2841937c35c311e947bee49864b9d295', hash_img(mat5))
     assert_equal('9f02fc4438b1d69fea75a10dfd2b66b0', hash_img(mat6))
+
+    assert_raise(TypeError) {
+      mat0.dilate(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.dilate(nil, DUMMY_OBJ)
+    }
   end
 
   def test_morphology
@@ -465,7 +606,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     # Top hat
     mat1 = mat0.morphology(CV_MOP_TOPHAT, kernel)
-    mat2 = mat0.morphology(CV_MOP_TOPHAT, kernel)
+    mat2 = mat0.morphology(:tophat, kernel)
     assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat1))
     assert_equal('1760c5b63a52df37069164fe3e901aa4', hash_img(mat2))
 
@@ -474,6 +615,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.morphology(:blackhat, kernel)
     assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat1))
     assert_equal('18b1d51637b912a38133341ee006c6ff', hash_img(mat2))
+
+    [:open, :close, :gradient, :tophat, :blackhat].each { |type|
+      assert_raise(TypeError) {
+        mat0.morphology(type, DUMMY_OBJ)
+      }
+    }
   end
   
   def test_morphology_open
@@ -582,6 +729,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   def test_smooth
     mat0 = CvMat.load(FILENAME_LENA32x32, CV_LOAD_IMAGE_GRAYSCALE)
 
+    assert_raise(TypeError) {
+      mat0.smooth(DUMMY_OBJ)
+    }
+
     # Blur no scale
     mat1 = mat0.smooth(CV_BLUR_NO_SCALE)
     mat2 = mat0.smooth(:blur_no_scale, 3, 3)
@@ -598,7 +749,14 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('3c9074c87b65117798f48e41a17b2f30', hash_img(mat1))
     assert_equal('3c9074c87b65117798f48e41a17b2f30', hash_img(mat2))
     assert_equal('9c549aa406a425a65b036c2f9a2689e0', hash_img(mat3))
-    
+
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BLUR_NO_SCALE, DUMMY_OBJ, 0, 0, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BLUR_NO_SCALE, 3, DUMMY_OBJ, 0, 0)
+    }
+
     # Blur
     mat1 = mat0.smooth(CV_BLUR)
     mat2 = mat0.smooth(:blur, 3, 3)
@@ -621,6 +779,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('f2473b5b964ae8950f6a7fa5cde4c67a', hash_img(mat1))
     assert_equal('f2473b5b964ae8950f6a7fa5cde4c67a', hash_img(mat2))
     assert_equal('d7bb344fc0f6ec0da4b9754d319e4e4a', hash_img(mat3))
+
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BLUR, DUMMY_OBJ, 0, 0, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BLUR, 3, DUMMY_OBJ, 0, 0)
+    }
 
     # Gaussian
     mat1 = mat0.smooth(CV_GAUSSIAN)
@@ -650,6 +815,19 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('a1ffaa14522719e37d75eec18ff8b309', hash_img(mat4))
     assert_equal('f7f8b4eff3240ffc8f259ce975936d92', hash_img(mat5))
 
+    assert_raise(TypeError) {
+      mat0.smooth(CV_GAUSSIAN, DUMMY_OBJ, 0, 0, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_GAUSSIAN, 3, DUMMY_OBJ, 0, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_GAUSSIAN, 3, 0, DUMMY_OBJ, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_GAUSSIAN, 3, 0, 0, DUMMY_OBJ)
+    }
+    
     # Median
     mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
       if (i + j) % 15 != 0
@@ -663,7 +841,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
         mat0[32 + dy, 32 + dx] = CvScalar.new(0)
       }
     }
-    
+
     mat1 = mat0.smooth(CV_MEDIAN)
     mat2 = mat0.smooth(:median, 3)
     mat3 = mat0.smooth(CV_MEDIAN, 7)
@@ -672,6 +850,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('7343a41c542e034db356636c06134961', hash_img(mat1))
     assert_equal('7343a41c542e034db356636c06134961', hash_img(mat2))
     assert_equal('6ae59e64850377ee5470c854761551ea', hash_img(mat3))
+
+    assert_raise(TypeError) {
+      mat0.smooth(CV_MEDIAN, DUMMY_OBJ, 0, 0, 0)
+    }
 
     # Bilateral
     mat0 = create_cvmat(64, 64, :cv8u, 1) { |j, i, c|
@@ -686,6 +868,14 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.smooth(:bilateral, 3, 3)
     mat3 = mat0.smooth(CV_BILATERAL, 7, 7)
     mat4 = CvMat.new(64, 64, :cv8u, 3).smooth(CV_BILATERAL)
+
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BILATERAL, DUMMY_OBJ, 0, 0, 0)
+    }
+    assert_raise(TypeError) {
+      mat0.smooth(CV_BILATERAL, 3, DUMMY_OBJ, 0, 0)
+    }
+
     flunk('FIXME: Cases of CvMat#smooth(CV_BILATERAL) are not tested yet.')
   end
 
@@ -823,6 +1013,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('14a01cc47078e8f8fe4f0fd510d5521b', hash_img(mat1))
     assert_equal('14a01cc47078e8f8fe4f0fd510d5521b', hash_img(mat2))
     assert_equal('30e04de43f9240df6aadbaea6467b8fe', hash_img(mat3))
+
+    assert_raise(TypeError) {
+      mat0.filter2d(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.filter2d(kernel, DUMMY_OBJ)
+    }
   end
 
   def test_copy_make_border_constant
@@ -830,6 +1027,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat1 = mat0.copy_make_border_constant(CvSize.new(64, 48), CvPoint.new(16, 8), 255)
 
     assert_equal('5e231f8ca051b8f93e4aaa42d193d095', hash_img(mat1))
+
+    assert_raise(TypeError) {
+      mat0.copy_make_border_constant(DUMMY_OBJ, CvPoint.new(16, 8))
+    }
+    assert_raise(TypeError) {
+      mat0.copy_make_border_constant(CvSize.new(64, 48), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.copy_make_border_constant(CvSize.new(64, 48), CvPoint.new(16, 8), DUMMY_OBJ)
+    }
   end
 
   def test_copy_make_border_replicate
@@ -837,6 +1044,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat1 = mat0.copy_make_border_replicate(CvSize.new(300, 300), CvPoint.new(30, 30))
 
     assert_equal('ecc7e69d110f9934fa31f8ec85b30275', hash_img(mat1))
+
+    assert_raise(TypeError) {
+      mat0.copy_make_border_replicate(DUMMY_OBJ, CvPoint.new(16, 8))
+    }
+    assert_raise(TypeError) {
+      mat0.copy_make_border_replicate(CvSize.new(64, 48), DUMMY_OBJ)
+    }
   end
 
   def test_integral

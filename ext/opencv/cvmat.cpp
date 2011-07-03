@@ -58,9 +58,9 @@ __NAMESPACE_BEGIN_CVMAT
 #define DO_IS_CLOSED(op) ({VALUE _is_closed = rb_hash_aref(op, ID2SYM(rb_intern("is_closed"))); NIL_P(_is_closed) ? 0 : _is_closed == Qfalse ? 0 : 1;})
 
 #define GOOD_FEATURES_TO_TRACK_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")), rb_intern("merge"), 1, op)
-#define GF_MAX(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("max"))))
+#define GF_MAX(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("max"))))
 #define GF_MASK(op) MASK(rb_hash_aref(op, ID2SYM(rb_intern("mask"))))
-#define GF_BLOCK_SIZE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
+#define GF_BLOCK_SIZE(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
 #define GF_USE_HARRIS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("use_harris"))), 0)
 #define GF_K(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("k"))))
 
@@ -2884,6 +2884,7 @@ rb_fill_poly_bang(int argc, VALUE *argv, VALUE self)
   p = ALLOCA_N(CvPoint*, num_polygons);
   for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
+    Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
     p[j] = ALLOCA_N(CvPoint, num_points[j]);
     for (i = 0; i < num_points[j]; ++i) {
@@ -3100,7 +3101,7 @@ rb_sobel(int argc, VALUE *argv, VALUE self)
     dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
-    rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    rb_raise(rb_eArgError, "source depth should be CV_8U or CV_32F.");
     break;
   }
   cvSobel(self_ptr, CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
@@ -3185,7 +3186,6 @@ rb_corner_eigenvv(int argc, VALUE *argv, VALUE self)
   VALUE block_size, aperture_size, dest;
   if (rb_scan_args(argc, argv, "11", &block_size, &aperture_size) < 2)
     aperture_size = INT2FIX(3);
-  Check_Type(block_size, T_FIXNUM);
   CvSize size = cvGetSize(CVARR(self));
   dest = new_object(cvSize(size.width * 6, size.height), CV_MAKETYPE(CV_32F, 1));
   cvCornerEigenValsAndVecs(CVARR(self), CVARR(dest), NUM2INT(block_size), NUM2INT(aperture_size));
@@ -3205,7 +3205,7 @@ rb_corner_min_eigen_val(int argc, VALUE *argv, VALUE self)
   if (rb_scan_args(argc, argv, "11", &block_size, &aperture_size) < 2)
     aperture_size = INT2FIX(3);
   dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCornerMinEigenVal(CVARR(self), CVARR(dest), FIX2INT(block_size), FIX2INT(aperture_size));
+  cvCornerMinEigenVal(CVARR(self), CVARR(dest), NUM2INT(block_size), NUM2INT(aperture_size));
   return dest;
 }
 
@@ -3222,7 +3222,7 @@ rb_corner_harris(int argc, VALUE *argv, VALUE self)
   VALUE block_size, aperture_size, k, dest;
   rb_scan_args(argc, argv, "12", &block_size, &aperture_size, &k);
   dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCornerHarris(CVARR(self), CVARR(dest), FIX2INT(block_size), IF_INT(aperture_size, 3), IF_DBL(k, 0.04));
+  cvCornerHarris(CVARR(self), CVARR(dest), NUM2INT(block_size), IF_INT(aperture_size, 3), IF_DBL(k, 0.04));
   return dest;
 }
 
@@ -3284,18 +3284,16 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
   eigen = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
   tmp = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
   int np = GF_MAX(good_features_to_track_option);
-  if(!(np > 0))
+  if(np <= 0)
     rb_raise(rb_eArgError, "option :max should be positive value.");
   CvPoint2D32f *p32 = (CvPoint2D32f*)rb_cvAlloc(sizeof(CvPoint2D32f) * np);
-  if(!p32)
-    rb_raise(rb_eNoMemError, "failed to allocate memory.");
   cvGoodFeaturesToTrack(src, &eigen, &tmp, p32, &np, NUM2DBL(quality_level), NUM2DBL(min_distance),
 			GF_MASK(good_features_to_track_option),
 			GF_BLOCK_SIZE(good_features_to_track_option),
 			GF_USE_HARRIS(good_features_to_track_option),
 			GF_K(good_features_to_track_option));
   VALUE corners = rb_ary_new2(np);
-  for (i = 0; i < np; i++)
+  for (i = 0; i < np; ++i)
     rb_ary_store(corners, i, cCvPoint2D32f::new_object(p32[i]));
   cvFree(&p32);
   cvReleaseMat(&eigen);
@@ -3362,8 +3360,8 @@ rb_rect_sub_pix(int argc, VALUE *argv, VALUE self)
     _size = cvGetSize(CVARR(self));
   else
     _size = VALUE_TO_CVSIZE(size);
-
-  VALUE dest = new_object(_size, cvGetElemType(CVARR(self)));
+  
+  VALUE dest = new_mat_kind_object(_size, self);
   cvGetRectSubPix(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT2D32F(center));
   return dest;
 }
@@ -3385,11 +3383,8 @@ rb_quadrangle_sub_pix(int argc, VALUE *argv, VALUE self)
   else
     _size = VALUE_TO_CVSIZE(size);
 
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (2x3).", rb_class2name(cCvMat::rb_class()));
-
-  VALUE dest = new_object(_size, cvGetElemType(CVARR(self)));
-  cvGetQuadrangleSubPix(CVARR(self), CVARR(dest), CVMAT(map_matrix));
+  VALUE dest = new_mat_kind_object(_size, self);
+  cvGetQuadrangleSubPix(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(map_matrix));
   return dest;
 }
 
@@ -3432,10 +3427,8 @@ rb_warp_affine(int argc, VALUE *argv, VALUE self)
   VALUE map_matrix, interpolation, option, fill_value;
   if (rb_scan_args(argc, argv, "13", &map_matrix, &interpolation, &option, &fill_value) < 4)
     fill_value = INT2FIX(0);
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (2x3).", rb_class2name(cCvMat::rb_class()));
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvWarpAffine(CVARR(self), CVARR(dest), CVMAT(map_matrix),
+  cvWarpAffine(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(map_matrix),
                CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fill_value));
   return dest;
 }
@@ -3515,10 +3508,8 @@ rb_warp_perspective(int argc, VALUE *argv, VALUE self)
   VALUE map_matrix, interpolation, option, fillval;
   if (rb_scan_args(argc, argv, "13", &map_matrix, &interpolation, &option, &fillval) < 4)
     fillval = INT2FIX(0);
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (3x3).", rb_class2name(cCvMat::rb_class()));
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvWarpPerspective(CVARR(self), CVARR(dest), CVMAT(map_matrix),
+  cvWarpPerspective(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(map_matrix),
                     CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
 		    | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
   return dest;
@@ -3540,12 +3531,8 @@ rb_remap(int argc, VALUE *argv, VALUE self)
   VALUE mapx, mapy, interpolation, option, fillval;
   if (rb_scan_args(argc, argv, "23", &mapx, &mapy, &interpolation, &option, &fillval) < 5)
     fillval = INT2FIX(0);
-  if (!rb_obj_is_kind_of(mapx, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map of x-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
-  if (!rb_obj_is_kind_of(mapy, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 2 (map of y-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
   VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvRemap(CVARR(self), CVARR(dest), CVARR(mapx), CVARR(mapy),
+  cvRemap(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(mapx), CVMAT_WITH_CHECK(mapy),
           CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
   return dest;
 }
@@ -3598,7 +3585,8 @@ rb_erode_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  cvErode(CVARR(self), CVARR(self), IPLCONVKERNEL(element), IF_INT(iteration, 1));
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
+  cvErode(CVARR(self), CVARR(self), kernel, IF_INT(iteration, 1));
   return self;
 }
 
@@ -3629,7 +3617,8 @@ rb_dilate_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  cvDilate(CVARR(self), CVARR(self), IPLCONVKERNEL(element), IF_INT(iteration, 1));
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
+  cvDilate(CVARR(self), CVARR(self), kernel, IF_INT(iteration, 1));
   return self;
 }
 
@@ -3639,13 +3628,14 @@ rb_morphology_internal(VALUE element, VALUE iteration, int operation, VALUE self
   CvArr* self_ptr = CVARR(self);
   CvSize size = cvGetSize(self_ptr);
   VALUE dest = new_mat_kind_object(size, self);
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
   if (operation == CV_MOP_GRADIENT) {
     CvMat* temp = rb_cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
-    cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
+    cvMorphologyEx(self_ptr, CVARR(dest), temp, kernel, CV_MOP_GRADIENT, IF_INT(iteration, 1));
     cvReleaseMat(&temp);
   }
   else {
-    cvMorphologyEx(self_ptr, CVARR(dest), 0, IPLCONVKERNEL(element), operation, IF_INT(iteration, 1));
+    cvMorphologyEx(self_ptr, CVARR(dest), 0, kernel, operation, IF_INT(iteration, 1));
   }
   return dest;
 }
@@ -3754,27 +3744,32 @@ rb_smooth(int argc, VALUE *argv, VALUE self)
   int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
   
   VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
+  argc--;
   switch (_smoothtype) {
     case CV_BLUR_NO_SCALE:
       smooth_func = rb_smooth_blur_no_scale;
+      argc = (argc > 2) ? 2 : argc;
       break;
     case CV_BLUR:
       smooth_func = rb_smooth_blur;
+      argc = (argc > 2) ? 2 : argc;
       break;
     case CV_GAUSSIAN:
       smooth_func = rb_smooth_gaussian;
       break;
     case CV_MEDIAN:
       smooth_func = rb_smooth_median;
+      argc = (argc > 1) ? 1 : argc;
       break;
     case CV_BILATERAL:
       smooth_func = rb_smooth_bilateral;
+      argc = (argc > 2) ? 2 : argc;
       break;
     default:
       smooth_func = rb_smooth_gaussian;
       break;
     }
-  return (*smooth_func)(argc - 1, argv + 1, self);
+  return (*smooth_func)(argc, argv + 1, self);
 }
 
 /*
@@ -3903,14 +3898,13 @@ rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_filter2d(int argc, VALUE *argv, VALUE self)
 {
-  VALUE kernel, anchor, dest;
-  rb_scan_args(argc, argv, "11", &kernel, &anchor);
-  if (!rb_obj_is_kind_of(kernel, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (kernel) should be %s.", rb_class2name(cCvMat::rb_class()));
-  int type = cvGetElemType(CVARR(kernel));
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvFilter2D(CVARR(self), CVARR(dest), CVMAT(kernel), NIL_P(anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(anchor));
-  return dest;
+  VALUE _kernel, _anchor, _dest;
+  rb_scan_args(argc, argv, "11", &_kernel, &_anchor);
+  CvMat* kernel = CVMAT_WITH_CHECK(_kernel);
+  int type = cvGetElemType(kernel);
+  _dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
+  cvFilter2D(CVARR(self), CVARR(_dest), kernel, NIL_P(_anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(_anchor));
+  return _dest;
 }
 
 /*
@@ -3926,7 +3920,8 @@ rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self)
   VALUE size, offset, value, dest;
   rb_scan_args(argc, argv, "21", &size, &offset, &value);
   dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_CONSTANT, NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
+  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_CONSTANT,
+		   NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
   return dest;
 }
 
