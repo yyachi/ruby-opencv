@@ -160,9 +160,9 @@ VALUE rb_fill_convex_poly(int argc, VALUE *argv, VALUE self);
 VALUE rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_poly_line(int argc, VALUE *argv, VALUE self);
 VALUE rb_poly_line_bang(int argc, VALUE *argv, VALUE self);
-
 VALUE rb_put_text(int argc, VALUE *argv, VALUE self);
 VALUE rb_put_text_bang(int argc, VALUE *argv, VALUE self);
+
 /* cv function */
 VALUE rb_sobel(int argc, VALUE *argv, VALUE self);
 VALUE rb_laplace(int argc, VALUE *argv, VALUE self);

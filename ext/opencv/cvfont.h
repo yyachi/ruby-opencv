@@ -52,6 +52,14 @@ CVFONT(VALUE object)
   return ptr;
 }
 
+inline CvFont*
+CVFONT_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvFont::rb_class()))
+    raise_typeerror(object, cCvFont::rb_class());
+  return CVFONT(object);
+}
+
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_CVFONT_H

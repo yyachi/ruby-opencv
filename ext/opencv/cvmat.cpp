@@ -2874,17 +2874,19 @@ rb_fill_poly_bang(int argc, VALUE *argv, VALUE self)
   int num_polygons;
   int *num_points;
   CvPoint **p;
+
   rb_scan_args(argc, argv, "11", &polygons, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
   num_points = ALLOCA_N(int, num_polygons);
+
   p = ALLOCA_N(CvPoint*, num_polygons);
-  for (j = 0; j < num_polygons; j++) {
+  for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
     num_points[j] = RARRAY_LEN(points);
     p[j] = ALLOCA_N(CvPoint, num_points[j]);
-    for (i = 0; i < num_points[j]; i++) {
+    for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
   }
@@ -2944,12 +2946,13 @@ rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self)
   VALUE points, drawing_option;
   int i, num_points;
   CvPoint *p;
+
   rb_scan_args(argc, argv, "11", &points, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(points, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_points = RARRAY_LEN(points);
   p = ALLOCA_N(CvPoint, num_points);
-  for (i = 0; i < num_points; i++)
+  for (i = 0; i < num_points; ++i)
     p[i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
 
   cvFillConvexPoly(CVARR(self),
@@ -3011,17 +3014,20 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
   int num_polygons;
   int *num_points;
   CvPoint **p;
+
   rb_scan_args(argc, argv, "11", &polygons, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
   num_points = ALLOCA_N(int, num_polygons);
   p = ALLOCA_N(CvPoint*, num_polygons);
-  for (j = 0; j < num_polygons; j++) {
+
+  for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
+    Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
     p[j] = ALLOCA_N(CvPoint, num_points[j]);
-    for (i = 0; i < num_points[j]; i++) {
+    for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
   }
@@ -3048,23 +3054,25 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
  * <i>font</i> should be CvFont object.
  */
 VALUE
-rb_put_text(int argc, VALUE *argv, VALUE self)
+rb_put_text(int argc, VALUE* argv, VALUE self)
 {
   return rb_put_text_bang(argc, argv, rb_clone(self));
 }
 
 /*
  * call-seq:
- *   put_text!(<i>str, point ,font[,color]</i>) -> self
+ *   put_text!(<i>str, point, font[,color]</i>) -> self
  *
  * Draws text string. Return self.
  */
 VALUE
-rb_put_text_bang(int argc, VALUE *argv, VALUE self)
+rb_put_text_bang(int argc, VALUE* argv, VALUE self)
 {
-  VALUE text, point, font, color;
-  rb_scan_args(argc, argv, "22", &text, &point, &font, &color);
-  cvPutText(CVARR(self), StringValueCStr(text), VALUE_TO_CVPOINT(point), CVFONT(font), *CVSCALAR(color));
+  VALUE _text, _point, _font, _color;
+  rb_scan_args(argc, argv, "31", &_text, &_point, &_font, &_color);
+  CvScalar color = NIL_P(_color) ? CV_RGB(0, 0, 0) : VALUE_TO_CVSCALAR(_color);
+  cvPutText(CVARR(self), StringValueCStr(_text), VALUE_TO_CVPOINT(_point),
+	    CVFONT_WITH_CHECK(_font), color);
   return self;
 }
 

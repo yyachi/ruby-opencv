@@ -30,9 +30,23 @@ class TestCvMat_drawing < OpenCVTestCase
                  :color => CvColor::Red, :thickness => 3, :line_type => :aa)
     m1.line!(CvPoint.new(1, 0), CvPoint.new(m0.width - 1, m0.height - 1),
              :color => CvColor::Blue, :thickness => 1, :line_type => :aa)
-
-    # Uncomment the following line to view the image
+    
+    # Uncomment the following line to show the image
     # snap(['Line: Blue, thickness = 1', m1], ['Line: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m0.line(DUMMY_OBJ, CvPoint.new(1, 0))
+    }
+    assert_raise(TypeError) {
+      m0.line(CvPoint.new(1, 0), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :thickness => DUMMY_OBJ)
+    # }
+    m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
   end
 
   def test_rectangle
@@ -43,8 +57,22 @@ class TestCvMat_drawing < OpenCVTestCase
     m1.rectangle!(CvPoint.new(20, 20), CvPoint.new(m0.width - 20, m0.height - 20),
                   :color => CvColor::Blue, :thickness => 1, :line_type => :aa)
 
-    # Uncomment the following line to view the image
+    # Uncomment the following line to show the image
     # snap(['Rectangle: Blue, thickness = 1', m1], ['Rectangle: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m0.line(DUMMY_OBJ, CvPoint.new(1, 0))
+    }
+    assert_raise(TypeError) {
+      m0.rectangle(CvPoint.new(1, 0), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :thickness => DUMMY_OBJ)
+    # }
+    m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
   end
 
   def test_circle
@@ -54,8 +82,23 @@ class TestCvMat_drawing < OpenCVTestCase
                    :color => CvColor::Red, :thickness => 3, :line_type => :aa)
     m1.circle!(CvPoint.new(m0.width / 2, m0.height / 2), 80,
                :color => CvColor::Blue, :thickness => 1, :line_type => :aa)
-    # Uncomment the following line to view the image
+
+    # Uncomment the following line to show the image
     # snap(['Circle: Blue, thickness = 1', m1], ['Circle: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m0.circle(DUMMY_OBJ, 10)
+    }
+    assert_raise(TypeError) {
+      m0.circle(CvPoint.new(1, 0), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.circle(CvPoint.new(1, 0), 10, :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m0.circle(CvPoint.new(1, 0), 10, :thickness => DUMMY_OBJ)
+    # }
+    m0.circle(CvPoint.new(1, 0), 10, :line_type => DUMMY_OBJ)
   end
 
   def test_ellipse
@@ -66,8 +109,34 @@ class TestCvMat_drawing < OpenCVTestCase
     m1.ellipse!(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, 0, 360,
                 :color => CvColor::Blue, :thickness => 1, :line_type => :aa)
 
-    # Uncomment the following line to view the image
+    # Uncomment the following line to show the image
     # snap(['Ellipse: Blue, thickness = 1', m1], ['Ellipse: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m1.ellipse(DUMMY_OBJ, CvSize.new(100, 60), 30, 0, 360)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), DUMMY_OBJ, 30, 0, 360)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), DUMMY_OBJ, 0, 360)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, DUMMY_OBJ, 360)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, 0, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, 0, 360,
+                  :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, 0, 360,
+    #              :thickness => DUMMY_OBJ)
+    # }
+    m1.ellipse(CvPoint.new(m0.width / 2, m0.height / 2), CvSize.new(100, 60), 30, 0, 360,
+               :line_type => DUMMY_OBJ)
   end
 
   def test_ellipse_box
@@ -77,8 +146,19 @@ class TestCvMat_drawing < OpenCVTestCase
     m2 = m0.ellipse_box(box, :color => CvColor::Red, :thickness => 3, :line_type => :aa)
     m1.ellipse_box!(box, :color => CvColor::Blue, :thickness => 1, :line_type => :aa)
 
-    # Uncomment the following line to view the image
+    # Uncomment the following line to show the image
     # snap(['Ellipse box: Blue, thickness = 1', m1], ['Ellipse box: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m1.ellipse_box(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.ellipse_box(box, :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m1.ellipse_box(box, :thickness => DUMMY_OBJ)
+    # }
+    m1.ellipse_box(box, :line_type => DUMMY_OBJ)
   end
 
   def test_fill_poly
@@ -93,6 +173,20 @@ class TestCvMat_drawing < OpenCVTestCase
 
     # Uncomment the following line to view the image
     # snap(['Fill poly: Blue', m1], ['Fill poly: Red', m2])
+
+    assert_raise(TypeError) {
+      m1.fill_poly(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.fill_poly([DUMMY_OBJ, DUMMY_OBJ])
+    }
+    assert_raise(TypeError) {
+      m1.fill_poly(pt, :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m1.fill_poly(pt, :thickness => DUMMY_OBJ)
+    # }
+    m1.fill_poly(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_fill_convex_poly
@@ -105,6 +199,21 @@ class TestCvMat_drawing < OpenCVTestCase
 
     # Uncomment the following line to view the image
     # snap(['Fill convex poly: Blue', m1], ['Fill convex poly: Red', m2])
+
+
+    assert_raise(TypeError) {
+      m1.fill_convex_poly(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.fill_convex_poly([DUMMY_OBJ, DUMMY_OBJ])
+    }
+    assert_raise(TypeError) {
+      m1.fill_convex_poly(pt, :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m1.fill_convex_poly(pt, :thickness => DUMMY_OBJ)
+    # }
+    m1.fill_convex_poly(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_poly_line
@@ -118,6 +227,23 @@ class TestCvMat_drawing < OpenCVTestCase
 
     # Uncomment the following line to view the image
     # snap(['Fill poly line: Blue, thickness = 1', m1], ['Fill poly line: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m1.poly_line(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.poly_line([DUMMY_OBJ, DUMMY_OBJ])
+    }
+    assert_raise(TypeError) {
+      m1.poly_line([[DUMMY_OBJ, DUMMY_OBJ], [DUMMY_OBJ, DUMMY_OBJ]])
+    }
+    assert_raise(TypeError) {
+      m1.poly_line(pt, :color => DUMMY_OBJ)
+    }
+    # assert_raise(CvError) {
+    #   m1.poly_line(pt, :thickness => DUMMY_OBJ)
+    # }
+    m1.poly_line(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_put_text
@@ -130,6 +256,19 @@ class TestCvMat_drawing < OpenCVTestCase
 
     # Uncomment the following lines to view the image
     # snap(['Put text: Blue, thickness = 1', m1], ['Put text: Red, thickness = 3', m2])
+
+    assert_raise(TypeError) {
+      m0.put_text(DUMMY_OBJ, CvPoint.new(60, 90), font)
+    }
+    assert_raise(TypeError) {
+      m0.put_text('test', DUMMY_OBJ, font)
+    }
+    assert_raise(TypeError) {
+      m0.put_text('test', CvPoint.new(60, 90), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.put_text('test', CvPoint.new(60, 90), font, DUMMY_OBJ)
+    }
   end
 end
 
