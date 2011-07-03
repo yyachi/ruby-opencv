@@ -40,6 +40,10 @@ class TestCvMat_dxt < OpenCVTestCase
       assert_in_delta(mat0[j, 0][0], mat3[j, 0][0], 0.001)
       assert_in_delta(mat0[j, 0][1], mat3[j, 0][1], 0.001)
     }
+
+    assert_raise(TypeError) {
+      mat0.dft(DUMMY_OBJ)
+    }
   end
 
   def test_dft_2D
@@ -97,6 +101,10 @@ class TestCvMat_dxt < OpenCVTestCase
     n.times { |j|
       assert_in_delta(expected1[j], mat1[j, 0][0], 0.001)
       assert_in_delta(mat0[j, 0][0], mat2[j, 0][0], 0.001)
+    }
+
+    assert_raise(TypeError) {
+      mat0.dct(DUMMY_OBJ)
     }
   end
 
