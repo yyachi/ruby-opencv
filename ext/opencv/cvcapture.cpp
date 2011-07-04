@@ -91,7 +91,6 @@ define_ruby_class()
   rb_define_method(rb_klass, "gain", RUBY_METHOD_FUNC(rb_get_gain), 0);
   rb_define_method(rb_klass, "exposure", RUBY_METHOD_FUNC(rb_get_exposure), 0);
   rb_define_method(rb_klass, "convert_rgb", RUBY_METHOD_FUNC(rb_get_convert_rgb), 0);
-  rb_define_method(rb_klass, "white_balance", RUBY_METHOD_FUNC(rb_get_white_balance), 0);
   rb_define_method(rb_klass, "rectification", RUBY_METHOD_FUNC(rb_get_rectification), 0);
 }
 
@@ -442,15 +441,6 @@ rb_get_convert_rgb(VALUE self)
 {
   int flag = (int)cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_CONVERT_RGB);
   return (flag == 1) ? Qtrue : Qfalse;
-}
-
-/*
- * Currently unsupported
- */
-VALUE
-rb_get_white_balance(VALUE self)
-{
-  return rb_float_new(cvGetCaptureProperty(CVCAPTURE(self), CV_CAP_PROP_WHITE_BALANCE));
 }
 
 /*

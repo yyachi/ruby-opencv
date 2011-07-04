@@ -55,7 +55,6 @@ VALUE rb_get_hue(VALUE self);
 VALUE rb_get_gain(VALUE self);
 VALUE rb_get_exposure(VALUE self);
 VALUE rb_get_convert_rgb(VALUE self);
-VALUE rb_get_white_balance(VALUE self);
 VALUE rb_get_rectification(VALUE self);
 
 __NAMESPACE_END_CVCAPTURE

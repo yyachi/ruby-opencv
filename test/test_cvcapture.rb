@@ -176,10 +176,6 @@ class TestCvCapture < OpenCVTestCase
            (@cap.convert_rgb == false))
   end
 
-  def test_white_balance
-    assert(@cap.white_balance.is_a? Numeric)
-  end
-
   def test_rectification
     assert(@cap.rectification.is_a? Numeric)
   end
