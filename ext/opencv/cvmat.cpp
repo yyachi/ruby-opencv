@@ -360,7 +360,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "flood_fill!", RUBY_METHOD_FUNC(rb_flood_fill_bang), -1);
   rb_define_method(rb_klass, "find_contours", RUBY_METHOD_FUNC(rb_find_contours), -1);
   rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
-  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), -1);
+  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), 3);
   rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
   rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
 
@@ -4116,16 +4116,16 @@ rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pyr_down(int argc, VALUE *argv, VALUE self)
 {
-  VALUE filter_type, dest;
-  rb_scan_args(argc, argv, "01", &filter_type);
+  VALUE dest;
   int filter = CV_GAUSSIAN_5x5;
   if (argc > 0) {
+    VALUE filter_type = argv[0];
     switch (TYPE(filter_type)) {
     case T_SYMBOL:
       // currently suport CV_GAUSSIAN_5x5 only.
       break;
     default:
-      rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
+      raise_typeerror(filter_type, rb_cSymbol);
     }
   }
   CvSize original_size = cvGetSize(CVARR(self));
@@ -4159,7 +4159,7 @@ rb_pyr_up(int argc, VALUE *argv, VALUE self)
       // currently suport CV_GAUSSIAN_5x5 only.
       break;
     default:
-      rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
+      raise_typeerror(filter_type, rb_cSymbol);
     }
   }
   CvSize original_size = cvGetSize(CVARR(self));
@@ -4324,7 +4324,7 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
     header_size = sizeof(CvContour);
   }
   storage = cCvMemStorage::new_object();
-  if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
+  if (cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
   		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0) {
     return Qnil;
   }
@@ -4348,20 +4348,19 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
  * <b>support single-channel or 3-channel 8bit unsigned image only</b>
  */
 VALUE
-rb_pyr_segmentation(int argc, VALUE *argv, VALUE self)
+rb_pyr_segmentation(VALUE self, VALUE level, VALUE threshold1, VALUE threshold2)
 {
   SUPPORT_8U_ONLY(self);
   SUPPORT_C1C3_ONLY(self);
-  VALUE level, threshold1, threshold2, storage, dest;
-  rb_scan_args(argc, argv, "30", &level, &threshold1, &threshold2);
+  VALUE storage, dest;
   IplImage *src = IPLIMAGE(self);
-  int l = FIX2INT(level);
+  int l = NUM2INT(level);
   double t1 = NUM2DBL(threshold1), t2 = NUM2DBL(threshold2);
   CvRect roi = cvGetImageROI(src);
   if (l <= 0)
     rb_raise(rb_eArgError, "argument 1 (level) should be > 0.");
   if(((roi.width | roi.height) & ((1 << l) - 1)) != 0)
-    rb_raise(rb_eArgError, "bad image size on level %d.", FIX2INT(level));
+    rb_raise(rb_eArgError, "bad image size on level %d.", l);
   if (t1 < 0)
     rb_raise(rb_eArgError, "argument 2 (threshold for establishing the link) should be >= 0.");
   if (t2 < 0)
@@ -4375,7 +4374,7 @@ rb_pyr_segmentation(int argc, VALUE *argv, VALUE self)
 		    CVMEMSTORAGE(storage),
 		    &comp,
 		    l, t1, t2);
-  if(!comp)
+  if (!comp)
     comp = cvCreateSeq(CV_SEQ_CONNECTED_COMP, sizeof(CvSeq), sizeof(CvConnectedComp), CVMEMSTORAGE(storage));
   return rb_ary_new3(2, dest, cCvSeq::new_sequence(cCvSeq::rb_class(), comp, cCvConnectedComp::rb_class(), storage));
 }
@@ -4436,7 +4435,7 @@ rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_watershed(VALUE self, VALUE markers)
 {
-  cvWatershed(CVARR(self), CVARR(markers));
+  cvWatershed(CVARR(self), CVMAT_WITH_CHECK(markers));
   return markers;
 }
 
@@ -4449,12 +4448,12 @@ rb_watershed(VALUE self, VALUE markers)
 VALUE
 rb_moments(int argc, VALUE *argv, VALUE self)
 {
-  VALUE is_binary, moments;
+  VALUE is_binary;
   rb_scan_args(argc, argv, "01", &is_binary);
   IplImage image = *IPLIMAGE(self);
   int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
-  moments = rb_ary_new();
-  for(int i = 1; i <= cn; i++) {
+  VALUE moments = rb_ary_new();
+  for (int i = 1; i <= cn; ++i) {
     cvSetImageCOI(&image, i);
     rb_ary_push(moments, cCvMoments::new_object(&image, TRUE_OR_FALSE(is_binary, 0)));
   }
@@ -4493,6 +4492,8 @@ rb_hough_lines(int argc, VALUE *argv, VALUE self)
   VALUE method, rho, theta, threshold, p1, p2;
   rb_scan_args(argc, argv, "42", &method, &rho, &theta, &threshold, &p1, &p2);
   int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
+  if (method_flag == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
   VALUE storage = cCvMemStorage::new_object();
   CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
 			     method_flag, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
@@ -4506,7 +4507,6 @@ rb_hough_lines(int argc, VALUE *argv, VALUE self)
     return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvTwoPoints::rb_class(), storage);
     break;
   default:
-    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
     break;
   }
 
@@ -4593,6 +4593,8 @@ rb_hough_circles(int argc, VALUE *argv, VALUE self)
 	       &min_radius, &max_radius);
   storage = cCvMemStorage::new_object();
   int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
+  if (method_flag == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
   CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
 			      method_flag, NUM2DBL(dp), NUM2DBL(min_dist),
 			      NUM2DBL(param1), NUM2DBL(param2),
@@ -4635,10 +4637,10 @@ rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius)
   const int INVALID_TYPE = -1;
   VALUE dest;
   int method = CVMETHOD("INPAINT_METHOD", inpaint_method, INVALID_TYPE);
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
+  if (method == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method");
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), method);
+  cvInpaint(CVARR(self), MASK(mask), CVARR(dest), NUM2DBL(radius), method);
   return dest;
 }
 
