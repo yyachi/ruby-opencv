@@ -1056,8 +1056,44 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   def test_integral
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
 
-    sum, sqsum, tilted_sum = mat0.integral(true, true)
-    [sum, sqsum, tilted_sum].each { |s|
+    result_sum = []
+    result_sqsum = []
+    result_tiled_sum = []
+
+    result1 = mat0.integral
+    assert_equal(CvMat, result1.class)
+    result_sum << result1
+
+    result2 = mat0.integral(true)
+    assert_equal(Array, result2.class)
+    assert_equal(2, result2.size)
+    assert(result2.all? {|a| a.class == CvMat})
+    result_sum << result2[0]
+    result_sqsum << result2[1]
+
+    result3 = mat0.integral(true, true)
+    assert_equal(Array, result3.class)
+    assert_equal(3, result3.size)
+    assert(result3.all? {|a| a.class == CvMat})
+    result_sum << result3[0]
+    result_sqsum << result3[1]
+    result_tiled_sum << result3[2]
+
+    result4 = mat0.integral(true, false)
+    assert_equal(Array, result4.class)
+    assert_equal(2, result4.size)
+    assert(result4.all? {|a| a.class == CvMat})
+    result_sum << result4[0]
+    result_sqsum << result4[1]
+
+    result5 = mat0.integral(false, true)
+    assert_equal(Array, result5.class)
+    assert_equal(2, result5.size)
+    assert(result5.all? {|a| a.class == CvMat})
+    result_sum << result5[0]
+    result_tiled_sum << result5[1]
+    
+    (result_sum + result_sqsum + result_tiled_sum).each { |s|
       assert_equal(mat0.height + 1, s.height)
       assert_equal(mat0.width + 1, s.width)
       assert_equal(:cv64f, s.depth)
@@ -1068,24 +1104,33 @@ class TestCvMat_imageprocessing < OpenCVTestCase
                     0, 0, 1, 3,
                     0, 3, 8, 15,
                     0, 9, 21, 36]
-    expected_sum.each_with_index { |x, i|
-      assert_in_delta(x, sum[i][0], 0.001)
+    result_sum.each { |sum|
+      expected_sum.each_with_index { |x, i|
+        assert_in_delta(x, sum[i][0], 0.001)
+      }
     }
+    
     expected_sqsum = [0, 0, 0, 0,
                       0, 0, 1, 5,
                       0, 9, 26, 55,
                       0, 45, 111, 204]
-    expected_sqsum.each_with_index { |x, i|
-      assert_in_delta(x, sqsum[i][0], 0.001)
+    result_sqsum.each { |sqsum|
+      expected_sqsum.each_with_index { |x, i|
+        assert_in_delta(x, sqsum[i][0], 0.001)
+      }
     }
 
     expected_tilted_sum = [0, 0, 0, 0,
                            0, 0, 1, 2,
                            0, 4, 7, 8,
                            4, 16, 22, 20]
-    expected_tilted_sum.each_with_index { |x, i|
-      assert_in_delta(x, tilted_sum[i][0], 0.001)
+    result_tiled_sum.each { |tiled_sum|
+      expected_tilted_sum.each_with_index { |x, i|
+        assert_in_delta(x, tiled_sum[i][0], 0.001)
+      }
     }
+
+    mat0.integral(DUMMY_OBJ, DUMMY_OBJ)
   end
 
   def test_threshold
