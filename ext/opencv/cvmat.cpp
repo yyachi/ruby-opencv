@@ -3960,21 +3960,26 @@ rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_integral(int argc, VALUE *argv, VALUE self)
 {
-  VALUE sum, sqsum, tilted_sum, dest;
-  rb_scan_args(argc, argv, "02", &sqsum, &tilted_sum);
+  VALUE need_sqsum = Qfalse, need_tiled_sum = Qfalse;
+  rb_scan_args(argc, argv, "02", &need_sqsum, &need_tiled_sum);
   CvSize size = cvSize(cvGetSize(CVARR(self)).width + 1, cvGetSize(CVARR(self)).height + 1);
   int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
-  sum = cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn));
-  sqsum = (sqsum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
-  tilted_sum = (tilted_sum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
-  cvIntegral(CVARR(self), CVARR(sum), NIL_P(sqsum) ? NULL : CVARR(sqsum),
-	     NIL_P(tilted_sum) ? NULL : CVARR(tilted_sum));
-  dest = rb_ary_new3(1, sum);
-  if(sqsum)
-    rb_ary_push(dest, sqsum);
-  if(tilted_sum)
-    rb_ary_push(dest, tilted_sum);
-  return dest;
+  VALUE sum = cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn));
+  VALUE sqsum = (need_sqsum == Qtrue ? cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
+  VALUE tiled_sum = (need_tiled_sum == Qtrue ? cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
+  cvIntegral(CVARR(self), CVARR(sum), (need_sqsum == Qtrue) ? CVARR(sqsum) : NULL,
+	     (need_tiled_sum == Qtrue) ? CVARR(tiled_sum) : NULL);
+  
+  if ((need_sqsum != Qtrue) && (need_tiled_sum != Qtrue))
+    return sum;
+  else {
+    VALUE dest = rb_ary_new3(1, sum);
+    if (need_sqsum == Qtrue)
+      rb_ary_push(dest, sqsum);
+    if (need_tiled_sum == Qtrue)
+      rb_ary_push(dest, tiled_sum);
+    return dest;
+  }
 }
 
 VALUE
