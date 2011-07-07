@@ -5053,33 +5053,6 @@ rb_optical_flow_lk(VALUE self, VALUE prev, VALUE win_size)
 VALUE
 rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
 {
-// SUPPORT_8UC1_ONLY(self);
-// VALUE prev, velx, vely, options;
-// int use_previous = 0;
-// rb_scan_args(argc, argv, "13", &prev, &velx, &vely, &options);
-// options = OPTICAL_FLOW_BM_OPTION(options);
-// CvSize
-//   image_size = cvGetSize(CVARR(self)),
-//   block_size = BM_BLOCK_SIZE(options),
-//   shift_size = BM_SHIFT_SIZE(options),
-//   max_range  = BM_MAX_RANGE(options),
-//   velocity_size = cvSize((image_size.width - block_size.width) / shift_size.width,
-// 			(image_size.height - block_size.height) / shift_size.height);
-// if (NIL_P(velx) && NIL_P(vely)) {
-//   velx = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
-//   vely = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
-// }
-// else {
-//   if (rb_obj_is_kind_of(velx, cCvMat::rb_class()) && rb_obj_is_kind_of(vely, cCvMat::rb_class()))
-//     use_previous = 1;
-//   else
-//     rb_raise(rb_eArgError, "Necessary to give both argument 2(previous velocity field x) and argument 3(previous velocity field y)");
-// }
-// cvCalcOpticalFlowBM(CVARR(prev), CVARR(self),
-// 		   block_size, shift_size, max_range, use_previous,
-// 		   CVARR(velx), CVARR(vely));
-// return rb_ary_new3(2, velx, vely);
-
   SUPPORT_8UC1_ONLY(self);
   VALUE prev, velx, vely, options;
   int use_previous = 0;
