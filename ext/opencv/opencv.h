@@ -261,16 +261,9 @@ CVMETHOD(const char *name, VALUE method, int ifnone = 0)
     method = rb_str_intern(method);
   case T_SYMBOL:
     value = rb_hash_aref(rb_const_get(rb_module_opencv(), rb_intern(name)), method);
-    if (NIL_P(value)) {
-      rb_warn("invalid opencv method type (see OpenCV::%s)", name);
-      return ifnone;
-    }
-    else {
-      return FIX2INT(value);
-    }
+    return NIL_P(value) ? ifnone : FIX2INT(value);
   default:
-    rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-	     rb_class2name(CLASS_OF(method)), rb_class2name(rb_cSymbol));
+    raise_typeerror(method, rb_cSymbol);
   }
   return ifnone;
 }

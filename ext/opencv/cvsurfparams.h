@@ -45,6 +45,14 @@ CVSURFPARAMS(VALUE object)
   return ptr;
 }
 
+inline CvSURFParams*
+CVSURFPARAMS_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvSURFParams::rb_class()))
+    raise_typeerror(object, cCvSURFParams::rb_class());
+  return CVSURFPARAMS(object);
+}
+
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_CVSURFPARAMS_H
