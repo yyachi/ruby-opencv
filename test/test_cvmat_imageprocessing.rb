@@ -1841,6 +1841,14 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     # pt2 = CvPoint.new(pt1.x + templ.width, pt1.y + templ.height)
     # mat.rectangle!(pt1, pt2, :color => CvColor::Black, :thickness => 3)
     # snap mat, templ, result
+
+
+    assert_raise(TypeError) {
+      mat.match_template(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat.match_template(templ, DUMMY_OBJ)
+    }
   end
 
   def test_match_shapes
@@ -1954,8 +1962,24 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     # raise error
     assert_raise(TypeError) {
-      mat.snake_image(points, alpha, arr_beta, gamma, size, term_criteria)
+      mat.snake_image(DUMMY_OBJ, arr_alpha, arr_beta, arr_gamma, size, term_criteria)
     }
+    assert_raise(TypeError) {
+      mat.snake_image(points, DUMMY_OBJ, arr_beta, arr_gamma, size, term_criteria)
+    }
+    assert_raise(TypeError) {
+      mat.snake_image(points, arr_alpha, DUMMY_OBJ, arr_gamma, size, term_criteria)
+    }
+    assert_raise(TypeError) {
+      mat.snake_image(points, arr_alpha, arr_beta, DUMMY_OBJ, size, term_criteria)
+    }
+    assert_raise(TypeError) {
+      mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, DUMMY_OBJ, term_criteria)
+    }
+    assert_raise(TypeError) {
+      mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, DUMMY_OBJ)
+    }
+    mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria, DUMMY_OBJ)
 
     assert_raise(ArgumentError) {
       mat.snake_image(points, arr_alpha[0 .. num_points / 2], arr_beta, arr_gamma, size, term_criteria)
@@ -1978,7 +2002,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
         CvColor::White
       end
     }
-    
+
     [curr.optical_flow_hs(prev, nil, nil, :lambda => 0.0005, :criteria => CvTermCriteria.new(1, 0.001)),
      curr.optical_flow_hs(prev)].each { |velx, vely|
       assert_equal('d437cd896365c509b5d16fd5f2d7e498', hash_img(velx))
@@ -2007,19 +2031,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('da33e266aece70ed69dcf074acd8fd4e', hash_img(vely))
 
     assert_raise(TypeError) {
-      curr.optical_flow_hs('foobar')
+      curr.optical_flow_hs(DUMMY_OBJ)
     }
-
-    assert_raise(ArgumentError) {
-      curr.optical_flow_hs(prev, 'foo', prev_vely)
+    assert_raise(TypeError) {
+      curr.optical_flow_hs(prev, DUMMY_OBJ, prev_vely)
     }
-
-    assert_raise(ArgumentError) {
-      curr.optical_flow_hs(prev, prev_velx, 'bar')
+    assert_raise(TypeError) {
+      curr.optical_flow_hs(prev, prev_velx, DUMMY_OBJ)
     }
-
-    assert_raise(ArgumentError) {
-      curr.optical_flow_hs(prev, 'foo', 'bar')
+    assert_raise(TypeError) {
+      curr.optical_flow_hs(prev, prev_velx, prev_vely, DUMMY_OBJ)
     }
   end
 
@@ -2049,7 +2070,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('e7524c292e95e374fdb588f0b516938e', hash_img(vely))
 
     assert_raise(TypeError) {
-      curr.optical_flow_lk('foobar', CvSize.new(3, 3))
+      curr.optical_flow_lk(DUMMY_OBJ, CvSize.new(3, 3))
+    }
+    assert_raise(TypeError) {
+      curr.optical_flow_lk(prev, DUMMY_OBJ)
     }
   end
 
@@ -2094,16 +2118,17 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('6ad6b7a5c935379c0df4b9ec5666f3de', hash_img(velx))
     assert_equal('b317b0b9d4fdb0e5cd40beb0dd4143b4', hash_img(vely))
 
-    assert_raise(ArgumentError) {
-      curr.optical_flow_bm(prev, 'foo', prev_vely)
+    assert_raise(TypeError) {
+      curr.optical_flow_bm(DUMMY_OBJ)
     }
-
-    assert_raise(ArgumentError) {
-      curr.optical_flow_bm(prev, prev_velx, 'bar')
+    assert_raise(TypeError) {
+      curr.optical_flow_bm(prev, DUMMY_OBJ, prev_vely)
     }
-
-    assert_raise(ArgumentError) {
-      curr.optical_flow_bm(prev, 'foo', 'bar')
+    assert_raise(TypeError) {
+      curr.optical_flow_bm(prev, prev_velx, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      curr.optical_flow_bm(prev, prev_velx, prev_vely, DUMMY_OBJ)
     }
   end
 
@@ -2144,13 +2169,13 @@ class TestCvMat_imageprocessing < OpenCVTestCase
 
     # raise exceptions because of invalid arguments
     assert_raise(TypeError) {
-      mat0.extract_surf(CvMat.new(1, 1, :cv8u))
+      mat0.extract_surf(DUMMY_OBJ)
     }
     assert_raise(TypeError) {
-      mat0.extract_surf(CvSURFParams.new(500), 'foobar')
+      mat0.extract_surf(CvSURFParams.new(500), DUMMY_OBJ)
     }
     assert_raise(TypeError) {
-      mat0.extract_surf(CvSURFParams.new(500), mask, mat0)
+      mat0.extract_surf(CvSURFParams.new(500), mask, DUMMY_OBJ)
     }
 
     ## Uncomment the following lines to show the result

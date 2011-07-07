@@ -179,26 +179,33 @@ CVPOINTS_FROM_POINT_SET(VALUE object, CvPoint **pointset)
   VALUE storage;
   CvSeq *seq = 0;
   CvPoint2D32f p32;
-  if(rb_obj_is_kind_of(object, cCvSeq::rb_class())){
-    if(CV_IS_SEQ_POINT_SET(CVSEQ(object))){ 
+  if (rb_obj_is_kind_of(object, cCvSeq::rb_class())) {
+    if (CV_IS_SEQ_POINT_SET(CVSEQ(object))) {
       *pointset = (CvPoint*)cvCvtSeqToArray(CVSEQ(object),
 					    rb_cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
       return CVSEQ(object)->total;
-    }else{
-      rb_raise(rb_eTypeError, "sequence is not contain %s or %s.",
+    }
+    else {
+      rb_raise(rb_eTypeError, "sequence does not contain %s or %s.",
 	       rb_class2name(cCvPoint::rb_class()), rb_class2name(cCvPoint2D32f::rb_class()));
     }
-  }else if(rb_obj_is_kind_of(object, cCvMat::rb_class())){
+  }
+  else if (rb_obj_is_kind_of(object, cCvMat::rb_class())) {
     /* to do */
     rb_raise(rb_eNotImpError, "CvMat to CvSeq conversion not implemented.");
-  }else if(rb_obj_is_kind_of(object, rb_cArray)){
-    *pointset = (CvPoint*)rb_cvAlloc(RARRAY_LEN(object) * sizeof(CvPoint));
-    for(int i = 0; i < RARRAY_LEN(object); i++){
-      (*pointset)[i].x = NUM2INT(rb_funcall(rb_ary_entry(object, i), rb_intern("x"), 0));
-      (*pointset)[i].y = NUM2INT(rb_funcall(rb_ary_entry(object, i), rb_intern("y"), 0));
+  }
+  else if (rb_obj_is_kind_of(object, rb_cArray)) {
+    int len = RARRAY_LEN(object);
+    *pointset = (CvPoint*)rb_cvAlloc(len * sizeof(CvPoint));
+    ID id_x = rb_intern("x");
+    ID id_y = rb_intern("y");
+    for (int i = 0; i < len; ++i) {
+      (*pointset)[i].x = NUM2INT(rb_funcall(rb_ary_entry(object, i), id_x, 0));
+      (*pointset)[i].y = NUM2INT(rb_funcall(rb_ary_entry(object, i), id_y, 0));
     }
-    return RARRAY_LEN(object);
-  }else{
+    return len;
+  }
+  else {
     rb_raise(rb_eTypeError, "Can't convert CvSeq(PointSet).");
   }  
 }

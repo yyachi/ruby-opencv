@@ -2824,9 +2824,11 @@ class TestCvMat < OpenCVTestCase
       CvMat.compute_correspond_epilines(DUMMY_OBJ, 1, f_mat)
     }
     assert_raise(TypeError) {
+      CvMat.compute_correspond_epilines(mat1, DUMMY_OBJ, f_mat)
+    }
+    assert_raise(TypeError) {
       CvMat.compute_correspond_epilines(mat1, 1, DUMMY_OBJ)
     }
-    CvMat.compute_correspond_epilines(mat1, DUMMY_OBJ, f_mat)
   end
 end
 

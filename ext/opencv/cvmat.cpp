@@ -4749,16 +4749,14 @@ rb_match_template(int argc, VALUE *argv, VALUE self)
   else
     method_flag = CVMETHOD("MATCH_TEMPLATE_METHOD", method);
 
-  if (!(rb_obj_is_kind_of(templ, cCvMat::rb_class())))
-    rb_raise(rb_eTypeError, "argument 1 (template) should be %s.", rb_class2name(cCvMat::rb_class()));
-  if (cvGetElemType(CVARR(self)) != cvGetElemType(CVARR(templ)))
-    rb_raise(rb_eTypeError, "template should be same type of self.");
-  CvSize src_size = cvGetSize(CVARR(self));
-  CvSize template_size = cvGetSize(CVARR(templ));
+  CvArr* self_ptr = CVARR(self);
+  CvMat* templ_ptr = CVMAT_WITH_CHECK(templ);
+  CvSize src_size = cvGetSize(self_ptr);
+  CvSize template_size = cvGetSize(templ_ptr);
   result = cCvMat::new_object(src_size.height - template_size.height + 1,
 			      src_size.width - template_size.width + 1,
 			      CV_32FC1);
-  cvMatchTemplate(CVARR(self), CVARR(templ), CVARR(result), method_flag);
+  cvMatchTemplate(self_ptr, templ_ptr, CVARR(result), method_flag);
   return result;
 }
 
@@ -4875,7 +4873,8 @@ rb_cam_shift(VALUE self, VALUE window, VALUE criteria)
   VALUE comp, box;
   comp = cCvConnectedComp::new_object();
   box = cCvBox2D::new_object();
-  cvCamShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria), CVCONNECTEDCOMP(comp), CVBOX2D(box));
+  cvCamShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria),
+	     CVCONNECTEDCOMP(comp), CVBOX2D(box));
   return rb_ary_new3(2, comp, box);
 }
 
@@ -4989,18 +4988,19 @@ rb_optical_flow_hs(int argc, VALUE *argv, VALUE self)
   int use_previous = 0;
   rb_scan_args(argc, argv, "13", &prev, &velx, &vely, &options);
   options = OPTICAL_FLOW_HS_OPTION(options);
-  if (!rb_obj_is_kind_of(prev, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (previous image) should be %s", rb_class2name(cCvMat::rb_class()));
+  CvMat *velx_ptr, *vely_ptr;
   if (NIL_P(velx) && NIL_P(vely)) {
     velx = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
     vely = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  } else {
-    if (rb_obj_is_kind_of(velx, cCvMat::rb_class()) && rb_obj_is_kind_of(vely, cCvMat::rb_class()))
-      use_previous = 1;
-    else
-      rb_raise(rb_eArgError, "Necessary to give both argument 2(previous velocity field x) and argument 3(previous velocity field y)");
+    velx_ptr = CVMAT(velx);
+    vely_ptr = CVMAT(vely);
   }
-  cvCalcOpticalFlowHS(CVARR(prev), CVARR(self), use_previous, CVARR(velx), CVARR(vely),
+  else {
+    use_previous = 1;
+    velx_ptr = CVMAT_WITH_CHECK(velx);
+    vely_ptr = CVMAT_WITH_CHECK(vely);
+  }
+  cvCalcOpticalFlowHS(CVMAT_WITH_CHECK(prev), CVARR(self), use_previous, velx_ptr, vely_ptr,
 		      HS_LAMBDA(options), HS_CRITERIA(options));
   return rb_ary_new3(2, velx, vely);
 }
@@ -5019,11 +5019,10 @@ rb_optical_flow_lk(VALUE self, VALUE prev, VALUE win_size)
 {
   SUPPORT_8UC1_ONLY(self);
   VALUE velx, vely;
-  if (!rb_obj_is_kind_of(prev, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (previous image) should be %s", rb_class2name(cCvMat::rb_class()));
   velx = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
   vely = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCalcOpticalFlowLK(CVARR(prev), CVARR(self), VALUE_TO_CVSIZE(win_size), CVARR(velx), CVARR(vely));
+  cvCalcOpticalFlowLK(CVMAT_WITH_CHECK(prev), CVARR(self), VALUE_TO_CVSIZE(win_size),
+		      CVARR(velx), CVARR(vely));
   return rb_ary_new3(2, velx, vely);
 }
 
@@ -5059,26 +5058,29 @@ rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
   int use_previous = 0;
   rb_scan_args(argc, argv, "13", &prev, &velx, &vely, &options);
   options = OPTICAL_FLOW_BM_OPTION(options);
+  CvArr* self_ptr = CVARR(self);
   CvSize
-    image_size = cvGetSize(CVARR(self)),
+    image_size = cvGetSize(self_ptr),
     block_size = BM_BLOCK_SIZE(options),
     shift_size = BM_SHIFT_SIZE(options),
     max_range  = BM_MAX_RANGE(options),
     velocity_size = cvSize((image_size.width - block_size.width) / shift_size.width,
-			   (image_size.height - block_size.height) / shift_size.height);
+  			   (image_size.height - block_size.height) / shift_size.height);
+  CvMat *velx_ptr, *vely_ptr;
   if (NIL_P(velx) && NIL_P(vely)) {
     velx = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
     vely = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
+    velx_ptr = CVMAT(velx);
+    vely_ptr = CVMAT(vely);
   }
   else {
-    if (rb_obj_is_kind_of(velx, cCvMat::rb_class()) && rb_obj_is_kind_of(vely, cCvMat::rb_class()))
-      use_previous = 1;
-    else
-      rb_raise(rb_eArgError, "Necessary to give both argument 2(previous velocity field x) and argument 3(previous velocity field y)");
+    use_previous = 1;
+    velx_ptr = CVMAT_WITH_CHECK(velx);
+    vely_ptr = CVMAT_WITH_CHECK(vely);
   }
-  cvCalcOpticalFlowBM(CVARR(prev), CVARR(self),
-		      block_size, shift_size, max_range, use_previous,
-		      CVARR(velx), CVARR(vely));
+  cvCalcOpticalFlowBM(CVMAT_WITH_CHECK(prev), self_ptr,
+  		      block_size, shift_size, max_range, use_previous,
+  		      velx_ptr, vely_ptr);
   return rb_ary_new3(2, velx, vely);
 }
 
@@ -5281,7 +5283,7 @@ rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VAL
     rb_raise(rb_eArgError, "input points should 2xN, Nx2 or 3xN, Nx3 matrix(N >= 7).");
   
   correspondent_lines = cCvMat::new_object(n, 3, CV_MAT_DEPTH(points_ptr->type));
-  cvComputeCorrespondEpilines(points_ptr, FIX2INT(which_image), CVMAT_WITH_CHECK(fundamental_matrix),
+  cvComputeCorrespondEpilines(points_ptr, NUM2INT(which_image), CVMAT_WITH_CHECK(fundamental_matrix),
 			      CVMAT(correspondent_lines));
   return correspondent_lines;
 }
@@ -5302,35 +5304,10 @@ rb_extract_surf(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "12", &_params, &_mask, &_keypoints);
 
   // Prepare arguments
-  if (!rb_obj_is_kind_of(_params, cCvSURFParams::rb_class())) {
-    rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-	     rb_class2name(CLASS_OF(_params)), rb_class2name(cCvSURFParams::rb_class()));
-  }
-  CvSURFParams params = *CVSURFPARAMS(_params);
-  CvMat* mask;
-  if (NIL_P(_mask))
-    mask = NULL;
-  else {
-    if (!rb_obj_is_kind_of(_mask, cCvMat::rb_class())) {
-      rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-	       rb_class2name(CLASS_OF(_mask)), rb_class2name(cCvMat::rb_class()));
-    }
-    mask = CVMAT(_mask);
-  }
-  CvSeq* keypoints;
-  if (NIL_P(_keypoints)) {
-    keypoints = NULL;
-  }
-  else {
-    if (!rb_obj_is_kind_of(_keypoints, cCvSeq::rb_class())) {
-      rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-	       rb_class2name(CLASS_OF(_keypoints)), rb_class2name(cCvSeq::rb_class()));
-    }
-    keypoints = CVSEQ(_keypoints);
-  }
-
+  CvSURFParams params = *CVSURFPARAMS_WITH_CHECK(_params);
+  CvMat* mask = MASK(_mask);
+  CvSeq* keypoints = NIL_P(_keypoints) ? NULL : CVSEQ_WITH_CHECK(_keypoints);
   int use_provided = (keypoints == NULL) ? 0 : 1;
-  
   VALUE storage = cCvMemStorage::new_object();
   CvSeq* descriptors = NULL;
 
@@ -5343,11 +5320,10 @@ rb_extract_surf(int argc, VALUE *argv, VALUE self)
   const int DIM_SIZE = (params.extended) ? 128 : 64;
   const int NUM_KEYPOINTS = keypoints->total;
   VALUE _descriptors = rb_ary_new2(NUM_KEYPOINTS);
-  int m, n;
-  for (m = 0; m < NUM_KEYPOINTS; ++m) {
+  for (int m = 0; m < NUM_KEYPOINTS; ++m) {
     VALUE elem = rb_ary_new2(DIM_SIZE);
     float *descriptor = (float*)cvGetSeqElem(descriptors, m);
-    for (n = 0; n < DIM_SIZE; ++n) {
+    for (int n = 0; n < DIM_SIZE; ++n) {
       rb_ary_store(elem, n, rb_float_new(descriptor[n]));
     }
     rb_ary_store(_descriptors, m, elem);

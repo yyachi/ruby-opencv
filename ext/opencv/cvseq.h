@@ -62,6 +62,14 @@ CVSEQ(VALUE object)
   return ptr;
 }
 
+inline CvSeq*
+CVSEQ_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvSeq::rb_class()))
+    raise_typeerror(object, cCvSeq::rb_class());
+  return CVSEQ(object);
+}
+
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_CVSEQ_H
