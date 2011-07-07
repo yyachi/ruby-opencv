@@ -299,12 +299,14 @@ MASK(VALUE object)
 {
   if (NIL_P(object))
     return NULL;
-  else if (rb_obj_is_kind_of(object, cCvMat::rb_class()) &&
-	   CV_MAT_DEPTH(CVMAT(object)->type) == CV_8UC1 &&
-	   CV_MAT_CN(CVMAT(object)->type) == 1)
-    return CVMAT(object);
-  else
-    rb_raise(rb_eTypeError, "object is not a mask.");
+  else {
+    CvMat* obj_ptr = CVMAT_WITH_CHECK(object);
+    if (CV_MAT_DEPTH(obj_ptr->type) == CV_8UC1 &&
+	CV_MAT_CN(obj_ptr->type) == 1)
+      return obj_ptr;
+    else
+      rb_raise(rb_eTypeError, "Mask should be 8bit 1-channel matrix.");
+  }
 }
 
 __NAMESPACE_END_OPENCV
