@@ -330,6 +330,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
 
   rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
+  rb_define_method(rb_klass, "copy_make_border", RUBY_METHOD_FUNC(rb_copy_make_border), -1);
   rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
   rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
   rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
@@ -3721,6 +3722,45 @@ rb_filter2d(int argc, VALUE *argv, VALUE self)
   _dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvFilter2D(CVARR(self), CVARR(_dest), kernel, NIL_P(_anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(_anchor));
   return _dest;
+}
+
+/*
+ * call-seq:
+ *   copy_make_border(<i>border_type, size, offset[,value = CvScalar.new(0)]</i>)
+ *
+ * Copies image and makes border around it.
+ * <i>border_type</i>:
+ * - IPL_BORDER_CONSTANT, :constant
+ *     border is filled with the fixed value, passed as last parameter of the function.
+ * - IPL_BORDER_REPLICATE, :replicate
+ *     the pixels from the top and bottom rows, the left-most and right-most columns are replicated to fill the border
+ * <i>size</i>: The destination image size
+ * <i>offset</i>: Coordinates of the top-left corner (or bottom-left in the case of images with bottom-left origin) of the destination image rectangle.
+ * <i>value</i>: Value of the border pixels if bordertype is IPL_BORDER_CONSTANT or :constant.
+ */
+VALUE
+rb_copy_make_border(int argc, VALUE *argv, VALUE self)
+{
+  VALUE border_type, size, offset, value, dest;
+  rb_scan_args(argc, argv, "31", &border_type, &size, &offset, &value);
+  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
+
+  int type = 0;
+  if (SYMBOL_P(border_type)) {
+    ID type_id = rb_to_id(border_type);
+    if (type_id == rb_intern("constant"))
+      type = IPL_BORDER_CONSTANT;
+    else if (type_id == rb_intern("replicate"))
+      type = IPL_BORDER_REPLICATE;
+    else
+      rb_raise(rb_eArgError, "Invalid border_type (should be :constant or :replicate)");
+  }
+  else
+    type = NUM2INT(border_type);
+
+  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), type,
+		   NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
+  return dest;
 }
 
 /*

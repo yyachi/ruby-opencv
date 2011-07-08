@@ -190,6 +190,7 @@ VALUE rb_dilate_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_morphology(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_smooth(int argc, VALUE *argv, VALUE self);
+VALUE rb_copy_make_border(int argc, VALUE *argv, VALUE self);
 VALUE rb_filter2d(int argc, VALUE *argv, VALUE self);
 VALUE rb_integral(int argc, VALUE *argv, VALUE self);
 VALUE rb_threshold(int argc, VALUE *argv, VALUE self);

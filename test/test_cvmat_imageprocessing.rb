@@ -802,6 +802,33 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
   end
 
+  def test_copy_make_border
+    mat0 = create_cvmat(32, 32, :cv8u, 1) { CvScalar.new(128) }
+
+    [IPL_BORDER_CONSTANT, :constant].each { |type|
+      mat1 = mat0.copy_make_border(type, CvSize.new(64, 48), CvPoint.new(16, 8), 255)
+      assert_equal('5e231f8ca051b8f93e4aaa42d193d095', hash_img(mat1))
+    }
+
+    [IPL_BORDER_REPLICATE, :replicate].each { |type|
+      mat2 = mat0.copy_make_border(type, CvSize.new(300, 300), CvPoint.new(30, 30))
+      assert_equal('96940dc9e3abb6e2556ea51af1468031', hash_img(mat2))
+    }
+    
+    assert_raise(TypeError) {
+      mat0.copy_make_border(DUMMY_OBJ, CvSize.new(64, 48), CvPoint.new(16, 8))
+    }
+    assert_raise(TypeError) {
+      mat0.copy_make_border(IPL_BORDER_CONSTANT, CvSize.new(64, 48), DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.copy_make_border(IPL_BORDER_CONSTANT, CvSize.new(64, 48), CvPoint.new(16, 8), DUMMY_OBJ)
+    }
+    assert_raise(ArgumentError) {
+      mat0.copy_make_border(:dummy, CvSize.new(64, 48), CvPoint.new(16, 8), DUMMY_OBJ)
+    }
+  end
+
   def test_integral
     mat0 = create_cvmat(3, 3, :cv8u, 1) { |j, i, n| CvScalar.new(n) }
 
