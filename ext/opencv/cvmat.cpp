@@ -187,8 +187,6 @@ void define_ruby_class()
   rb_define_method(rb_klass, "to_CvMat", RUBY_METHOD_FUNC(rb_to_CvMat), 0);
   rb_define_method(rb_klass, "sub_rect", RUBY_METHOD_FUNC(rb_sub_rect), -2);
   rb_define_alias(rb_klass, "subrect", "sub_rect");
-  rb_define_method(rb_klass, "slice_width", RUBY_METHOD_FUNC(rb_slice_width), 1);
-  rb_define_method(rb_klass, "slice_height", RUBY_METHOD_FUNC(rb_slice_height), 1);
   rb_define_method(rb_klass, "row", RUBY_METHOD_FUNC(rb_row), -2);
   rb_define_method(rb_klass, "col", RUBY_METHOD_FUNC(rb_col), -2);
   rb_define_alias(rb_klass, "column", "col");
@@ -330,28 +328,11 @@ void define_ruby_class()
   rb_define_method(rb_klass, "dilate", RUBY_METHOD_FUNC(rb_dilate), -1);
   rb_define_method(rb_klass, "dilate!", RUBY_METHOD_FUNC(rb_dilate_bang), -1);
   rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
-  rb_define_method(rb_klass, "morphology_open", RUBY_METHOD_FUNC(rb_morphology_open), -1);
-  rb_define_method(rb_klass, "morphology_close", RUBY_METHOD_FUNC(rb_morphology_close), -1);
-  rb_define_method(rb_klass, "morphology_gradient", RUBY_METHOD_FUNC(rb_morphology_gradient), -1);
-  rb_define_method(rb_klass, "morphology_tophat", RUBY_METHOD_FUNC(rb_morphology_tophat), -1);
-  rb_define_method(rb_klass, "morphology_blackhat", RUBY_METHOD_FUNC(rb_morphology_blackhat), -1);
 
   rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
-  rb_define_method(rb_klass, "smooth_blur_no_scale", RUBY_METHOD_FUNC(rb_smooth_blur_no_scale), -1);
-  rb_define_method(rb_klass, "smooth_blur", RUBY_METHOD_FUNC(rb_smooth_blur), -1);
-  rb_define_method(rb_klass, "smooth_gaussian", RUBY_METHOD_FUNC(rb_smooth_gaussian), -1);
-  rb_define_method(rb_klass, "smooth_median", RUBY_METHOD_FUNC(rb_smooth_median), -1);
-  rb_define_method(rb_klass, "smooth_bilateral", RUBY_METHOD_FUNC(rb_smooth_bilateral), -1);
   rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
-  rb_define_method(rb_klass, "copy_make_border_constant", RUBY_METHOD_FUNC(rb_copy_make_border_constant), -1);
-  rb_define_method(rb_klass, "copy_make_border_replicate", RUBY_METHOD_FUNC(rb_copy_make_border_replicate), -1);
   rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
   rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
-  rb_define_method(rb_klass, "threshold_binary", RUBY_METHOD_FUNC(rb_threshold_binary), -1);
-  rb_define_method(rb_klass, "threshold_binary_inverse", RUBY_METHOD_FUNC(rb_threshold_binary_inverse), -1);
-  rb_define_method(rb_klass, "threshold_trunc", RUBY_METHOD_FUNC(rb_threshold_trunc), -1);
-  rb_define_method(rb_klass, "threshold_to_zero", RUBY_METHOD_FUNC(rb_threshold_to_zero), -1);
-  rb_define_method(rb_klass, "threshold_to_zero_inverse", RUBY_METHOD_FUNC(rb_threshold_to_zero_inverse), -1);
 
   rb_define_method(rb_klass, "pyr_down", RUBY_METHOD_FUNC(rb_pyr_down), -1);
   rb_define_method(rb_klass, "pyr_up", RUBY_METHOD_FUNC(rb_pyr_up), -1);
@@ -367,23 +348,13 @@ void define_ruby_class()
   rb_define_method(rb_klass, "moments", RUBY_METHOD_FUNC(rb_moments), -1);
 
   rb_define_method(rb_klass, "hough_lines", RUBY_METHOD_FUNC(rb_hough_lines), -1);
-  rb_define_method(rb_klass, "hough_lines_standard", RUBY_METHOD_FUNC(rb_hough_lines_standard), 3);
-  rb_define_method(rb_klass, "hough_lines_probabilistic", RUBY_METHOD_FUNC(rb_hough_lines_probabilistic), 5);
-  rb_define_method(rb_klass, "hough_lines_multi_scale", RUBY_METHOD_FUNC(rb_hough_lines_multi_scale), 5);
   rb_define_method(rb_klass, "hough_circles", RUBY_METHOD_FUNC(rb_hough_circles), -1);
-  rb_define_method(rb_klass, "hough_circles_gradient", RUBY_METHOD_FUNC(rb_hough_circles_gradient), -1);
-  //rb_define_method(rb_klass, "dist_transform", RUBY_METHOD_FUNC(rb_dist_transform), -1);
 
   rb_define_method(rb_klass, "inpaint", RUBY_METHOD_FUNC(rb_inpaint), 3);
-  rb_define_method(rb_klass, "inpaint_ns", RUBY_METHOD_FUNC(rb_inpaint_ns), 2);
-  rb_define_method(rb_klass, "inpaint_telea", RUBY_METHOD_FUNC(rb_inpaint_telea), 2);
 
   rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
   rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
   rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
-  rb_define_method(rb_klass, "match_shapes_i1", RUBY_METHOD_FUNC(rb_match_shapes_i1), -1);
-  rb_define_method(rb_klass, "match_shapes_i2", RUBY_METHOD_FUNC(rb_match_shapes_i2), -1);
-  rb_define_method(rb_klass, "match_shapes_i3", RUBY_METHOD_FUNC(rb_match_shapes_i3), -1);
 
   rb_define_method(rb_klass, "mean_shift", RUBY_METHOD_FUNC(rb_mean_shift), 2);
   rb_define_method(rb_klass, "cam_shift", RUBY_METHOD_FUNC(rb_cam_shift), 2);
@@ -393,14 +364,6 @@ void define_ruby_class()
   rb_define_method(rb_klass, "optical_flow_lk", RUBY_METHOD_FUNC(rb_optical_flow_lk), 2);
   rb_define_method(rb_klass, "optical_flow_bm", RUBY_METHOD_FUNC(rb_optical_flow_bm), -1);
 
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_7point",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_7point), 2);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_8point",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_8point), 2);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_ransac",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_ransac), -1);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_lmeds",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_lmeds), -1);
   rb_define_singleton_method(rb_klass, "find_fundamental_mat",
 			     RUBY_METHOD_FUNC(rb_find_fundamental_mat), -1);
   rb_define_singleton_method(rb_klass, "compute_correspond_epilines",
@@ -946,65 +909,6 @@ rb_sub_rect(VALUE self, VALUE args)
   return DEPEND_OBJECT(rb_klass,
                        cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), area),
                        self);
-}
-
-/*
- * call-seq:
- *   slice_width(<i>n</i>)
- *
- * The matrix is divided into <i>n</i> piece by the width.
- * If it cannot be just divided, warning is displayed.
- *
- * e.g.
- *   m = OpenCV::CvMat.new(10, 10) #=> size 10x10 matrix
- *   ml, mr = m.slice_width(2)     #=> 5x10 and 5x10 matrix
- *
- *   ml, mm, mr = m.slice_width(3)#=> 3x10 3x10 3x10 matrix
- *   warning : width does not div correctly.
- */
-VALUE
-rb_slice_width(VALUE self, VALUE num)
-{
-  int n = NUM2INT(num);
-  if (n < 1) 
-    rb_raise(rb_eArgError, "number of piece should be > 0");
-  CvSize size = cvGetSize(CVARR(self));
-  if (size.width % n != 0)
-    rb_warn("width does not div correctly.");
-  int div_x = size.width / n;
-  VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; ++i) {
-    CvRect rect = { div_x * i, 0, div_x, size.height };
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
-  }
-  return ary;
-}
-
-/*
- * call-seq:
- *   slice_height(<i>n</i>)
- *
- * The matrix is divided into <i>n</i> piece by the height.
- * If it cannot be just divided, warning is displayed.
- *
- * see also #slice_width.
- */
-VALUE
-rb_slice_height(VALUE self, VALUE num)
-{
-  int n = NUM2INT(num);
-  if (n < 1)
-    rb_raise(rb_eArgError, "number of piece should be > 0");
-  CvSize size = cvGetSize(CVARR(self));
-  if (size.height % n != 0)
-    rb_warn("height does not div correctly.");
-  int div_y = size.height / n;
-  VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; ++i) {
-    CvRect rect = { 0, div_y * i, size.width, div_y };
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
-  }
-  return ary;
 }
 
 /*
@@ -1602,19 +1506,6 @@ rb_merge(VALUE klass, VALUE args)
   dest = new_object(cvGetSize(tmp), CV_MAKETYPE(CV_MAT_DEPTH(tmp->type), len));
   cvMerge(src[0], src[1], src[2], src[3], CVARR(dest));
   return dest;
-}
-
-/*
- * call-seq:
- *   CvMat.mix_channels(srcs,dests,from_to = {1 => 1, 2 => 2, 3 => 3, 4 => 4}) -> dests
- */
-VALUE
-rb_mix_channels(int argc, VALUE *argv, VALUE self)
-{
-  VALUE srcs, dests, from_to;
-  rb_scan_args(argc, argv, "21", &srcs, &dests, &from_to);
-  /* not yet */
-  return Qnil;
 }
 
 /*
@@ -3663,117 +3554,6 @@ rb_morphology(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   morpholohy_open(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Opening".
- *   dilate(erode(src,element),element)
- */
-VALUE
-rb_morphology_open(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_OPEN, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_close(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Closing".
- *    erode(dilate(src,element),element)
- */
-VALUE
-rb_morphology_close(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_CLOSE, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_gradient(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Morphological gradient".
- *    dilate(src,element)-erode(src,element)
- */
-VALUE
-rb_morphology_gradient(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_GRADIENT, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_tophat(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "tophat".
- *    src-open(src,element)
- */
-VALUE
-rb_morphology_tophat(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_TOPHAT, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_blackhat(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "blackhat".
- *    close(src,element)-src
- */
-VALUE
-rb_morphology_blackhat(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration, dest;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_BLACKHAT, self);
-}
-
-VALUE
-rb_smooth(int argc, VALUE *argv, VALUE self)
-{
-  VALUE smoothtype, p1, p2, p3, p4;
-  rb_scan_args(argc, argv, "14", &smoothtype, &p1, &p2, &p3, &p4);
-  int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
-  
-  VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
-  argc--;
-  switch (_smoothtype) {
-    case CV_BLUR_NO_SCALE:
-      smooth_func = rb_smooth_blur_no_scale;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    case CV_BLUR:
-      smooth_func = rb_smooth_blur;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    case CV_GAUSSIAN:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    case CV_MEDIAN:
-      smooth_func = rb_smooth_median;
-      argc = (argc > 1) ? 1 : argc;
-      break;
-    case CV_BILATERAL:
-      smooth_func = rb_smooth_bilateral;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    default:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    }
-  return (*smooth_func)(argc, argv + 1, self);
-}
-
-/*
- * call-seq:
  *   smooth_blur_no_scale(<i>[p1 = 3, p2 = 3]</i>) -> cvmat
  *
  * Smooths the image by simple blur with no scaling.
@@ -3886,6 +3666,42 @@ rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
   return dest;
 }
 
+VALUE
+rb_smooth(int argc, VALUE *argv, VALUE self)
+{
+  VALUE smoothtype, p1, p2, p3, p4;
+  rb_scan_args(argc, argv, "14", &smoothtype, &p1, &p2, &p3, &p4);
+  int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
+  
+  VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
+  argc--;
+  switch (_smoothtype) {
+    case CV_BLUR_NO_SCALE:
+      smooth_func = rb_smooth_blur_no_scale;
+      argc = (argc > 2) ? 2 : argc;
+      break;
+    case CV_BLUR:
+      smooth_func = rb_smooth_blur;
+      argc = (argc > 2) ? 2 : argc;
+      break;
+    case CV_GAUSSIAN:
+      smooth_func = rb_smooth_gaussian;
+      break;
+    case CV_MEDIAN:
+      smooth_func = rb_smooth_median;
+      argc = (argc > 1) ? 1 : argc;
+      break;
+    case CV_BILATERAL:
+      smooth_func = rb_smooth_bilateral;
+      argc = (argc > 2) ? 2 : argc;
+      break;
+    default:
+      smooth_func = rb_smooth_gaussian;
+      break;
+    }
+  return (*smooth_func)(argc, argv + 1, self);
+}
+
 /*
  * call-seq:
  *   filter2d(<i>kernel[,anchor]</i>) -> cvmat
@@ -3905,42 +3721,6 @@ rb_filter2d(int argc, VALUE *argv, VALUE self)
   _dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvFilter2D(CVARR(self), CVARR(_dest), kernel, NIL_P(_anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(_anchor));
   return _dest;
-}
-
-/*
- * call-seq:
- *   copy_make_border_constant(<i>size, offset[,value = CvScalar.new(0)]</i>)
- *
- * Copies image and makes border around it.
- * Border is filled with the fixed value, passed as last parameter of the function.
- */
-VALUE
-rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self)
-{
-  VALUE size, offset, value, dest;
-  rb_scan_args(argc, argv, "21", &size, &offset, &value);
-  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_CONSTANT,
-		   NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
-  return dest;
-}
-
-/*
- * call-seq:
- *   copy_make_border_replicate(<i>size, offset</i>)
- *
- * Copies image and makes border around it.
- * The pixels from the top and bottom rows,
- * the left-most and right-most columns are replicated to fill the border.
- */
-VALUE
-rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self)
-{
-  VALUE size, offset, dest;
-  rb_scan_args(argc, argv, "20", &size, &offset);
-  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_REPLICATE);
-  return dest;
 }
 
 /*
@@ -4015,91 +3795,6 @@ rb_threshold(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eArgError, "Invalid threshold type.");
   
   return rb_threshold_internal(type, threshold, max_value, use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_binary(<i>threshold, max_value[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = max_value, if src(x,y)>threshold
- *              0, otherwise
- */
-VALUE
-rb_threshold_binary(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, max_value, use_otsu;
-  rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_BINARY, threshold, max_value, use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_binary_inverse(<i>threshold, max_value[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = 0, if src(x,y)>threshold
- *              max_value, otherwise
- */
-VALUE
-rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, max_value, use_otsu;
-  rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_BINARY_INV, threshold, max_value, use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_trunc(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = threshold, if src(x,y)>threshold
- *              src(x,y), otherwise
- */
-VALUE
-rb_threshold_trunc(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TRUNC, threshold, INT2NUM(0), use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_to_zero(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = src(x,y), if src(x,y)>threshold
- *              0, otherwise
- */
-VALUE
-rb_threshold_to_zero(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TOZERO, threshold, INT2NUM(0), use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_to_zero_inverse(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = 0, if src(x,y)>threshold
- *              src(x,y), otherwise
- */
-VALUE
-rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TOZERO_INV, threshold, INT2NUM(0), use_otsu, self);
 }
 
 /*
@@ -4513,70 +4208,6 @@ rb_hough_lines(int argc, VALUE *argv, VALUE self)
   return Qnil;
 }
 
-
-/*
- * call-seq:
- *   hough_lines_standard(<i>rho, theta, threshold</i>) -> cvseq(include CvLine)
- *
- * Finds lines in binary image using standard(classical) Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- */
-VALUE
-rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_STANDARD, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
-}
-
-/*
- * call-seq:
- *   hough_lines_probabilistic(<i>rho, theta, threshold, min_length, max_gap</i>) -> cvseq(include CvTwoPoints)
- *
- * Finds lines in binary image using probabilistic Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * min_length - The minimum line length.
- * * max_gap - The maximum gap between line segments lieing on the same line to treat them as the single line segment (i.e. to join them).
- */
-VALUE
-rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_PROBABILISTIC, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
-			     NUM2DBL(p1), NUM2DBL(p2));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvTwoPoints::rb_class(), storage);
-}
-
-/*
- * call-seq:
- *   hough_lines_multi_scale(<i>rho, theta, threshold, div_rho, div_theta</i>) -> cvseq(include CvLine)
- *
- * Finds lines in binary image using multi-scale variant of classical Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * div_rho = divisor for distance resolution rho.
- * * div_theta = divisor for angle resolution theta.
- */
-VALUE
-rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_MULTI_SCALE, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
-			     NUM2DBL(p1), NUM2DBL(p2));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
-}
-
 /*
  * call-seq:
  *   hough_circles(<i>method, dp, min_dist, param1, param2, min_radius = 0, max_radius = max(width,height)</i>) -> cvseq(include CvCircle32f)
@@ -4604,26 +4235,6 @@ rb_hough_circles(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   hough_circles_gradient(<i>dp, min_dist, threshold_canny, threshold_accumulate, min_radius = 0, max_radius = max(width,height)</i>) -> cvseq(include CvCircle32f)
- *
- * Finds circles in grayscale image using Hough transform.
- */
-VALUE
-rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE dp, min_dist, threshold_canny, threshold_accumulate, min_radius, max_radius, storage;
-  rb_scan_args(argc, argv, "42", &dp, &min_dist, &threshold_canny, &threshold_accumulate, &min_radius, &max_radius);
-  storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
-			      CV_HOUGH_GRADIENT, NUM2DBL(dp), NUM2DBL(min_dist),
-			      NUM2DBL(threshold_canny), NUM2DBL(threshold_accumulate),
-			      IF_INT(min_radius, 0), IF_INT(max_radius, 0));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvCircle32f::rb_class(), storage);
-}
-
-/*
- * call-seq:
  *   inpaint(<i>inpaint_method, mask, radius</i>) -> cvmat
  *
  * Inpaints the selected region in the image
@@ -4641,47 +4252,6 @@ rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius)
     rb_raise(rb_eArgError, "Invalid method");
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
   cvInpaint(CVARR(self), MASK(mask), CVARR(dest), NUM2DBL(radius), method);
-  return dest;
-}
-
-
-/*
- * call-seq:
- *   inpaint_ns(<i>mask, radius</i>) -> cvmat
- *
- * Inpaints the selected region in the image by Navier-Stokes based method.
- * The radius of circlular neighborhood of each point inpainted that is considered by the algorithm.
- */
-VALUE
-rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius)
-{
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
-  VALUE dest;
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_NS);
-  return dest;
-}
-
-/*
- * call-seq:
- *   inpaint_telea(<i>mask, radius</i>) -> cvmat
- *
- * Inpaints the selected region in the image by The method by Alexandru Telea's method.
- * The radius of circlular neighborhood of each point inpainted that is considered by the algorithm.
- */
-VALUE
-rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius)
-{
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
-  VALUE dest;
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_TELEA);
   return dest;
 }
 
@@ -4785,63 +4355,6 @@ rb_match_shapes(int argc, VALUE *argv, VALUE self)
 	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
   return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method_flag));
 }
-
-inline VALUE
-rb_match_shapes_internal(int argc, VALUE *argv, VALUE self, int method)
-{
-  VALUE object;
-  rb_scan_args(argc, argv, "10", &object);
-  if (!(rb_obj_is_kind_of(object, cCvMat::rb_class()) || rb_obj_is_kind_of(object, cCvContour::rb_class())))
-    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s",
-	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method));
-}
-
-/*
- * call-seq:
- *   match_shapes_i1(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I1(A,B)=sumi=1..7abs(1/mAi - 1/mBi)
- */
-VALUE
-rb_match_shapes_i1(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I1);
-}
-
-/*
- * call-seq:
- *   match_shapes_i2(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I2(A,B)=sumi=1..7abs(mAi - mBi)
- */
-VALUE
-rb_match_shapes_i2(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I2);
-}
-
-/*
- * call-seq:
- *   match_shapes_i3(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I3(A,B)=sumi=1..7abs(mAi - mBi)/abs(mAi)
- */
-VALUE
-rb_match_shapes_i3(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I3);
-}
-
 
 /*
  * call-seq:
@@ -5082,123 +4595,6 @@ rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
   		      block_size, shift_size, max_range, use_previous,
   		      velx_ptr, vely_ptr);
   return rb_ary_new3(2, velx, vely);
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_7point(<i>points1, points2</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for 7-point algorism. Return fundamental matrix(9x3).
- * <i>points1</i> and <i>points2</i> should be 2x7 or 3x7 single-channel, or 1x7 multi-channel matrix.
- *
- * note: 9x3 fundamental matrix means 3x3 three fundamental matrices.
- */
-VALUE
-rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2)
-{
-  CvMat* points1_ptr = CVMAT_WITH_CHECK(points1);
-  VALUE fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(points1_ptr->type));
-  int num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix),
-				 CV_FM_7POINT, 0, 0, NULL);
-  return (num == 0) ? Qnil : fundamental_matrix;
-}
-
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_8point(<i>points1, points2</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for 8-point algorism.
- * <i>points1</i> and <i>points2</i> should be 2x8 or 3x8 single-channel, or 1x8 multi-channel matrix.
- *
- */
-VALUE
-rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2)
-{
-  CvMat* points1_ptr = CVMAT_WITH_CHECK(points1);
-  VALUE fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
-  int num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix),
-				 CV_FM_8POINT, 0, 0, NULL);
-  return (num == 0) ? Qnil : fundamental_matrix;
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_ransac(<i>points1, points2[,options = {}]</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for RANSAC algorism.
- * <i>points1</i> and <i>points2</i> should be 2xN, Nx2, 3xN or Nx3 1-channel, or 1xN or Nx1 multi-channel matrix (N >= 8).
- * <i>option</i> should be Hash include these keys.
- *   :with_status (true or false)
- *      If set true, return fundamental_matrix and status. [fundamental_matrix, status]
- *      Otherwise return fundamental matrix only(default).
- *   :maximum_distance
- *      The maximum distance from point to epipolar line in pixels, beyond which the point is considered an outlier
- *      and is not used for computing the final fundamental matrix. Usually it is set to 0.5 or 1.0.
- *   :desirable_level
- *      It denotes the desirable level of confidence that the matrix is correct.
- *
- * note: <i>option</i>'s default value is CvMat::FIND_FUNDAMENTAL_MAT_OPTION.
- */
-VALUE
-rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass)
-{
-  VALUE points1, points2, option, fundamental_matrix, status;
-  int num = 0;
-  rb_scan_args(argc, argv, "21", &points1, &points2, &option);
-  option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
-  if (FFM_WITH_STATUS(option)) {
-    int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
-    status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
-    return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }
-  else {
-    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
-    return num == 0 ? Qnil : fundamental_matrix;
-  }
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_lmeds(<i>points1, points2[,options = {}]</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for LMedS algorism.
- * <i>points1</i> and <i>points2</i> should be 2xN, Nx2, 3xN or Nx3 1-channel, or 1xN or Nx1 multi-channel matrix (N >= 8).
- * <i>option</i> should be Hash include these keys.
- *   :with_status (true or false)
- *      If set true, return fundamental_matrix and status. [fundamental_matrix, status]
- *      Otherwise return fundamental matrix only(default).
- *   :desirable_level
- *      It denotes the desirable level of confidence that the matrix is correct.
- *
- * note: <i>option</i>'s default value is CvMat::FIND_FUNDAMENTAL_MAT_OPTION.
- */
-VALUE
-rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass)
-{
-  VALUE points1, points2, option, fundamental_matrix, status;
-  int num = 0;
-  rb_scan_args(argc, argv, "21", &points1, &points2, &option);
-  option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
-  if(FFM_WITH_STATUS(option)){
-    int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
-    status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
-			       0, FFM_DESIRABLE_LEVEL(option), CVMAT(status));
-    return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }
-  else{
-    num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
-			       0, FFM_DESIRABLE_LEVEL(option), NULL);
-    return num == 0 ? Qnil : fundamental_matrix;
-  }
 }
 
 /*

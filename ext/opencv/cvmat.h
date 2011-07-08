@@ -56,8 +56,6 @@ VALUE rb_square_q(VALUE self);
 VALUE rb_to_CvMat(VALUE self);
 VALUE rb_to_IplImage(VALUE self);
 VALUE rb_sub_rect(VALUE self, VALUE args);
-VALUE rb_slice_width(VALUE self, VALUE num);
-VALUE rb_slice_height(VALUE self, VALUE num);
 VALUE rb_row(VALUE self, VALUE args);
 VALUE rb_col(VALUE self, VALUE args);
 VALUE rb_each_row(VALUE self);
@@ -84,7 +82,6 @@ VALUE rb_flip(int argc, VALUE *argv, VALUE self);
 VALUE rb_flip_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_split(VALUE self);
 VALUE rb_merge(VALUE klass, VALUE args);
-VALUE rb_mix_channels(int argc, VALUE *argv, VALUE klass);
 VALUE rb_rand_shuffle(int argc, VALUE *argv, VALUE klass);
 VALUE rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE klass);
 
@@ -191,28 +188,11 @@ VALUE rb_erode_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_dilate(int argc, VALUE *argv, VALUE self);
 VALUE rb_dilate_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_morphology(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_open(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_close(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_gradient(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_tophat(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_blackhat(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_smooth(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_blur(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_gaussian(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_median(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_bilateral(int argc, VALUE *argv, VALUE self);
 VALUE rb_filter2d(int argc, VALUE *argv, VALUE self);
-VALUE rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self);
-VALUE rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self);
 VALUE rb_integral(int argc, VALUE *argv, VALUE self);
 VALUE rb_threshold(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_binary(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_trunc(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_to_zero(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self);
 VALUE rb_adaptive_threshold(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_pyr_down(int argc, VALUE *argv, VALUE self);
@@ -229,23 +209,14 @@ VALUE rb_watershed(VALUE self, VALUE markers);
 VALUE rb_moments(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_hough_lines(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold);
-VALUE rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
-VALUE rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
 VALUE rb_hough_circles(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self);
 VALUE rb_dist_transform(int argc, VALUE *argv, VALUE self);
 VALUE rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius);
-VALUE rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius);
-VALUE rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius);
 
 VALUE rb_equalize_hist(VALUE self);
 /* Matching*/
 VALUE rb_match_template(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i1(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i2(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i3(int argc, VALUE *argv, VALUE self);
 // VALUE rb_calc_emd(int argc, VALUE *argv, VALUE self);
 /* Object Tracking */
 VALUE rb_mean_shift(VALUE self, VALUE window, VALUE criteria);
@@ -258,10 +229,6 @@ VALUE rb_optical_flow_bm(int argc, VALUE *argv, VALUE self);
 VALUE rb_optical_flow_pyr_lk(int argc, VALUE *argv, VALUE self);
 
 /* Epipolar Geometory */
-VALUE rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2);
-VALUE rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2);
-VALUE rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass);
-VALUE rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass);
 VALUE rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass);
 VALUE rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix);
 
