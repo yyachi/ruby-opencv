@@ -187,9 +187,8 @@ void define_ruby_class()
   rb_define_method(rb_klass, "to_CvMat", RUBY_METHOD_FUNC(rb_to_CvMat), 0);
   rb_define_method(rb_klass, "sub_rect", RUBY_METHOD_FUNC(rb_sub_rect), -2);
   rb_define_alias(rb_klass, "subrect", "sub_rect");
-  rb_define_method(rb_klass, "row", RUBY_METHOD_FUNC(rb_row), -2);
-  rb_define_method(rb_klass, "col", RUBY_METHOD_FUNC(rb_col), -2);
-  rb_define_alias(rb_klass, "column", "col");
+  rb_define_method(rb_klass, "get_rows", RUBY_METHOD_FUNC(rb_get_rows), -2);
+  rb_define_method(rb_klass, "get_cols", RUBY_METHOD_FUNC(rb_get_cols), -2);
   rb_define_method(rb_klass, "each_row", RUBY_METHOD_FUNC(rb_each_row), 0);
   rb_define_method(rb_klass, "each_col", RUBY_METHOD_FUNC(rb_each_col), 0);
   rb_define_alias(rb_klass, "each_column", "each_col");
@@ -914,14 +913,14 @@ rb_sub_rect(VALUE self, VALUE args)
 
 /*
  * call-seq:
- *   row(<i>n</i>)            -> Return row
- *   row(<i>n1, n2, ...</i>)  -> Return Array of row
+ *   get_rows(<i>n</i>)            -> Return row
+ *   get_rows(<i>n1, n2, ...</i>)  -> Return Array of row
  *
  * Return row(or rows) of matrix.
  * argument should be Fixnum or CvSlice compatible object.
  */
 VALUE
-rb_row(VALUE self, VALUE args)
+rb_get_rows(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
   if (len < 1)
@@ -943,14 +942,14 @@ rb_row(VALUE self, VALUE args)
 
 /*
  * call-seq:
- *   col(<i>n</i>)            -> Return column
- *   col(<i>n1, n2, ...</i>)  -> Return Array of columns
+ *   get_cols(<i>n</i>)            -> Return column
+ *   get_cols(<i>n1, n2, ...</i>)  -> Return Array of columns
  *
  * Return column(or columns) of matrix.
  * argument should be Fixnum or CvSlice compatible object.
  */
 VALUE
-rb_col(VALUE self, VALUE args)
+rb_get_cols(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
   if (len < 1)

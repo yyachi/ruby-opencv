@@ -320,17 +320,17 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
-  def test_row
+  def test_get_rows
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.row(2)
+    m2 = m1.get_rows(2)
     assert_equal(1, m2.height)
     assert_equal(m1.width, m2.width)
     m1.width.times { |i|
       assert_cvscalar_equal(m1[2, i], m2[i])
     }
 
-    m2, m3 = m1.row(1, 2)
+    m2, m3 = m1.get_rows(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.height)
       assert_equal(m1.width, m.width)
@@ -341,25 +341,21 @@ class TestCvMat < OpenCVTestCase
     }
 
     assert_raise(TypeError) {
-      m1.row(DUMMY_OBJ)
+      m1.get_rows(DUMMY_OBJ)
     }
-    flunk('FIXME: Not handle out of range error yet')
-    # assert_raise(ArgumentError) {
-    #   m1.row(-1)
-    # }
   end
 
-  def test_col
+  def test_get_cols
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.col(2)
+    m2 = m1.get_cols(2)
     assert_equal(1, m2.width)
     assert_equal(m1.height, m2.height)
     m1.height.times { |j|
       assert_cvscalar_equal(m1[j, 2], m2[j])
     }
 
-    m2, m3 = m1.col(1, 2)
+    m2, m3 = m1.get_cols(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.width)
       assert_equal(m1.height, m.height)
@@ -370,13 +366,8 @@ class TestCvMat < OpenCVTestCase
     }
 
     assert_raise(TypeError) {
-      m1.col(DUMMY_OBJ)
+      m1.get_cols(DUMMY_OBJ)
     }
-
-    flunk('FIXME: Not handle out of range error yet')
-    # assert_raise(ArgumentError) {
-    #   m1.col(-1)
-    # }
   end
 
   def test_each_row
