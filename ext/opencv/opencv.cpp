@@ -138,26 +138,6 @@ rb_module_opencv()
   return rb_module;
 }
 
-/*
- * convert OpenCV internal error to Ruby exception.
- */
-int
-error_callback(int status,
-               const char *function_name,
-               const char *error_message,
-               const char *file_name,
-               int line,
-               void *user_data)
-{
-  int error_code = (CvStatus)cvGetErrStatus();
-  if (error_code) {
-    OPENCV_RSTERR(); // = CV_StsOk
-    rb_warn("OpenCV error code (%d) : %s (%d in %s)", error_code, function_name, line, file_name);
-    rb_raise(mCvError::by_code(error_code), "%s", error_message);
-  }
-  return 0;
-}
-
 void
 define_ruby_module()
 {
@@ -578,17 +558,25 @@ CREATE_CVTCOLOR_FUNC(rb_Luv2RGB, CV_Luv2RGB, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2BGR, CV_HLS2BGR, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2RGB, CV_HLS2RGB, 3, 3);
 
+int
+error_callback(int status, const char *function_name, const char *error_message,
+	       const char *file_name, int line, void *user_data)
+{
+  // dummy 
+  return 0;
+}
+
 __NAMESPACE_END_OPENCV
 
-extern "C"{
+extern "C" {
   void
   Init_opencv()
   {
     cvRedirectError((CvErrorCallback)mOpenCV::error_callback);
-    
+
     mOpenCV::define_ruby_module();
     
-    mOpenCV::mCvError::define_ruby_module();
+    mOpenCV::cCvError::define_ruby_class();
     mOpenCV::cCvPoint::define_ruby_class();
     mOpenCV::cCvPoint2D32f::define_ruby_class();
     mOpenCV::cCvPoint3D32f::define_ruby_class();
