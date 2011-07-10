@@ -11,7 +11,7 @@ iwindow = GUI::Window.new "inpaint"
 
 image = IplImage::load "inpaint.png"
 b, g, r = image.split
-original_mask = r.threshold_binary_inverse(0x00, 0xFF) & b.threshold_binary_inverse(0x00, 0xFF)
+original_mask = r.threshold(0x00, 0xFF, CV_THRESH_BINARY_INV) & b.threshold(0x00, 0xFF, CV_THRESH_BINARY_INV)
 mask = original_mask.copy
 
 num_dilate = 3

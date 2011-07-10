@@ -44,6 +44,10 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(3, CV_MEDIAN)
     assert_equal(4, CV_BILATERAL)
 
+    # Border types
+    assert_equal(0, IPL_BORDER_CONSTANT)
+    assert_equal(1, IPL_BORDER_REPLICATE)
+    
     # Thresholding types
     assert_equal(0, CV_THRESH_BINARY)
     assert_equal(1, CV_THRESH_BINARY_INV)

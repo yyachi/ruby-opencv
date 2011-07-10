@@ -320,67 +320,17 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
-  def test_slice_width
-    m1 = create_cvmat(10, 40, :cv32f, 1)
-    ml, mr = m1.slice_width(2)
-    [ml, mr].each { |m|
-      assert_equal(10, m.height)
-      assert_equal(20, m.width)
-      assert_equal(:cv32f, m.depth)
-      assert_equal(1, m.channel)
-    }
-
-    ml.height.times { |j|
-      ml.width.times { |i|
-        assert_cvscalar_equal(m1[j, i], ml[j, i])
-        assert_cvscalar_equal(m1[j, (m1.width / 2) + i], mr[j, i])
-      }
-    }
-
-    assert_raise(ArgumentError) {
-      m1.slice_width(0)
-    }
-    assert_raise(TypeError) {
-      m1.slice_width(DUMMY_OBJ)
-    }
-  end
-
-  def test_slice_height
-    m1 = create_cvmat(10, 20, :cv32f, 1)
-    mt, mb = m1.slice_height(2)
-    [mt, mb].each { |m|
-      assert_equal(5, m.height)
-      assert_equal(20, m.width)
-      assert_equal(:cv32f, m.depth)
-      assert_equal(1, m.channel)
-    }
-
-    mt.height.times { |j|
-      mt.width.times { |i|
-        assert_cvscalar_equal(m1[j, i], mt[j, i])
-        assert_cvscalar_equal(m1[(m1.height / 2) + j, i], mb[j, i])
-      }
-    }
-
-    assert_raise(ArgumentError) {
-      m1.slice_height(0)
-    }
-    assert_raise(TypeError) {
-      m1.slice_height(DUMMY_OBJ)
-    }
-  end
-  
-  def test_row
+  def test_get_rows
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.row(2)
+    m2 = m1.get_rows(2)
     assert_equal(1, m2.height)
     assert_equal(m1.width, m2.width)
     m1.width.times { |i|
       assert_cvscalar_equal(m1[2, i], m2[i])
     }
 
-    m2, m3 = m1.row(1, 2)
+    m2, m3 = m1.get_rows(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.height)
       assert_equal(m1.width, m.width)
@@ -391,25 +341,21 @@ class TestCvMat < OpenCVTestCase
     }
 
     assert_raise(TypeError) {
-      m1.row(DUMMY_OBJ)
+      m1.get_rows(DUMMY_OBJ)
     }
-    flunk('FIXME: Not handle out of range error yet')
-    # assert_raise(ArgumentError) {
-    #   m1.row(-1)
-    # }
   end
 
-  def test_col
+  def test_get_cols
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.col(2)
+    m2 = m1.get_cols(2)
     assert_equal(1, m2.width)
     assert_equal(m1.height, m2.height)
     m1.height.times { |j|
       assert_cvscalar_equal(m1[j, 2], m2[j])
     }
 
-    m2, m3 = m1.col(1, 2)
+    m2, m3 = m1.get_cols(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.width)
       assert_equal(m1.height, m.height)
@@ -420,13 +366,8 @@ class TestCvMat < OpenCVTestCase
     }
 
     assert_raise(TypeError) {
-      m1.col(DUMMY_OBJ)
+      m1.get_cols(DUMMY_OBJ)
     }
-
-    flunk('FIXME: Not handle out of range error yet')
-    # assert_raise(ArgumentError) {
-    #   m1.col(-1)
-    # }
   end
 
   def test_each_row
@@ -907,10 +848,6 @@ class TestCvMat < OpenCVTestCase
       CvMat.merge(CvMat.new(1, 2, :cv8u, 1),
                   CvMat.new(1, 2, :cv32f, 1))
     }
-  end
-
-  def test_mix_channels
-    flunk('FIXME: CvMat.mix_channels is not implemented yet.')
   end
 
   def test_rand_shuffle
@@ -2245,275 +2182,6 @@ class TestCvMat < OpenCVTestCase
       CvMat.find_homography(src, dst, :ransac, DUMMY_OBJ, true)
     }
     CvMat.find_homography(src, dst, :ransac, 5, DUMMY_OBJ)
-  end
-
-  def test_find_fundamental_mat_7point
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656]]
-
-    mat1 = CvMat.new(7, 2, :cv64f, 1)
-    mat2 = CvMat.new(7, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    f_mat = CvMat.find_fundamental_mat_7point(mat1, mat2)
-
-    assert_equal(9, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-
-    expected = [0.000009, 0.000029, -0.010343,
-                -0.000033, 0.000000, 0.014590,
-                0.004415, -0.013420, 1.000000,
-                0.000000, 0.000001, -0.000223,
-                -0.000001, 0.000036, -0.005309,
-                -0.000097, -0.006463, 1.000000,
-                0.000002, 0.000005, -0.001621,
-                -0.000005, 0.000031, -0.002559,
-                0.000527, -0.007424, 1.000000]
-    expected.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_7point(DUMMY_OBJ, mat2)
-    }
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_7point(mat1, DUMMY_OBJ)
-    }
-  end
-
-  def test_find_fundamental_mat_8point
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565]]
-
-    mat1 = CvMat.new(8, 2, :cv64f, 1)
-    mat2 = CvMat.new(8, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    f_mat = CvMat.find_fundamental_mat_8point(mat1, mat2)
-
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-
-    expected = [0.000001, 0.000004, -0.001127,
-                -0.000005, 0.000038, -0.003778,
-                0.000819, -0.008325, 1.000000]
-    expected.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_8point(DUMMY_OBJ, mat2)
-    }
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_8point(mat1, DUMMY_OBJ)
-    }
-  end
-
-  def test_find_fundamental_mat_ransac
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134.0],
-               [494.335, 74.544],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565],
-                [534.632, 97.5152],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5]]
-
-    mat1 = CvMat.new(points1.size, 2, :cv64f, 1)
-    mat2 = CvMat.new(points2.size, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    # default
-    [CvMat.find_fundamental_mat_ransac(mat1, mat2, :with_status => false,
-                                       :maximum_distance => 1.0, :desirable_level => 0.99),
-     CvMat.find_fundamental_mat_ransac(mat1, mat2)].each { |f_mat|
-      assert_equal(3, f_mat.rows)
-      assert_equal(3, f_mat.cols)
-      expected = [0.000010, 0.000039, -0.011141,
-                  -0.000045, -0.000001, 0.019631,
-                  0.004873, -0.017604, 1.000000]
-      expected.each_with_index { |val, i|
-        assert_in_delta(val, f_mat[i][0], 1.0e-5)
-      }
-    }
-    
-    # with options
-    f_mat, status = CvMat.find_fundamental_mat_ransac(mat1, mat2, :with_status => true,
-                                                      :maximum_distance => 2.0, :desirable_level => 0.8)
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-    assert_equal(1, status.rows)
-    assert_equal(points1.size, status.cols)
-
-    expected_f_mat = [0.000009, 0.000030, -0.010692,
-                      -0.000039, 0.000000, 0.020567,
-                      0.004779, -0.018064, 1.000000]
-    expected_f_mat.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-    expected_status = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    expected_status.each_with_index { |val, i|
-      assert_in_delta(val, status[i][0], 1.0e-5)
-    }
-
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_ransac(DUMMY_OBJ, mat2)
-    }
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_ransac(mat1, DUMMY_OBJ)
-    }
-  end
-
-  def test_find_fundamental_mat_lmeds
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134.0],
-               [494.335, 74.544],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565],
-                [534.632, 97.5152],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5]]
-
-    mat1 = CvMat.new(points1.size, 2, :cv64f, 1)
-    mat2 = CvMat.new(points2.size, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    # default
-    [CvMat.find_fundamental_mat_lmeds(mat1, mat2, :with_status => false,
-                                      :maximum_distance => 1.0, :desirable_level => 0.99),
-     CvMat.find_fundamental_mat_lmeds(mat1, mat2)].each { |f_mat|
-      assert_equal(3, f_mat.rows)
-      assert_equal(3, f_mat.cols)
-      expected = [0.000032, 0.000882, -0.012426,
-                  -0.000854, 0.000091, 0.210136,
-                  0.001034, -0.2405784, 1.000000]
-      expected.each_with_index { |val, i|
-        assert_in_delta(val, f_mat[i][0], 1.0e-5)
-      }
-    }
-    
-    # with options
-    f_mat, status = CvMat.find_fundamental_mat_lmeds(mat1, mat2, :with_status => true,
-                                                     :desirable_level => 0.8)
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-    assert_equal(1, status.rows)
-    assert_equal(points1.size, status.cols)
-
-    expected_f_mat = [0.000009, 0.000101, -0.009396,
-                      -0.000113, -0.000002, 0.049380,
-                      0.003335, -0.045132, 1.000000]
-    expected_f_mat.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-    expected_status = [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1 ]
-
-    expected_status.each_with_index { |val, i|
-      assert_in_delta(val, status[i][0], 1.0e-5)
-    }
-
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_lmeds(DUMMY_OBJ, mat2)
-    }
-    assert_raise(TypeError) {
-      CvMat.find_fundamental_mat_lmeds(mat1, DUMMY_OBJ)
-    }
   end
 
   def test_find_fundamental_mat
