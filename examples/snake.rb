@@ -33,7 +33,7 @@ window.on_mouse{|mouse|
     end
     points = image.snake_image(points, 1.0, 0.5, 1.5, CvSize.new(3, 3), 100)
     display = image.GRAY2BGR
-    display.poly_line! points, :color => CvColor::Red, :is_closed => true
+    display.poly_line!(points, :color => CvColor::Red, :is_closed => true)
     window.show display
   end
 }

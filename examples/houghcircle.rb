@@ -12,7 +12,7 @@ gray = image.BGR2GRAY
 
 result = image.clone
 original_window.show image
-detect = gray.hough_circles_gradient(2.0, 10, 200, 50)
+detect = gray.hough_circles(CV_HOUGH_GRADIENT, 2.0, 10, 200, 50)
 puts detect.size
 detect.each{|circle|
   puts "#{circle.center.x},#{circle.center.y} - #{circle.radius}"

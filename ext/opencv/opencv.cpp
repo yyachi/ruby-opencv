@@ -215,6 +215,10 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_THRESH_TOZERO_INV", INT2FIX(CV_THRESH_TOZERO_INV));
   rb_define_const(rb_module, "CV_THRESH_OTSU", INT2FIX(CV_THRESH_OTSU));
 
+  /* Border type */
+  rb_define_const(rb_module, "IPL_BORDER_CONSTANT", INT2FIX(IPL_BORDER_CONSTANT));
+  rb_define_const(rb_module, "IPL_BORDER_REPLICATE", INT2FIX(IPL_BORDER_REPLICATE));
+  
   /* Retrieval mode */
   rb_define_const(rb_module, "CV_RETR_EXTERNAL", INT2FIX(CV_RETR_EXTERNAL));
   rb_define_const(rb_module, "CV_RETR_LIST", INT2FIX(CV_RETR_LIST));
