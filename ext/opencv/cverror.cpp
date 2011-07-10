@@ -140,7 +140,6 @@ void define_ruby_class()
   REGISTER_CVERROR("CvGpuNotSupported", CV_GpuNotSupported);
   REGISTER_CVERROR("CvGpuApiCallError", CV_GpuApiCallError);
   REGISTER_CVERROR("CvGpuNppCallError", CV_GpuNppCallError);
-  REGISTER_CVERROR("CvGpuCufftCallError", CV_GpuCufftCallError);
 }
     
 VALUE
