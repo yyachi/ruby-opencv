@@ -443,12 +443,11 @@ class TestCvMat < OpenCVTestCase
       assert_cvscalar_equal(s, d[i])
     }
 
-    flunk('FIXME: Not handle out of range error yet')
-    # [m.rows, m.cols, -m.rows, -m.cols].each { |d|
-    #   assert_raise(ArgumentError) {
-    #     m.diag(d)
-    #   }
-    # }
+    [m.rows, m.cols, -m.rows, -m.cols].each { |d|
+      assert_raise(CvStsOutOfRange) {
+        m.diag(d)
+      }
+    }
   end
 
   def test_size
@@ -487,6 +486,25 @@ class TestCvMat < OpenCVTestCase
     assert_raise(TypeError) {
       m[DUMMY_OBJ]
     }
+    
+    assert_raise(CvStsOutOfRange) {
+      m[-1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[6]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2, 1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3, 1]
+    }
   end
 
   def test_aset
@@ -505,6 +523,25 @@ class TestCvMat < OpenCVTestCase
     }
     assert_raise(TypeError) {
       m[0] = DUMMY_OBJ
+    }
+
+    assert_raise(CvStsOutOfRange) {
+      m[-1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[6]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2, 1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3, 1]
     }
   end
 
@@ -837,14 +874,14 @@ class TestCvMat < OpenCVTestCase
     assert_raise(ArgumentError) {
       CvMat.merge(m1, m2, m3, m4, m5)
     }
-    assert_raise(StandardError) {
+    assert_raise(ArgumentError) {
       CvMat.merge(CvMat.new(1, 2, :cv8u, 2))
     }
-    assert_raise(StandardError) {
+    assert_raise(ArgumentError) {
       CvMat.merge(CvMat.new(1, 2, :cv8u, 1),
                   CvMat.new(2, 2, :cv8u, 1))
     }
-    assert_raise(StandardError) {
+    assert_raise(ArgumentError) {
       CvMat.merge(CvMat.new(1, 2, :cv8u, 1),
                   CvMat.new(1, 2, :cv32f, 1))
     }
