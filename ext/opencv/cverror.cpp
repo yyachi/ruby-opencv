@@ -152,7 +152,7 @@ by_code(int error_code)
 }
 
 void
-raise_cverror(cv::Exception e)
+raise(cv::Exception e)
 {
   rb_raise(by_code(e.code), e.what());
 }
