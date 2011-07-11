@@ -14,6 +14,8 @@
 #include "opencv2/imgproc/imgproc_c.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
+#define raise_cverror(e) cCvError::raise(e)
+
 void raise_typeerror(VALUE object, VALUE expected_class);
 void raise_compatible_typeerror(VALUE object, VALUE expected_class);
 void* rb_cvAlloc(size_t size);
