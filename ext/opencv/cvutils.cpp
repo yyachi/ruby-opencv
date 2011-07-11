@@ -10,13 +10,15 @@
 #include "cvutils.h"
 
 void
-raise_typeerror(VALUE object, VALUE expected_class) {
+raise_typeerror(VALUE object, VALUE expected_class)
+{
   rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
   	   rb_obj_classname(object), rb_class2name(expected_class));
 }
 
 void
-raise_compatible_typeerror(VALUE object, VALUE expected_class) {
+raise_compatible_typeerror(VALUE object, VALUE expected_class)
+{
   rb_raise(rb_eTypeError, "wrong argument type %s (expected %s or compatible object)",
   	   rb_obj_classname(object), rb_class2name(expected_class));
 }

@@ -20,7 +20,7 @@ __NAMESPACE_BEGIN_CVERROR
 
 void define_ruby_class();
 VALUE by_code(int error_code);
-void raise_cverror(cv::Exception e);
+void raise(cv::Exception e);
 
 __NAMESPACE_END_CVERROR
 __NAMESPACE_END_OPENCV
