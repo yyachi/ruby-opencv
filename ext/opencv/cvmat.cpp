@@ -2394,8 +2394,9 @@ VALUE
 rb_cross_product(VALUE self, VALUE mat)
 {
   CvArr* self_ptr = CVARR(self);
-  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  VALUE dest = Qnil;
   try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
     cvCrossProduct(self_ptr, CVMAT_WITH_CHECK(mat), CVARR(dest));
   }
   catch (cv::Exception& e) {
@@ -2416,11 +2417,16 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 {
   VALUE transmat, shiftvec;
   rb_scan_args(argc, argv, "11", &transmat, &shiftvec);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (NIL_P(shiftvec))
-    cvTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(transmat), NULL);
-  else
-    cvTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(transmat), CVMAT_WITH_CHECK(shiftvec));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvTransform(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(transmat),
+		NIL_P(shiftvec) ? NULL : CVMAT_WITH_CHECK(shiftvec));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2442,8 +2448,15 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_perspective_transform(VALUE self, VALUE mat)
 {
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvPerspectiveTransform(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(mat));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvPerspectiveTransform(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mat));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2487,7 +2500,14 @@ rb_mul_transposed(VALUE self, VALUE args)
 VALUE
 rb_trace(VALUE self)
 {
-  return cCvScalar::new_object(cvTrace(CVARR(self)));
+  CvScalar scalar;
+  try {
+    scalar = cvTrace(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvScalar::new_object(scalar);
 }
 
 /*
@@ -2499,8 +2519,14 @@ rb_trace(VALUE self)
 VALUE
 rb_transpose(VALUE self)
 {
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvTranspose(CVARR(self), CVARR(dest));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    cvTranspose(self_ptr, CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2515,7 +2541,13 @@ rb_transpose(VALUE self)
 VALUE
 rb_transpose_bang(VALUE self)
 {
-  cvTranspose(CVARR(self), CVARR(self));
+  CvArr* self_ptr = CVARR(self);
+  try {
+    cvTranspose(self_ptr, self_ptr);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2529,7 +2561,14 @@ rb_transpose_bang(VALUE self)
 VALUE
 rb_det(VALUE self)
 {
-  return rb_float_new(cvDet(CVARR(self)));
+  double det = 0.0;
+  try {
+    det = cvDet(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(det);
 }
 
 /*
@@ -2556,8 +2595,15 @@ rb_invert(int argc, VALUE *argv, VALUE self)
   VALUE symbol;
   rb_scan_args(argc, argv, "01", &symbol);
   int method = CVMETHOD("INVERSION_METHOD", symbol, CV_LU);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInvert(CVARR(self), CVARR(dest), method);
+  VALUE dest = Qnil;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvInvert(self_ptr, CVARR(dest), method);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2583,11 +2629,15 @@ rb_solve(int argc, VALUE *argv, VALUE self)
 {
   VALUE mat, symbol;
   rb_scan_args(argc, argv, "11", &mat, &symbol);
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument 1 (right-hand part of the linear system) should be %s.)",
-	     rb_class2name(rb_klass));
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(mat)), self);
-  cvSolve(CVARR(self), CVARR(mat), CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+  VALUE dest = Qnil;
+  CvMat* mat_ptr = CVMAT_WITH_CHECK(mat);
+  try {
+    dest = new_mat_kind_object(cvGetSize(mat_ptr), self);
+    cvSolve(CVARR(self), mat_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2646,11 +2696,18 @@ rb_eigenvv(int argc, VALUE *argv, VALUE self)
   double eps = (NIL_P(epsilon)) ? 0.0 : NUM2DBL(epsilon);
   int lowidx = (NIL_P(lowindex)) ? -1 : NUM2INT(lowindex);
   int highidx = (NIL_P(highindex)) ? -1 : NUM2INT(highindex);
-
-  CvSize size = cvGetSize(CVARR(self));
-  int type = cvGetElemType(CVARR(self));
-  VALUE eigen_vectors = new_object(size, type), eigen_values = new_object(size.height, 1, type);
-  cvEigenVV(CVARR(self), CVARR(eigen_vectors), CVARR(eigen_values), eps, lowidx, highidx);
+  VALUE eigen_vectors = Qnil, eigen_values = Qnil;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    CvSize size = cvGetSize(self_ptr);
+    int type = cvGetElemType(self_ptr);
+    eigen_vectors = new_object(size, type);
+    eigen_values = new_object(size.height, 1, type);
+    cvEigenVV(self_ptr, CVARR(eigen_vectors), CVARR(eigen_values), eps, lowidx, highidx);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, eigen_vectors, eigen_values);
 }
 
@@ -2707,16 +2764,23 @@ rb_dft(int argc, VALUE *argv, VALUE self)
   int num_rows = 0;
   if (argc > 0) {
     int num_flags = argc;
-    if (TYPE(argv[argc -1]) == T_FIXNUM) {
+    if (FIXNUM_P(argv[argc -1])) {
       num_flags = argc - 1;
       num_rows = FIX2INT(argv[argc - 1]);
     }
-    for (int i = 0; i < num_flags; i++) {
+    for (int i = 0; i < num_flags; ++i) {
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvDFT(CVARR(self), CVARR(dest), type, num_rows);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvDFT(self_ptr, CVARR(dest), type, num_rows);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2739,12 +2803,19 @@ rb_dct(int argc, VALUE *argv, VALUE self)
 {
   int type = CV_DXT_FORWARD;
   if (argc > 0) {
-    for (int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; ++i) {
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvDCT(CVARR(self), CVARR(dest), type);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvDCT(self_ptr, CVARR(dest), type);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2793,11 +2864,16 @@ rb_line_bang(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, drawing_option;
   rb_scan_args(argc, argv, "21", &p1, &p2, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
-	 DO_COLOR(drawing_option),
-	 DO_THICKNESS(drawing_option),
-	 DO_LINE_TYPE(drawing_option),
-	 DO_SHIFT(drawing_option));
+  try {
+      cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
+	     DO_COLOR(drawing_option),
+	     DO_THICKNESS(drawing_option),
+	     DO_LINE_TYPE(drawing_option),
+	     DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2843,11 +2919,16 @@ rb_rectangle_bang(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, drawing_option;
   rb_scan_args(argc, argv, "21", &p1, &p2, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvRectangle(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
-	      DO_COLOR(drawing_option),
-	      DO_THICKNESS(drawing_option),
-	      DO_LINE_TYPE(drawing_option),
-	      DO_SHIFT(drawing_option));
+  try {
+    cvRectangle(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
+		DO_COLOR(drawing_option),
+		DO_THICKNESS(drawing_option),
+		DO_LINE_TYPE(drawing_option),
+		DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2893,11 +2974,16 @@ rb_circle_bang(int argc, VALUE *argv, VALUE self)
   VALUE center, radius, drawing_option;
   rb_scan_args(argc, argv, "21", &center, &radius, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvCircle(CVARR(self), VALUE_TO_CVPOINT(center), NUM2INT(radius),
-	   DO_COLOR(drawing_option),
-	   DO_THICKNESS(drawing_option),
-	   DO_LINE_TYPE(drawing_option),
-	   DO_SHIFT(drawing_option));
+  try {
+    cvCircle(CVARR(self), VALUE_TO_CVPOINT(center), NUM2INT(radius),
+	     DO_COLOR(drawing_option),
+	     DO_THICKNESS(drawing_option),
+	     DO_LINE_TYPE(drawing_option),
+	     DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2943,13 +3029,18 @@ rb_ellipse_bang(int argc, VALUE *argv, VALUE self)
   VALUE center, axis, angle, start_angle, end_angle, drawing_option;
   rb_scan_args(argc, argv, "51", &center, &axis, &angle, &start_angle, &end_angle, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvEllipse(CVARR(self), VALUE_TO_CVPOINT(center),
-	    VALUE_TO_CVSIZE(axis),
-	    NUM2DBL(angle), NUM2DBL(start_angle), NUM2DBL(end_angle),
-	    DO_COLOR(drawing_option),
-	    DO_THICKNESS(drawing_option),
-	    DO_LINE_TYPE(drawing_option),
-	    DO_SHIFT(drawing_option));
+  try {
+    cvEllipse(CVARR(self), VALUE_TO_CVPOINT(center),
+	      VALUE_TO_CVSIZE(axis),
+	      NUM2DBL(angle), NUM2DBL(start_angle), NUM2DBL(end_angle),
+	      DO_COLOR(drawing_option),
+	      DO_THICKNESS(drawing_option),
+	      DO_LINE_TYPE(drawing_option),
+	      DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2996,11 +3087,16 @@ rb_ellipse_box_bang(int argc, VALUE *argv, VALUE self)
   VALUE box, drawing_option;
   rb_scan_args(argc, argv, "11", &box, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvEllipseBox(CVARR(self), VALUE_TO_CVBOX2D(box),
-	       DO_COLOR(drawing_option),
-	       DO_THICKNESS(drawing_option),
-	       DO_LINE_TYPE(drawing_option),
-	       DO_SHIFT(drawing_option));
+  try {
+    cvEllipseBox(CVARR(self), VALUE_TO_CVBOX2D(box),
+		 DO_COLOR(drawing_option),
+		 DO_THICKNESS(drawing_option),
+		 DO_LINE_TYPE(drawing_option),
+		 DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3063,15 +3159,15 @@ rb_fill_poly_bang(int argc, VALUE *argv, VALUE self)
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
   }
-
-  cvFillPoly(CVARR(self),
-	     p,
-	     num_points,
-	     num_polygons,
-	     DO_COLOR(drawing_option),
-	     DO_LINE_TYPE(drawing_option),
-	     DO_SHIFT(drawing_option));
-
+  try {
+    cvFillPoly(CVARR(self), p, num_points, num_polygons,
+	       DO_COLOR(drawing_option),
+	       DO_LINE_TYPE(drawing_option),
+	       DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3128,12 +3224,15 @@ rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self)
   for (i = 0; i < num_points; ++i)
     p[i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
 
-  cvFillConvexPoly(CVARR(self),
-		   p,
-		   num_points,
-		   DO_COLOR(drawing_option),
-		   DO_LINE_TYPE(drawing_option),
-		   DO_SHIFT(drawing_option));
+  try {
+    cvFillConvexPoly(CVARR(self), p, num_points,
+		     DO_COLOR(drawing_option),
+		     DO_LINE_TYPE(drawing_option),
+		     DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3205,15 +3304,17 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
     }
   }
 
-  cvPolyLine(CVARR(self),
-	     p,
-	     num_points,
-	     num_polygons,
-	     DO_IS_CLOSED(drawing_option),
-	     DO_COLOR(drawing_option),
-	     DO_THICKNESS(drawing_option),
-	     DO_LINE_TYPE(drawing_option),
-	     DO_SHIFT(drawing_option));
+  try {
+    cvPolyLine(CVARR(self), p, num_points, num_polygons,
+	       DO_IS_CLOSED(drawing_option),
+	       DO_COLOR(drawing_option),
+	       DO_THICKNESS(drawing_option),
+	       DO_LINE_TYPE(drawing_option),
+	       DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 
   return self;
 }
@@ -3244,8 +3345,13 @@ rb_put_text_bang(int argc, VALUE* argv, VALUE self)
   VALUE _text, _point, _font, _color;
   rb_scan_args(argc, argv, "31", &_text, &_point, &_font, &_color);
   CvScalar color = NIL_P(_color) ? CV_RGB(0, 0, 0) : VALUE_TO_CVSCALAR(_color);
-  cvPutText(CVARR(self), StringValueCStr(_text), VALUE_TO_CVPOINT(_point),
-	    CVFONT_WITH_CHECK(_font), color);
+  try {
+    cvPutText(CVARR(self), StringValueCStr(_text), VALUE_TO_CVPOINT(_point),
+	      CVFONT_WITH_CHECK(_font), color);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 

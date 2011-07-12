@@ -1987,6 +1987,9 @@ class TestCvMat < OpenCVTestCase
     assert_raise(TypeError) {
       mat.perspective_transform(DUMMY_OBJ)
     }
+    assert_raise(CvStsAssert) {
+      mat.perspective_transform(CvMat.new(3, 3, :cv32f, 3))
+    }
   end
 
   def test_mul_transposed
