@@ -73,8 +73,8 @@ VALUE rb_clear(VALUE self);
 VALUE rb_clear_bang(VALUE self);
 VALUE rb_set_identity(int argc, VALUE *argv, VALUE self);
 VALUE rb_set_identity_bang(int argc, VALUE *argv, VALUE self);
-VALUE rb_range(int argc, VALUE *argv, VALUE self);
-VALUE rb_range_bang(int argc, VALUE *argv, VALUE self);
+VALUE rb_range(VALUE self, VALUE start, VALUE end);
+VALUE rb_range_bang(VALUE self, VALUE start, VALUE end);
 /* Transforms and Permutations */
 VALUE rb_reshape(VALUE self, VALUE hash);
 VALUE rb_repeat(VALUE self, VALUE object);

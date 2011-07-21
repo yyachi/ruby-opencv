@@ -211,8 +211,8 @@ void define_ruby_class()
   rb_define_alias(rb_klass, "set_zero!", "clear!");
   rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
   rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
-  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), -1);
-  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), -1);
+  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);
+  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), 2);
 
   rb_define_method(rb_klass, "reshape", RUBY_METHOD_FUNC(rb_reshape), 1);
   rb_define_method(rb_klass, "repeat", RUBY_METHOD_FUNC(rb_repeat), 1);
@@ -1452,9 +1452,9 @@ rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
  * see range!
  */
 VALUE
-rb_range(int argc, VALUE *argv, VALUE self)
+rb_range(VALUE self, VALUE start, VALUE end)
 {
-  return rb_range_bang(argc, argv, copy(self));
+  return rb_range_bang(copy(self), start, end);
 }
 
 /*
@@ -1470,10 +1470,8 @@ rb_range(int argc, VALUE *argv, VALUE self)
  *   m.range!(0, m.cols);            // m will be initialized as [0,1,2,3,4,5,6,7,8,9]
  */
 VALUE
-rb_range_bang(int argc, VALUE *argv, VALUE self)
+rb_range_bang(VALUE self, VALUE start, VALUE end)
 {
-  VALUE start, end;
-  rb_scan_args(argc, argv, "20", &start, &end);
   try {
     cvRange(CVARR(self), NUM2DBL(start), NUM2DBL(end));
   }
