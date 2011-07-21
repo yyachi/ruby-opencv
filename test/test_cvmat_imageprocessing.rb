@@ -1025,7 +1025,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(96, comp1.rect.width)
     assert_equal(96, comp1.rect.height)
     assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), comp1.value)
-    assert_equal('98ebfcc49df7b8ebca6dd1c931ce7c34', hash_img(mask1))
+    assert_equal('1fd2537966283987b39c8b2c9d778383', hash_img(mask1))
 
     assert_equal('7456e5de74bb8b4e783d04bbf1904644', hash_img(mat2))
     assert_equal(12288.0, comp2.area)
@@ -1034,7 +1034,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(128, comp2.rect.width)
     assert_equal(128, comp2.rect.height)
     assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), comp2.value)
-    assert_equal('3c23b0e491bb59dc9af75bf191d24458', hash_img(mask2))
+    assert_equal('847934f5170e2072cdfd63e16a1e06ad', hash_img(mask2))
 
     assert_equal('df720005423762ca1b68e06571f58b21', hash_img(mat3))
     assert_equal(9216.0, comp3.area)
@@ -1051,7 +1051,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(96, comp4.rect.width)
     assert_equal(96, comp4.rect.height)
     assert_cvscalar_equal(CvScalar.new(220, 0, 0, 0), comp4.value)
-    assert_equal('33e01cdd72d7630e4231ffa63557da3e', hash_img(mask4))
+    assert_equal('b34b0269872fe3acde0e0c73e5cdd23b', hash_img(mask4))
 
     assert_equal('7833f4c85c77056db71e33ae8072a1b5', hash_img(mat5))
     assert_equal('7833f4c85c77056db71e33ae8072a1b5', hash_img(mat05))
@@ -1061,7 +1061,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(96, comp5.rect.width)
     assert_equal(96, comp5.rect.height)
     assert_cvscalar_equal(CvScalar.new(220, 0, 0, 0), comp5.value)
-    assert_equal('33e01cdd72d7630e4231ffa63557da3e', hash_img(mask5))
+    assert_equal('b34b0269872fe3acde0e0c73e5cdd23b', hash_img(mask5))
 
     assert_raise(TypeError) {
       mat0.flood_fill(DUMMY_OBJ, 0)
@@ -1166,6 +1166,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(TypeError) {
       mat0.find_contours(DUMMY_OBJ)
     }
+    assert_raise(CvStsUnsupportedFormat) {
+      CvMat.new(10, 10, :cv32f, 3).find_contours
+    }
   end
 
   def test_pyr_segmentation
@@ -1180,16 +1183,16 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('963b26f51b14f175fbbf128e9b9e979f', hash_img(img2))
     assert_equal(11, seq2.total)
 
-    assert_raise(ArgumentError) {
+    assert_raise(CvStsAssert) {
       img0.pyr_segmentation(-1, 255, 50)
     }
-    assert_raise(ArgumentError) {
+    assert_raise(CvStsAssert) {
       img0.pyr_segmentation(1000, 255, 50)
     }
-    assert_raise(ArgumentError) {
+    assert_raise(CvStsAssert) {
       img0.pyr_segmentation(4, -1, 50)
     }
-    assert_raise(ArgumentError) {
+    assert_raise(CvStsAssert) {
       img0.pyr_segmentation(4, 255, -1)
     }
     assert_raise(TypeError) {
@@ -1200,6 +1203,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     assert_raise(TypeError) {
       img0.pyr_segmentation(4, 255, DUMMY_OBJ)
+    }
+    assert_raise(CvBadDepth) {
+      IplImage.new(10, 10, :cv32f, 2).pyr_segmentation(4, 255, 50)
     }
   end
 
@@ -1237,6 +1243,104 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(TypeError) {
       mat0.watershed(DUMMY_OBJ)
     }
+  end
+
+  def test_moments
+    mat = create_cvmat(128, 128, :cv8u, 1) { |j, i|
+      if j >= 32 and j < 96 and i >= 16 and i < 112
+        CvScalar.new(0)
+      elsif j >= 16 and j < 112 and i >= 16 and i < 112
+        CvScalar.new(128)
+      else
+        CvScalar.new(255)
+      end
+    }
+
+    moments1 = mat.moments
+    moments2 = mat.moments(false)
+    moments3 = mat.moments(true)
+
+    [moments1, moments2].each { |moments|
+      assert_equal(1, moments.size)
+      m = moments[0]
+      assert_in_delta(2221056, m.spatial(0, 0), 0.1)
+      assert_in_delta(2221056, m.central(0, 0), 0.1)
+      assert_in_delta(1, m.normalized_central(0, 0), 0.1)
+
+      hu_moments = m.hu
+      assert_equal(CvHuMoments, hu_moments.class)
+      assert_in_delta(0.001771, hu_moments.hu1, 0.000001)
+      hu_moments.to_a[1..7].each { |hu|
+        assert_in_delta(0.0, hu, 0.000001)
+      }
+
+      center = m.gravity_center
+      assert_equal(CvPoint2D32f, center.class)
+      assert_in_delta(63.5, center.x, 0.001)
+      assert_in_delta(63.5, center.y, 0.001)
+
+      assert_in_delta(0, m.angle, 0.001)
+
+      assert_in_delta(2221056, m.m00, 0.001)
+      assert_in_delta(141037056, m.m10, 0.001)
+      assert_in_delta(141037056, m.m01, 0.001)
+      assert_in_delta(13157049856, m.m20, 0.001)
+      assert_in_delta(8955853056, m.m11, 0.001)
+      assert_in_delta(13492594176, m.m02, 0.001)
+      assert_in_delta(1369024659456, m.m30, 0.001)
+      assert_in_delta(835472665856, m.m21, 0.001)
+      assert_in_delta(856779730176, m.m12, 0.001)
+      assert_in_delta(1432945852416, m.m03, 0.001)
+      assert_in_delta(4201196800, m.mu20, 0.001)
+      assert_in_delta(0, m.mu11, 0.001)
+      assert_in_delta(4536741120, m.mu02, 0.001)
+      assert_in_delta(0, m.mu30, 0.001)
+      assert_in_delta(0, m.mu21, 0.001)
+      assert_in_delta(0, m.mu12, 0.001)
+      assert_in_delta(0, m.mu03, 0.001)
+      assert_in_delta(0.000671, m.inv_sqrt_m00, 0.000001)
+    }
+
+    assert_equal(1, moments3.size)
+    m = moments3[0]
+
+    assert_in_delta(10240, m.spatial(0, 0), 0.1)
+    assert_in_delta(10240, m.central(0, 0), 0.1)
+    assert_in_delta(1, m.normalized_central(0, 0), 0.1)
+
+    hu_moments = m.hu
+    assert_equal(CvHuMoments, hu_moments.class)
+    assert_in_delta(0.361650, hu_moments.hu1, 0.000001)
+    assert_in_delta(0.000625, hu_moments.hu2, 0.000001)
+    hu_moments.to_a[2..7].each { |hu|
+      assert_in_delta(0.0, hu, 0.000001)
+    }
+
+    center = m.gravity_center
+    assert_equal(CvPoint2D32f, center.class)
+    assert_in_delta(63.5, center.x, 0.001)
+    assert_in_delta(63.5, center.y, 0.001)
+
+    assert_in_delta(0, m.angle, 0.001)
+
+    assert_in_delta(10240, m.m00, 0.001)
+    assert_in_delta(650240, m.m10, 0.001)
+    assert_in_delta(650240, m.m01, 0.001)
+    assert_in_delta(58940416, m.m20, 0.001)
+    assert_in_delta(41290240, m.m11, 0.001)
+    assert_in_delta(61561856, m.m02, 0.001)
+    assert_in_delta(5984288768, m.m30, 0.001)
+    assert_in_delta(3742716416, m.m21, 0.001)
+    assert_in_delta(3909177856, m.m12, 0.001)
+    assert_in_delta(6483673088, m.m03, 0.001)
+    assert_in_delta(17650176, m.mu20, 0.001)
+    assert_in_delta(0, m.mu11, 0.001)
+    assert_in_delta(20271616, m.mu02, 0.001)
+    assert_in_delta(0, m.mu30, 0.001)
+    assert_in_delta(0, m.mu21, 0.001)
+    assert_in_delta(0, m.mu12, 0.001)
+    assert_in_delta(0, m.mu03, 0.001)
+    assert_in_delta(0.009882, m.inv_sqrt_m00, 0.000001)
   end
 
   def test_hough_lines
@@ -1282,6 +1386,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     assert_raise(ArgumentError) {
       mat.hough_lines(:dummy, 1, Math::PI / 180, 40, 2, DUMMY_OBJ)
+    }
+    assert_raise(CvStsBadArg) {
+      CvMat.new(10, 10, :cv32f, 3).hough_lines(:standard, 1, Math::PI / 180, 65)
     }
   end
 
@@ -1331,6 +1438,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(ArgumentError) {
       mat.hough_circles(:dummy, 1.5, 40, 100, 50, 10, DUMMY_OBJ)
     }
+    assert_raise(CvStsBadArg) {
+      CvMat.new(10, 10, :cv32f, 3).hough_circles(:gradient, 1.5, 40, 100, 50, 10, 50)
+    }
   end
 
   def test_inpaint
@@ -1363,12 +1473,19 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(ArgumentError) {
       mat.inpaint(:dummy, mask, 10)
     }
+    assert_raise(CvStsUnsupportedFormat) {
+      CvMat.new(10, 10, :cv32f, 3).inpaint(:ns, CvMat.new(10, 10, :cv8u, 1), 10)
+    }
   end
 
   def test_equalize_hist
     mat = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_GRAYSCALE)
     result = mat.equalize_hist
     assert_equal('de235065c746193d7f3de9359f63a7af', hash_img(result))
+
+    assert_raise(CvStsAssert) {
+      CvMat.new(10, 10, :cv32f, 3).equalize_hist
+    }
 
     # Uncomment the following lines to show the result
     # snap mat, result
@@ -1538,6 +1655,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(ArgumentError) {
       mat.snake_image(points, arr_alpha[0 .. num_points / 2], arr_beta, arr_gamma, size, term_criteria)
     }
+    assert_raise(CvBadNumChannels) {
+      CvMat.new(10, 10, :cv8u, 3).snake_image(points, alpha, beta, gamma, size, term_criteria)
+    }
   end
 
   def test_optical_flow_hs
@@ -1583,7 +1703,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     velx, vely = curr.optical_flow_hs(prev, prev_velx, prev_vely, :criteria => CvTermCriteria.new(10, 0.01))
     assert_equal('c32a8483e3aec3cd6c33bceeefb8d2f2', hash_img(velx))
     assert_equal('da33e266aece70ed69dcf074acd8fd4e', hash_img(vely))
-
+    
     assert_raise(TypeError) {
       curr.optical_flow_hs(DUMMY_OBJ)
     }
@@ -1595,6 +1715,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     assert_raise(TypeError) {
       curr.optical_flow_hs(prev, prev_velx, prev_vely, DUMMY_OBJ)
+    }
+    assert_raise(CvStsUnmatchedFormats) {
+      CvMat.new(10, 10, :cv8u, 3).optical_flow_hs(prev)
     }
   end
 
@@ -1628,6 +1751,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     assert_raise(TypeError) {
       curr.optical_flow_lk(prev, DUMMY_OBJ)
+    }
+    assert_raise(CvStsUnmatchedFormats) {
+      CvMat.new(10, 10, :cv8u, 3).optical_flow_lk(prev, CvSize.new(3, 3))
     }
   end
 
@@ -1683,6 +1809,9 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     assert_raise(TypeError) {
       curr.optical_flow_bm(prev, prev_velx, prev_vely, DUMMY_OBJ)
+    }
+    assert_raise(CvStsUnmatchedFormats) {
+      CvMat.new(10, 10, :cv8u, 3).optical_flow_bm(prev)
     }
   end
 

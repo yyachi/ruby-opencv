@@ -92,9 +92,13 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   else
     storage = rb_cvCreateMemStorage(0);
-  
-  DATA_PTR(self) = (CvChain*)cvCreateSeq(CV_SEQ_ELTYPE_CODE, sizeof(CvChain),
-					 sizeof(char), storage);
+  try {
+    DATA_PTR(self) = (CvChain*)cvCreateSeq(CV_SEQ_ELTYPE_CODE, sizeof(CvChain),
+					   sizeof(char), storage);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -136,10 +140,15 @@ rb_codes(VALUE self)
   CvChainPtReader reader;
   int total = chain->total;
   VALUE ary = rb_ary_new2(total);
-  cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < total; ++i) {
-    CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
-    rb_ary_store(ary, i, CHR2FIX(reader.code));
+  try {
+    cvStartReadChainPoints(chain, &reader);
+    for (int i = 0; i < total; ++i) {
+      CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
+      rb_ary_store(ary, i, CHR2FIX(reader.code));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return ary;
 }
@@ -158,10 +167,15 @@ rb_points(VALUE self)
   CvPoint p = chain->origin;
   int total = chain->total;
   VALUE ary = rb_ary_new2(total);
-  cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < total; ++i) {
-    CV_READ_CHAIN_POINT(p, reader);
-    rb_ary_store(ary, i, cCvPoint::new_object(p));
+  try {
+    cvStartReadChainPoints(chain, &reader);
+    for (int i = 0; i < total; ++i) {
+      CV_READ_CHAIN_POINT(p, reader);
+      rb_ary_store(ary, i, cCvPoint::new_object(p));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return ary;
 }
@@ -211,9 +225,14 @@ VALUE
 new_object()
 {
   VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
-  VALUE object = cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
-  return object;
+  CvSeq *seq = NULL;
+  try {
+    seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
 }
 
 __NAMESPACE_END_CVCHAIN

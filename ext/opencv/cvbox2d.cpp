@@ -126,8 +126,6 @@ rb_size(VALUE self)
 VALUE
 rb_set_size(VALUE self, VALUE value)
 {
-  if (!cCvSize2D32f::rb_compatible_q(rb_klass, value))
-    rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(cCvSize2D32f::rb_class()));
   CVBOX2D(self)->size = VALUE_TO_CVSIZE2D32F(value);
   return self;
 }
@@ -167,9 +165,14 @@ rb_points(VALUE self)
 {
   const int n = 4;
   CvPoint2D32f p[n];
-  cvBoxPoints(*CVBOX2D(self), p);
+  try {
+    cvBoxPoints(*CVBOX2D(self), p);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   VALUE points = rb_ary_new2(n);
-  for(int i = 0; i < n; i++)
+  for (int i = 0; i < n; ++i)
     rb_ary_store(points, i, cCvPoint2D32f::new_object(p[i]));        
   return points;
 }

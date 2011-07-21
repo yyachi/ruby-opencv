@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCAPTURE namespace cCvCapture{
+#define __NAMESPACE_BEGIN_CVCAPTURE namespace cCvCapture {
 #define __NAMESPACE_END_CVCAPTURE }
 
 __NAMESPACE_BEGIN_OPENCV

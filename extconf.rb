@@ -15,7 +15,7 @@ require "mkmf"
 # extconf.rb --with-opencv-lib=/path/to/opencv/lib
 # extconf.rb --with-opencv-include=/path/to/opencv/include
 
-dir_config("opencv", "/usr/local/include/opencv2", "/usr/local/lib")
+dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 if CONFIG["arch"].include?("darwin")
   dir_config("ffcall", "/opt/local/include", "/opt/local/lib")
 else
@@ -23,11 +23,11 @@ else
 end
 dir_config("libxml2", "/usr/include", "/usr/lib")
 
-opencv_headers = ["core/core_c.h", "core/core.hpp", "imgproc/imgproc_c.h",
-                  "imgproc/imgproc.hpp", "video/tracking.hpp", "features2d/features2d.hpp",
-                  "flann/flann.hpp", "calib3d/calib3d.hpp", "objdetect/objdetect.hpp",
-                  "legacy/compat.hpp", "legacy/legacy.hpp", "highgui/highgui_c.h",
-                  "highgui/highgui.hpp"]
+opencv_headers = ["opencv2/core/core_c.h", "opencv2/core/core.hpp", "opencv2/imgproc/imgproc_c.h",
+                  "opencv2/imgproc/imgproc.hpp", "opencv2/video/tracking.hpp", "opencv2/features2d/features2d.hpp",
+                  "opencv2/flann/flann.hpp", "opencv2/calib3d/calib3d.hpp", "opencv2/objdetect/objdetect.hpp",
+                  "opencv2/legacy/compat.hpp", "opencv2/legacy/legacy.hpp", "opencv2/highgui/highgui_c.h",
+                  "opencv2/highgui/highgui.hpp"]
 
 opencv_libraries = ["opencv_calib3d", "opencv_contrib", "opencv_core", "opencv_features2d",
                     "opencv_flann", "opencv_gpu", "opencv_highgui", "opencv_imgproc",

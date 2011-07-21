@@ -88,9 +88,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 {
   VALUE width, height, depth, channel;
   rb_scan_args(argc, argv, "22", &width, &height, &depth, &channel);
-  int _depth = argc < 3 ? CV_8U : FIX2INT(depth);
-  int _channel = argc < 4 ? 3 : FIX2INT(channel);
-  DATA_PTR(self) = rb_cvCreateImage(cvSize(FIX2INT(width), FIX2INT(height)), cvIplDepth(_depth), _channel);
+  int _depth = CVMETHOD("DEPTH", depth, CV_8U);
+  int _channel = argc < 4 ? 3 : NUM2INT(channel);
+  DATA_PTR(self) = rb_cvCreateImage(cvSize(NUM2INT(width), NUM2INT(height)), cvIplDepth(_depth), _channel);
   return self;
 }
 
@@ -139,7 +139,14 @@ rb_load_image(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_get_roi(VALUE self)
 {
-  return cCvRect::new_object(cvGetImageROI(IPLIMAGE(self)));
+  CvRect rect;
+  try {
+    rect = cvGetImageROI(IPLIMAGE(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvRect::new_object(rect);
 }
 
 /*
@@ -154,13 +161,19 @@ VALUE
 rb_set_roi(VALUE self, VALUE roi)
 {
   VALUE block = rb_block_given_p() ? rb_block_proc() : 0;
-  if (block) {
-    CvRect prev_roi = cvGetImageROI(IPLIMAGE(self));
-    cvSetImageROI(IPLIMAGE(self), VALUE_TO_CVRECT(roi));
-    rb_yield_values(1, self);
-    cvSetImageROI(IPLIMAGE(self), prev_roi);
-  } else {
-    cvSetImageROI(IPLIMAGE(self), VALUE_TO_CVRECT(roi));
+  try {
+    if (block) {
+      CvRect prev_roi = cvGetImageROI(IPLIMAGE(self));
+      cvSetImageROI(IPLIMAGE(self), VALUE_TO_CVRECT(roi));
+      rb_yield_values(1, self);
+      cvSetImageROI(IPLIMAGE(self), prev_roi);
+    }
+    else {
+      cvSetImageROI(IPLIMAGE(self), VALUE_TO_CVRECT(roi));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return self;
 }
@@ -172,7 +185,12 @@ rb_set_roi(VALUE self, VALUE roi)
 VALUE
 rb_reset_roi(VALUE self)
 {
-  cvResetImageROI(IPLIMAGE(self));
+  try {
+    cvResetImageROI(IPLIMAGE(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -182,7 +200,14 @@ rb_reset_roi(VALUE self)
 VALUE
 rb_get_coi(VALUE self)
 {
-  return INT2FIX(cvGetImageCOI(IPLIMAGE(self)));
+  int coi = 0;
+  try {
+    coi = cvGetImageCOI(IPLIMAGE(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return INT2FIX(coi);
 }
 
 /*
@@ -197,13 +222,19 @@ VALUE
 rb_set_coi(VALUE self, VALUE coi)
 {
   VALUE block = rb_block_given_p() ? rb_block_proc() : 0;
-  if (block) {
-    int prev_coi = cvGetImageCOI(IPLIMAGE(self));
-    cvSetImageCOI(IPLIMAGE(self), FIX2INT(coi));
-    rb_yield_values(1, self);
-    cvSetImageCOI(IPLIMAGE(self), prev_coi);
-  } else {
-    cvSetImageCOI(IPLIMAGE(self), FIX2INT(coi));
+  try {
+    if (block) {
+      int prev_coi = cvGetImageCOI(IPLIMAGE(self));
+      cvSetImageCOI(IPLIMAGE(self), NUM2INT(coi));
+      rb_yield_values(1, self);
+      cvSetImageCOI(IPLIMAGE(self), prev_coi);
+    }
+    else {
+      cvSetImageCOI(IPLIMAGE(self), NUM2INT(coi));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return self;
 }
@@ -214,7 +245,12 @@ rb_set_coi(VALUE self, VALUE coi)
 VALUE
 rb_reset_coi(VALUE self)
 {
-  cvSetImageCOI(IPLIMAGE(self), 0);
+  try {
+    cvSetImageCOI(IPLIMAGE(self), 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 

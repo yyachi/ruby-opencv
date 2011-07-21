@@ -47,8 +47,8 @@ class TestCvPoint < OpenCVTestCase
     assert_equal(10, point.x)
     assert_equal(20, point.y)
 
-    assert_raise(ArgumentError) {
-      CvPoint.new('string')
+    assert_raise(TypeError) {
+      CvPoint.new(DUMMY_OBJ)
     }
     assert_raise(ArgumentError) {
       CvPoint.new(1, 2, 3)
