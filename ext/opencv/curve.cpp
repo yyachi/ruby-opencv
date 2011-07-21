@@ -95,9 +95,16 @@ rb_arc_length(int argc, VALUE *argv, VALUE self)
 {
   VALUE slice, is_closed;
   rb_scan_args(argc, argv, "02", &slice, &is_closed);
-  return rb_float_new(cvArcLength(CVARR(self),
-				  NIL_P(slice) ? CV_WHOLE_SEQ : VALUE_TO_CVSLICE(slice),
-				  TRUE_OR_FALSE(is_closed, -1)));
+  double length = 0;
+  try {
+    length = cvArcLength(CVARR(self),
+			 NIL_P(slice) ? CV_WHOLE_SEQ : VALUE_TO_CVSLICE(slice),
+			 TRUE_OR_FALSE(is_closed, -1));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(length);
 }
 
 __NAMESPACE_END_CURVE
