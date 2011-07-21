@@ -105,9 +105,14 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   else
     storage = rb_cvCreateMemStorage(0);
-  
-  DATA_PTR(self) = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
-					   sizeof(CvPoint), storage);
+
+  try {
+    DATA_PTR(self) = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
+					     sizeof(CvPoint), storage);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -180,7 +185,14 @@ rb_approx_poly(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_bounding_rect(VALUE self)
 {
-  return cCvRect::new_object(cvBoundingRect(CVCONTOUR(self), 1));
+  CvRect rect;
+  try {
+    rect = cvBoundingRect(CVCONTOUR(self), 1);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvRect::new_object(rect);
 }
 
 /*
@@ -199,7 +211,13 @@ rb_create_tree(int argc, VALUE *argv, VALUE self)
   VALUE threshold, storage;
   rb_scan_args(argc, argv, "01", &threshold);
   storage = cCvMemStorage::new_object();
-  CvContourTree *tree = cvCreateContourTree(CVSEQ(self), CVMEMSTORAGE(storage), IF_DBL(threshold, 0.0));
+  CvContourTree *tree = NULL;
+  try {
+    tree = cvCreateContourTree(CVSEQ(self), CVMEMSTORAGE(storage), IF_DBL(threshold, 0.0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return cCvSeq::new_sequence(cCvContourTree::rb_class(), (CvSeq*)tree, cCvPoint::rb_class(), storage);
 }
 
@@ -212,7 +230,13 @@ rb_create_tree(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_in_q(VALUE self, VALUE point)
 {
-  double n = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 0);
+  double n = 0;
+  try {
+    n = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return n == 0 ? Qnil : n > 0 ? Qtrue : Qfalse;
 }
 
@@ -225,7 +249,14 @@ rb_in_q(VALUE self, VALUE point)
 VALUE
 rb_measure_distance(VALUE self, VALUE point)
 {
-  return rb_float_new(cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 1));
+  double distance = 0;
+  try {
+    distance = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 1);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(distance);
 }
 
 /*
@@ -248,8 +279,13 @@ rb_point_polygon_test(VALUE self, VALUE point, VALUE measure_dist)
   else
     measure_dist_flag = NUM2INT(measure_dist);
 
-  dist = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), measure_dist_flag);
-
+  try {
+    dist = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), measure_dist_flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  
   /* cvPointPolygonTest returns 100, -100 or 0 when measure_dist = 0 */
   if ((!measure_dist_flag) && ((int)dist) != 0)
     dist = (dist > 0) ? 1 : -1;

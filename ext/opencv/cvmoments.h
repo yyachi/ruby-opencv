@@ -62,6 +62,14 @@ CVMOMENTS(VALUE object)
   return ptr;
 }
 
+inline CvMoments*
+CVMOMENTS_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvMoments::rb_class()))
+    raise_typeerror(object, cCvMoments::rb_class());
+  return CVMOMENTS(object);
+}
+
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_CVMOMENTS_H

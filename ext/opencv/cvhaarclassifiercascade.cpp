@@ -77,8 +77,14 @@ cvhaarclassifiercascade_free(void* ptr)
 VALUE
 rb_load(VALUE klass, VALUE path)
 {
-  CvHaarClassifierCascade *cascade = (CvHaarClassifierCascade*)cvLoad(StringValueCStr(path), 0, 0, 0);
-  if(!CV_IS_HAAR_CLASSIFIER(cascade))
+  CvHaarClassifierCascade *cascade = NULL;
+  try {
+    cascade = (CvHaarClassifierCascade*)cvLoad(StringValueCStr(path), 0, 0, 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  if (!CV_IS_HAAR_CLASSIFIER(cascade))
     rb_raise(rb_eArgError, "invalid format haar classifier cascade file.");
   return Data_Wrap_Struct(klass, 0, cvhaarclassifiercascade_free, cascade);
 }
@@ -120,9 +126,6 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
   VALUE image, options;
   rb_scan_args(argc, argv, "11", &image, &options);
 
-  if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))
-    raise_typeerror(image, cCvMat::rb_class());
-
   double scale_factor;
   int flags, min_neighbors;
   CvSize min_size, max_size;
@@ -145,12 +148,18 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
     storage_val = CHECK_CVMEMSTORAGE(LOOKUP_CVMETHOD(options, "storage"));
   }
 
-  CvSeq *seq = cvHaarDetectObjects(CVMAT(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
-                                   scale_factor, min_neighbors, flags, min_size, max_size);
-  VALUE result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
-  if (rb_block_given_p()) {
-    for(int i = 0; i < seq->total; ++i)
-      rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage_val));
+  VALUE result = Qnil;
+  try {
+    CvSeq *seq = cvHaarDetectObjects(CVMAT_WITH_CHECK(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
+			      scale_factor, min_neighbors, flags, min_size, max_size);
+    result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
+    if (rb_block_given_p()) {
+      for(int i = 0; i < seq->total; ++i)
+	rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage_val));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return result;
 }

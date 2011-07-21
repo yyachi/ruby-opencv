@@ -85,11 +85,12 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(VALUE self, VALUE src_moments)
 {
-  if (rb_obj_is_kind_of(src_moments, cCvMoments::rb_class()))
+  try {
     cvGetHuMoments(CVMOMENTS(src_moments), CVHUMOMENTS(self));
-  else
-    rb_raise(rb_eTypeError, "argument 1 (src_moments) should be %s.",
-	     rb_class2name(cCvMoments::rb_class()));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;      
 }
 
@@ -124,8 +125,13 @@ rb_to_ary(VALUE self)
 VALUE
 new_object(CvMoments *src_moments)
 {
-  VALUE object = rb_allocate(rb_class());
-  cvGetHuMoments(src_moments, CVHUMOMENTS(object));
+  VALUE object = rb_allocate(rb_klass);
+  try {
+    cvGetHuMoments(src_moments, CVHUMOMENTS(object));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return object;
 }
 
