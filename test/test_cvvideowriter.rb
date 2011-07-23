@@ -32,12 +32,19 @@ class TestCvVideoWriter < OpenCVTestCase
   end
 
   def test_write
+    img = IplImage.load(FILENAME_LENA256x256)
     vw = CvVideoWriter.new('foo.avi', 'MJPG', 15, CvSize.new(256, 256))
-    vw.write CvMat.load(FILENAME_LENA256x256)
+    vw.write img
     vw.close
 
     CvVideoWriter.new('foo.avi', 'MJPG', 15, CvSize.new(256, 256)) { |vw|
-      vw.write CvMat.load(FILENAME_LENA256x256)
+      vw.write img
+    }
+    
+    assert_raise(TypeError) {
+      CvVideoWriter.new('foo.avi', 'MJPG', 15, CvSize.new(256, 256)) { |vw|
+        vw.write DUMMY_OBJ
+      }
     }
   end
 

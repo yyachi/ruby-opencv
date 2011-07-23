@@ -60,11 +60,14 @@ class TestCvPoint3D32f < OpenCVTestCase
     assert_in_delta(2.2, point.y, 0.001)
     assert_in_delta(3.3, point.z, 0.001)
 
-    assert_raise(ArgumentError) {
-      CvPoint3D32f.new('string')
+    assert_raise(TypeError) {
+      CvPoint3D32f.new(DUMMY_OBJ)
     }
     assert_raise(ArgumentError) {
       CvPoint3D32f.new(1, 2)
+    }
+    assert_raise(ArgumentError) {
+      CvPoint3D32f.new(1, 2, 3, 4)
     }
   end
 

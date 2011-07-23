@@ -148,7 +148,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     storage = rb_cvCreateMemStorage(0);
   
   if(!rb_obj_is_kind_of(klass, rb_cClass))
-    rb_raise(rb_eTypeError, "argument 1 (sequence-block class) should be %s.", rb_class2name(rb_cClass));
+    raise_typeerror(klass, rb_cClass);
 
   int type = 0, size = 0;
   if (klass == rb_cFixnum) {
@@ -168,9 +168,15 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     size = sizeof(CvPoint3D32f);
   }
   else
-    rb_raise(rb_eTypeError, "unsupport %s class for sequence-block.", rb_class2name(klass));
+    rb_raise(rb_eArgError, "unsupport %s class for sequence-block.", rb_class2name(klass));
   
-  CvSeq* seq = cvCreateSeq(type, sizeof(CvSeq), size, storage);
+  CvSeq* seq = NULL;
+  try {
+    seq = cvCreateSeq(type, sizeof(CvSeq), size, storage);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   DATA_PTR(self) = seq;
   resist_class_information_of_sequence(seq, klass);
   
@@ -186,7 +192,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_total(VALUE self)
 {
-  return INT2FIX(CVSEQ(self)->total);
+  return INT2NUM(CVSEQ(self)->total);
 }
 
 /*
@@ -217,10 +223,17 @@ rb_aref(VALUE self, VALUE index)
   if (idx >= seq->total)
     rb_raise(rb_eIndexError, "index %d out of sequence", idx);
 
-  if (seqblock_class(seq) == rb_cFixnum)
-    return INT2FIX(*CV_GET_SEQ_ELEM(int, seq, idx));
-  else
-    return REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, idx), self);
+  VALUE result = Qnil;
+  try {
+    if (seqblock_class(seq) == rb_cFixnum)
+      result = INT2NUM(*CV_GET_SEQ_ELEM(int, seq, idx));
+    else
+      result = REFER_OBJECT(seqblock_class(seq), cvGetSeqElem(seq, idx), self);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return result;
 }
 
 /*
@@ -320,7 +333,6 @@ rb_seq_push(VALUE self, VALUE args, int flag)
 {
   CvSeq *seq = CVSEQ(self);
   VALUE klass = seqblock_class(seq), object;
-  void *buffer = NULL;
   void *elem = NULL;
   int len = RARRAY_LEN(args);
   for (int i = 0; i < len; ++i) {
@@ -333,15 +345,28 @@ rb_seq_push(VALUE self, VALUE args, int flag)
       else {
 	elem = (void*)DATA_PTR(object);
       }
-      if (flag == CV_FRONT)
-	cvSeqPushFront(seq, elem);
-      else
-	cvSeqPush(seq, elem);
+      try {
+	if (flag == CV_FRONT)
+	  cvSeqPushFront(seq, elem);
+	else
+	  cvSeqPush(seq, elem);
+      }
+      catch (cv::Exception& e) {
+	raise_cverror(e);
+      }
     }
     else if (rb_obj_is_kind_of(object, rb_klass) && CLASS_OF(rb_first(object)) == klass) { // object is CvSeq
-      buffer = cvCvtSeqToArray(CVSEQ(object), rb_cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
-      cvSeqPushMulti(seq, buffer, CVSEQ(object)->total, flag);
-      cvFree(&buffer);
+      void *buffer = NULL;
+      try {
+	buffer = cvCvtSeqToArray(CVSEQ(object), rb_cvAlloc(CVSEQ(object)->total * CVSEQ(object)->elem_size));
+	cvSeqPushMulti(seq, buffer, CVSEQ(object)->total, flag);
+	cvFree(&buffer);
+      }
+      catch (cv::Exception& e) {
+	if (buffer != NULL)
+	  cvFree(&buffer);
+	raise_cverror(e);
+      }
     }
     else {
       rb_raise(rb_eTypeError, "arguments should be %s or %s which includes %s.",
@@ -381,14 +406,19 @@ rb_pop(VALUE self)
   
   VALUE object;
   VALUE klass = seqblock_class(seq);
-  if (klass == rb_cFixnum) {
-    int n = 0;
-    cvSeqPop(seq, &n);
-    object = INT2FIX(n);
+  try {
+    if (klass == rb_cFixnum) {
+      int n = 0;
+      cvSeqPop(seq, &n);
+      object = INT2FIX(n);
+    }
+    else {
+      object = GENERIC_OBJECT(klass, malloc(seq->elem_size));
+      cvSeqPop(seq, DATA_PTR(object));
+    }
   }
-  else {
-    object = GENERIC_OBJECT(klass, malloc(seq->elem_size));
-    cvSeqPop(seq, DATA_PTR(object));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return object;
 }
@@ -402,7 +432,12 @@ rb_pop(VALUE self)
 VALUE
 rb_clear(VALUE self)
 {
-  cvClearSeq(CVSEQ(self));
+  try {
+    cvClearSeq(CVSEQ(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -415,7 +450,14 @@ rb_clear(VALUE self)
 VALUE
 rb_unshift(VALUE self, VALUE args)
 {
-  return rb_seq_push(self, args, CV_FRONT);
+  VALUE result = Qnil;
+  try {
+    result = rb_seq_push(self, args, CV_FRONT);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return result;
 }
 
 /*
@@ -431,15 +473,20 @@ rb_shift(VALUE self)
   if(seq->total == 0)
     return Qnil;
 
-  VALUE object;
-  if (seqblock_class(seq) == rb_cFixnum) {
-    int n = 0;
-    cvSeqPopFront(seq, &n);
-    object = INT2FIX(n);
+  VALUE object = Qnil;
+  try {
+    if (seqblock_class(seq) == rb_cFixnum) {
+      int n = 0;
+      cvSeqPopFront(seq, &n);
+      object = INT2NUM(n);
+    }
+    else {
+      object = GENERIC_OBJECT(seqblock_class(seq), malloc(seq->elem_size));
+      cvSeqPopFront(seq, DATA_PTR(object));
+    }
   }
-  else {
-    object = GENERIC_OBJECT(seqblock_class(seq), malloc(seq->elem_size));
-    cvSeqPopFront(seq, DATA_PTR(object));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
 
   return object;
@@ -463,12 +510,17 @@ rb_each(VALUE self)
   CvSeq *seq = CVSEQ(self);
   if (seq->total > 0) {
     VALUE klass = seqblock_class(seq);
-    if (klass == rb_cFixnum)
-      for (int i = 0; i < seq->total; ++i)
-      	rb_yield(INT2FIX(*CV_GET_SEQ_ELEM(int, seq, i)));
-    else
-      for (int i = 0; i < seq->total; ++i)
-	rb_yield(REFER_OBJECT(klass, cvGetSeqElem(seq, i), self));
+    try {
+      if (klass == rb_cFixnum)
+	for (int i = 0; i < seq->total; ++i)
+	  rb_yield(INT2NUM(*CV_GET_SEQ_ELEM(int, seq, i)));
+      else
+	for (int i = 0; i < seq->total; ++i)
+	  rb_yield(REFER_OBJECT(klass, cvGetSeqElem(seq, i), self));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
   return self;
 }
@@ -484,7 +536,7 @@ rb_each_index(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
   for(int i = 0; i < seq->total; ++i)
-    rb_yield(INT2FIX(i));
+    rb_yield(INT2NUM(i));
   return self;
 }
 
@@ -503,12 +555,17 @@ rb_insert(VALUE self, VALUE index, VALUE object)
   VALUE klass = seqblock_class(seq);
   if (CLASS_OF(object) != klass)
     rb_raise(rb_eTypeError, "arguments should be %s.", rb_class2name(klass));
-  if (klass == rb_cFixnum) {
-    int n = NUM2INT(object);
-    cvSeqInsert(seq, FIX2INT(index), &n);
+  try {
+    if (klass == rb_cFixnum) {
+      int n = NUM2INT(object);
+      cvSeqInsert(seq, NUM2INT(index), &n);
+    }
+    else
+      cvSeqInsert(seq, NUM2INT(index), DATA_PTR(object));
   }
-  else
-    cvSeqInsert(seq, FIX2INT(index), DATA_PTR(object));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -521,7 +578,12 @@ rb_insert(VALUE self, VALUE index, VALUE object)
 VALUE
 rb_remove(VALUE self, VALUE index)
 {
-  cvSeqRemove(CVSEQ(self), FIX2INT(index));
+  try {
+    cvSeqRemove(CVSEQ(self), NUM2INT(index));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 

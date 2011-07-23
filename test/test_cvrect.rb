@@ -74,11 +74,17 @@ class TestCvRect < OpenCVTestCase
     assert_equal(30, rect.width)
     assert_equal(40, rect.height)
 
+    assert_raise(TypeError) {
+      CvRect.new(DUMMY_OBJ)
+    }
     assert_raise(ArgumentError) {
-      CvRect.new('string')
+      CvRect.new(1, 2)
     }
     assert_raise(ArgumentError) {
       CvRect.new(1, 2, 3)
+    }
+    assert_raise(ArgumentError) {
+      CvRect.new(1, 2, 3, 4, 5)
     }
   end
 

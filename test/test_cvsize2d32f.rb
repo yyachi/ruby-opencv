@@ -48,8 +48,8 @@ class TestCvSize2D32f < OpenCVTestCase
     assert_in_delta(1.1, size.width, 0.001)
     assert_in_delta(2.2, size.height, 0.001)
 
-    assert_raise(ArgumentError) {
-      CvSize2D32f.new('string')
+    assert_raise(TypeError) {
+      CvSize2D32f.new(DUMMY_OBJ)
     }
     assert_raise(ArgumentError) {
       CvSize2D32f.new(1, 2, 3)

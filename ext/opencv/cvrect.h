@@ -24,7 +24,6 @@ void define_ruby_class();
 
 VALUE rb_compatible_q(VALUE klass, VALUE object);
 VALUE rb_max_rect(VALUE klass, VALUE rect1, VALUE rect2);
-VALUE rb_bounding(VALUE klass, VALUE points);
 
 VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);

@@ -59,13 +59,6 @@ rb_allocate(VALUE klass)
   return Data_Make_Struct(klass, CvTwoPoints, 0, -1, ptr);
 }
 
-VALUE
-rb_cvseqblock(VALUE self)
-{
-  return Qnil;
-}
-
-
 /*
  * Return point 1.
  */

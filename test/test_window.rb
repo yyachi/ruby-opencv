@@ -24,7 +24,7 @@ class TestWindow < OpenCVTestCase
       assert_not_nil(w)
       assert_equal(Window, w.class)
     }
-
+    
     assert_raise(TypeError) {
       Window.new('w4', 'foobar')
     }
@@ -62,7 +62,7 @@ class TestWindow < OpenCVTestCase
 
     # Uncomment the following lines to show the results
     # @window1.show(CvMat.new(10, 20))
-    # @window2.show(CvMat.new(100, 200))
+    # @window1.resize(100, 200)
     # GUI::wait_key
   end
 

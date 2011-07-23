@@ -103,23 +103,19 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE obj, x, y;
+  CvSize2D32f *self_ptr = CVSIZE2D32F(self);
   switch(argc){
   case 0:
     break;
-  case 1:
-    obj = argv[0];
-    if(rb_compatible_q(rb_klass, obj)){
-      CVSIZE2D32F(self)->width = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("width"), 0), rb_intern("to_f"), 0));
-      CVSIZE2D32F(self)->height = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("height"), 0), rb_intern("to_f"), 0));
-    }else{
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvSize2D32f size = VALUE_TO_CVSIZE2D32F(argv[0]);
+    self_ptr->width = size.width;
+    self_ptr->height = size.height;
     break;
+  }
   case 2:
-    x = argv[0], y = argv[1];
-    CVSIZE2D32F(self)->width = NUM2DBL(x);
-    CVSIZE2D32F(self)->height = NUM2DBL(y);
+    self_ptr->width = NUM2DBL(argv[0]);
+    self_ptr->height = NUM2DBL(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);

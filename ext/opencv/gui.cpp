@@ -54,7 +54,13 @@ rb_wait_key(int argc, VALUE *argv, VALUE self)
   VALUE delay;
   rb_scan_args(argc, argv, "01", &delay);
   int keycode = 0;
-  return ((keycode = cvWaitKey(IF_INT(delay, 0))) < 0) ? Qnil : INT2FIX(keycode);
+  try {
+    keycode = cvWaitKey(IF_INT(delay, 0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return (keycode < 0) ? Qnil : INT2NUM(keycode);
 }
 
 __NAMESPACE_END_GUI

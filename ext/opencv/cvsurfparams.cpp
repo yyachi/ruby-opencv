@@ -76,8 +76,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 
   self_ptr->hessianThreshold = NUM2DBL(h_thresh);
   self_ptr->extended = NIL_P(ext) ? 0 : BOOL2INT(ext);
-  self_ptr->nOctaves = NIL_P(noct) ? 3 : FIX2INT(noct);
-  self_ptr->nOctaveLayers = NIL_P(noctl) ? 4 : FIX2INT(noctl);
+  self_ptr->nOctaves = NIL_P(noct) ? 3 : NUM2INT(noct);
+  self_ptr->nOctaveLayers = NIL_P(noctl) ? 4 : NUM2INT(noctl);
     
   return self;
 }
@@ -141,7 +141,7 @@ rb_set_extended(VALUE self, VALUE value)
 VALUE
 rb_get_n_octaves(VALUE self)
 {
-  return INT2FIX(CVSURFPARAMS(self)->nOctaves);
+  return INT2NUM(CVSURFPARAMS(self)->nOctaves);
 }
 
 /*
@@ -152,7 +152,7 @@ rb_get_n_octaves(VALUE self)
 VALUE
 rb_set_n_octaves(VALUE self, VALUE value)
 {
-  CVSURFPARAMS(self)->nOctaves = FIX2INT(value);
+  CVSURFPARAMS(self)->nOctaves = NUM2INT(value);
   return self;
 }
 
@@ -164,7 +164,7 @@ rb_set_n_octaves(VALUE self, VALUE value)
 VALUE
 rb_get_n_octave_layers(VALUE self)
 {
-  return INT2FIX(CVSURFPARAMS(self)->nOctaveLayers);
+  return INT2NUM(CVSURFPARAMS(self)->nOctaveLayers);
 }
 
 /*
@@ -175,7 +175,7 @@ rb_get_n_octave_layers(VALUE self)
 VALUE
 rb_set_n_octave_layers(VALUE self, VALUE value)
 {
-  CVSURFPARAMS(self)->nOctaveLayers = FIX2INT(value);
+  CVSURFPARAMS(self)->nOctaveLayers = NUM2INT(value);
   return self;
 }
 

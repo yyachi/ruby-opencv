@@ -65,8 +65,6 @@ define_ruby_class()
   rb_define_method(rb_klass, "top_right", RUBY_METHOD_FUNC(rb_top_right), 0);
   rb_define_method(rb_klass, "bottom_left", RUBY_METHOD_FUNC(rb_bottom_left), 0);
   rb_define_method(rb_klass, "bottom_right", RUBY_METHOD_FUNC(rb_bottom_right), 0);
-  // rb_define_method(rb_klass, "or", RUBY_METHOD_FUNC(rb_or), 1);
-  // rb_define_alias(rb_klass, "|", "or");
 }
 
 /*
@@ -115,18 +113,6 @@ rb_max_rect(VALUE klass, VALUE rect1, VALUE rect2)
   return cCvRect::new_object(cvMaxRect(CVRECT(rect1), CVRECT(rect2)));
 }
 
-/*
- * call-seq:
- *   CvRect.bounding
- *
- */
-VALUE
-rb_bounding(VALUE klass, VALUE points)
-{
-  /* not yet */
-  return Qnil;
-}
-
 VALUE
 rb_allocate(VALUE klass)
 {
@@ -150,33 +136,29 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE object, x, y, width, height;
+  CvRect *self_ptr = CVRECT(self);
   switch (argc) {
   case 0:
     break;
-  case 1:
-    object = argv[0];
-    if (rb_compatible_q(rb_klass, object)) {
-      CVRECT(self)->x = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("x"), 0), rb_intern("to_i"), 0));
-      CVRECT(self)->y = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("y"), 0), rb_intern("to_i"), 0));
-      CVRECT(self)->width = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("width"), 0), rb_intern("to_i"), 0));
-      CVRECT(self)->height = NUM2INT(rb_funcall(rb_funcall(object, rb_intern("height"), 0), rb_intern("to_i"), 0));
-    }
-    else{
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvRect rect = VALUE_TO_CVRECT(argv[0]);
+    self_ptr->x = rect.x;
+    self_ptr->y = rect.y;
+    self_ptr->width = rect.width;
+    self_ptr->height = rect.height;
     break;
+  }
   case 4:
-    x = argv[0], y = argv[1], width = argv[2], height = argv[3];
-    CVRECT(self)->x = NUM2INT(x);
-    CVRECT(self)->y = NUM2INT(y);
-    CVRECT(self)->width = NUM2INT(width);
-    CVRECT(self)->height = NUM2INT(height);
+    self_ptr->x = NUM2INT(argv[0]);
+    self_ptr->y = NUM2INT(argv[1]);
+    self_ptr->width = NUM2INT(argv[2]);
+    self_ptr->height = NUM2INT(argv[3]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);
+    break;
   }
-  return Qnil;      
+  return self;
 }
 
 /*
@@ -303,7 +285,8 @@ rb_points(VALUE self)
 VALUE
 rb_top_left(VALUE self)
 {
-  return cCvPoint::new_object(cvPoint(CVRECT(self)->x, CVRECT(self)->y));
+  CvRect* rect = CVRECT(self);
+  return cCvPoint::new_object(cvPoint(rect->x, rect->y));
 }
 
 /*
@@ -312,7 +295,8 @@ rb_top_left(VALUE self)
 VALUE
 rb_top_right(VALUE self)
 {
-  return cCvPoint::new_object(cvPoint(CVRECT(self)->x + CVRECT(self)->width, CVRECT(self)->y));
+  CvRect* rect = CVRECT(self);
+  return cCvPoint::new_object(cvPoint(rect->x + rect->width, rect->y));
 }
 
 /*
@@ -321,7 +305,9 @@ rb_top_right(VALUE self)
 VALUE
 rb_bottom_left(VALUE self)
 {
-  return cCvPoint::new_object(cvPoint(CVRECT(self)->x, CVRECT(self)->y + CVRECT(self)->height));
+  CvRect* rect = CVRECT(self);
+  return cCvPoint::new_object(cvPoint(rect->x,
+				      rect->y + rect->height));
 }
 
 /*
@@ -330,7 +316,9 @@ rb_bottom_left(VALUE self)
 VALUE
 rb_bottom_right(VALUE self)
 {
-  return cCvPoint::new_object(cvPoint(CVRECT(self)->x + CVRECT(self)->width, CVRECT(self)->y + CVRECT(self)->height));
+  CvRect* rect = CVRECT(self);
+  return cCvPoint::new_object(cvPoint(rect->x + rect->width,
+				      rect->y + rect->height));
 }
 
 VALUE
