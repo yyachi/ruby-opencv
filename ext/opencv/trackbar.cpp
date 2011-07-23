@@ -88,14 +88,14 @@ VALUE rb_name(VALUE self) {
  * Return the maximum value that can be taken this trackbar.
  */
 VALUE rb_max(VALUE self) {
-  return INT2FIX(TRACKBAR(self)->maxval);
+  return INT2NUM(TRACKBAR(self)->maxval);
 }
 
 /*
  * Return the value of this trackbar.
  */
 VALUE rb_value(VALUE self) {
-  return INT2FIX(TRACKBAR(self)->val);
+  return INT2NUM(TRACKBAR(self)->val);
 }
 
 /*

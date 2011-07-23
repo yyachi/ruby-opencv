@@ -104,29 +104,25 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE obj, x, y;
+  CvPoint2D32f *self_ptr = CVPOINT2D32F(self);
   switch (argc) {
   case 0:
     break;
-  case 1:
-    obj = argv[0];
-    if (rb_compatible_q(rb_klass, obj)) {
-      CVPOINT2D32F(self)->x = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("x"), 0), rb_intern("to_f"), 0));
-      CVPOINT2D32F(self)->y = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("y"), 0), rb_intern("to_f"), 0));
-    }
-    else {
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvPoint2D32f point = VALUE_TO_CVPOINT2D32F(argv[0]);
+    self_ptr->x = point.x;
+    self_ptr->y = point.y;
     break;
+  }
   case 2:
-    x = argv[0], y = argv[1];
-    CVPOINT2D32F(self)->x = NUM2DBL(x);
-    CVPOINT2D32F(self)->y = NUM2DBL(y);
+    self_ptr->x = NUM2DBL(argv[0]);
+    self_ptr->y = NUM2DBL(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);
+    break;
   }
-  return Qnil;
+  return self;
 }
 
 /*

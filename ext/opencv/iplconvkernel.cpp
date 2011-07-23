@@ -7,7 +7,7 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#include"iplconvkernel.h"
+#include "iplconvkernel.h"
 /*
  * Document-class: OpenCV::IplConvKernel
  *
@@ -101,11 +101,16 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     num_values = RARRAY_LEN(values);
     _values = ALLOCA_N(int, num_values);
     VALUE *values_ptr = RARRAY_PTR(values);
-    for (int i = 0; i < num_values; i++)
+    for (int i = 0; i < num_values; ++i)
       _values[i] = NUM2INT(values_ptr[i]);
   }
-  DATA_PTR(self) = rb_cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),
-						   shape_type, _values);
+  try {
+    DATA_PTR(self) = rb_cvCreateStructuringElementEx(_cols, _rows, NUM2INT(anchor_x), NUM2INT(anchor_y),
+						     shape_type, _values);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 

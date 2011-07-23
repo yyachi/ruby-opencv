@@ -79,8 +79,8 @@ rb_initialize(VALUE self, VALUE pt, VALUE laplacian, VALUE size, VALUE dir, VALU
 {
   CvSURFPoint *self_ptr = CVSURFPOINT(self);
   self_ptr->pt = VALUE_TO_CVPOINT2D32F(pt);
-  self_ptr->laplacian = FIX2INT(laplacian);
-  self_ptr->size = FIX2INT(size);
+  self_ptr->laplacian = NUM2INT(laplacian);
+  self_ptr->size = NUM2INT(size);
   self_ptr->dir = (float)NUM2DBL(dir);
   self_ptr->hessian = (float)NUM2DBL(hessian);
 
@@ -107,21 +107,19 @@ rb_get_pt(VALUE self)
 VALUE
 rb_set_pt(VALUE self, VALUE value)
 {
-  if (!cCvPoint2D32f::rb_compatible_q(rb_klass, value))
-    rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(cCvPoint2D32f::rb_class()));
   CVSURFPOINT(self)->pt = VALUE_TO_CVPOINT2D32F(value);
   return self;
 }
 
 /*
  * call-seq:
- *   laplacian -> fixnum
+ *   laplacian -> number
  * Return sign of the laplacian at the point (-1, 0 or +1)
  */
 VALUE
 rb_get_laplacian(VALUE self)
 {
-  return INT2FIX(CVSURFPOINT(self)->laplacian);
+  return INT2NUM(CVSURFPOINT(self)->laplacian);
 }
 
 /*
@@ -132,20 +130,20 @@ rb_get_laplacian(VALUE self)
 VALUE
 rb_set_laplacian(VALUE self, VALUE value)
 {
-  int val = FIX2INT(value);
+  int val = NUM2INT(value);
   CVSURFPOINT(self)->laplacian = (val > 0) ? 1 : (val < 0) ? -1 : 0;
   return self;
 }
 
 /*
  * call-seq:
- *   size -> fixnum
+ *   size -> number
  * Return size of feature
  */
 VALUE
 rb_get_size(VALUE self)
 {
-  return INT2FIX(CVSURFPOINT(self)->size);
+  return INT2NUM(CVSURFPOINT(self)->size);
 }
 
 /*
@@ -156,7 +154,7 @@ rb_get_size(VALUE self)
 VALUE
 rb_set_size(VALUE self, VALUE value)
 {
-  CVSURFPOINT(self)->size = FIX2INT(value);
+  CVSURFPOINT(self)->size = NUM2INT(value);
   return self;
 }
 

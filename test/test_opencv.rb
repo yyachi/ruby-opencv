@@ -235,47 +235,60 @@ class TestOpenCV < OpenCVTestCase
 
     # RGB(A) <=> RGB(A)
     [mat_3ch.BGR2BGRA, mat_3ch.RGB2RGBA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 20, 30, 255), m[0])
     }
     [mat_3ch.BGR2RGBA, mat_3ch.RGB2BGRA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 255), m[0])
     }
     [mat_4ch.BGRA2BGR, mat_4ch.RGBA2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 20, 30, 0), m[0])
     }
     [mat_4ch.RGBA2BGR, mat_4ch.BGRA2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_3ch.BGR2RGB, mat_3ch.RGB2BGR].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_4ch.BGRA2RGBA, mat_4ch.RGBA2BGRA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 40), m[0])
     }
 
     # RGB <=> GRAY
     [mat_3ch.BGR2GRAY, mat_4ch.BGRA2GRAY].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(1, m.channel)
       assert_cvscalar_equal(CvScalar.new(gray_bgr, 0, 0, 0), m[0])
     }
     [mat_3ch.RGB2GRAY, mat_4ch.RGBA2GRAY].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(1, m.channel)
       assert_cvscalar_equal(CvScalar.new(gray_rgb, 0, 0, 0), m[0])
     }
     [mat_1ch.GRAY2BGR, mat_1ch.GRAY2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 10, 10, 0), m[0])
     }
     [mat_1ch.GRAY2BGRA, mat_1ch.GRAY2RGBA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 10, 10, 255), m[0])
     }
+
+    img_3ch = IplImage.new(1, 1, :cv8u, 3)
+    assert_equal(IplImage, img_3ch.BGR2GRAY.class)
 
     flunk('FIXME: Most cvtColor functions are not tested yet.')
   end

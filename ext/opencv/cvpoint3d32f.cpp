@@ -114,29 +114,27 @@ VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
   VALUE obj, x, y, z;
+  CvPoint3D32f *self_ptr = CVPOINT3D32F(self);
   switch (argc) {
   case 0:
     break;
-  case 1:
-    obj = argv[0];
-    if(rb_compatible_q(rb_klass, obj)) {
-      CVPOINT3D32F(self)->x = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("x"), 0), rb_intern("to_f"), 0));
-      CVPOINT3D32F(self)->y = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("y"), 0), rb_intern("to_f"), 0));
-      CVPOINT3D32F(self)->z = NUM2DBL(rb_funcall(rb_funcall(obj, rb_intern("z"), 0), rb_intern("to_f"), 0));
-    }else{
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvPoint3D32f point = VALUE_TO_CVPOINT3D32F(argv[0]);
+    self_ptr->x = point.x;
+    self_ptr->y = point.y;
+    self_ptr->z = point.z;
     break;
+  }
   case 3:
-    x = argv[0], y = argv[1], z = argv[2];
-    CVPOINT3D32F(self)->x = NUM2DBL(x);
-    CVPOINT3D32F(self)->y = NUM2DBL(y);
-    CVPOINT3D32F(self)->z = NUM2DBL(z);
+    self_ptr->x = NUM2DBL(argv[0]);
+    self_ptr->y = NUM2DBL(argv[1]);
+    self_ptr->z = NUM2DBL(argv[2]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);
+    break;
   }
-  return Qnil;
+  return self;
 }
 
 /*

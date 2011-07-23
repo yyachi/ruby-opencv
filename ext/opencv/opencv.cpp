@@ -474,14 +474,18 @@ define_ruby_module()
 #define CREATE_CVTCOLOR_FUNC(rb_func_name, c_const_name, src_cn, dest_cn) \
   VALUE rb_func_name(VALUE klass, VALUE image)				\
   {									\
-    VALUE dest;								\
-    if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))			\
-      rb_raise(rb_eTypeError, "argument 1 should be %s.", rb_class2name(cCvMat::rb_class())); \
-    int type = cvGetElemType(CVARR(image));				\
-    if (CV_MAT_CN(type) != src_cn)					\
-      rb_raise(rb_eTypeError, "argument 1 should be %d-channel.", src_cn); \
-    dest = cIplImage::new_object(cvGetSize(CVARR(image)), CV_MAKETYPE(CV_MAT_DEPTH(type), dest_cn)); \
-    cvCvtColor(CVARR(image), CVARR(dest), c_const_name);		\
+    VALUE dest = Qnil;							\
+    CvArr* img_ptr = CVMAT_WITH_CHECK(image);				\
+    try {								\
+      int type = cvGetElemType(img_ptr);				\
+      if (CV_MAT_CN(type) != src_cn)					\
+	rb_raise(rb_eArgError, "argument 1 should be %d-channel.", src_cn); \
+      dest = cCvMat::new_mat_kind_object(cvGetSize(img_ptr), image, CV_MAT_DEPTH(type), dest_cn); \
+      cvCvtColor(img_ptr, CVARR(dest), c_const_name);			\
+    }									\
+    catch (cv::Exception& e) {						\
+      raise_cverror(e);							\
+    }									\
     return dest;							\
   }
 

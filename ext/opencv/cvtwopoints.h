@@ -12,12 +12,12 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVTWOPOINTS namespace cCvTwoPoints{
+#define __NAMESPACE_BEGIN_CVTWOPOINTS namespace cCvTwoPoints {
 #define __NAMESPACE_END_CVTWOPOINTS }
 
 __NAMESPACE_BEGIN_OPENCV
 
-typedef struct CvTwoPoints{
+typedef struct CvTwoPoints {
   CvPoint p1;
   CvPoint p2;
 } CvTwoPoints;
@@ -40,7 +40,7 @@ VALUE new_object(CvTwoPoints twopoints);
 __NAMESPACE_END_CVTWOPOINTS
 
 inline CvTwoPoints*
-CVTWOPOINTS(VALUE object){
+CVTWOPOINTS(VALUE object) {
   CvTwoPoints *ptr;
   Data_Get_Struct(object, CvTwoPoints, ptr);
   return ptr;

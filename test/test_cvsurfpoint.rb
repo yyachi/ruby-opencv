@@ -29,6 +29,10 @@ class TestCvSURFPoint < OpenCVTestCase
     @surf_point1.pt = CvPoint2D32f.new(12.3, 45.6)
     assert_in_delta(12.3, @surf_point1.pt.x, 0.001)
     assert_in_delta(45.6, @surf_point1.pt.y, 0.001)
+
+    assert_raise(TypeError) {
+      @surf_point1.pt = DUMMY_OBJ
+    }
   end
 
   def test_laplacian

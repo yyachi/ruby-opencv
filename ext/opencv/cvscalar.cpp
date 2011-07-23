@@ -104,8 +104,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 {
   VALUE val[4];
   rb_scan_args(argc, argv, "04", &val[0], &val[1], &val[2], &val[3]);
-  for (int i = 0; i < 4; i++) {
-    CVSCALAR(self)->val[i] = NIL_P(val[i]) ? 0 : NUM2DBL(val[i]);
+  CvScalar* self_ptr = CVSCALAR(self);
+  for (int i = 0; i < 4; ++i) {
+    self_ptr->val[i] = NIL_P(val[i]) ? 0 : NUM2DBL(val[i]);
   }
   return self;
 }
@@ -120,11 +121,10 @@ VALUE
 rb_aref(VALUE self, VALUE index)
 {
   int idx = NUM2INT(index);
-  if (!(idx < 0) && idx < 4) {
-    return rb_float_new(CVSCALAR(self)->val[idx]);
-  }else{
+  if (idx < 0 || idx >= 4) {
     rb_raise(rb_eIndexError, "scalar index should be 0...4");
   }
+  return rb_float_new(CVSCALAR(self)->val[idx]);
 }
 
 /*
@@ -137,12 +137,11 @@ VALUE
 rb_aset(VALUE self, VALUE index, VALUE value)
 {
   int idx = NUM2INT(index);
-  if (!(idx < 0) && idx < 4) {
-    CVSCALAR(self)->val[idx] = NUM2DBL(value);
-    return self;
-  }else{
+  if (idx < 0 || idx >= 4) {
     rb_raise(rb_eIndexError, "scalar index should be 0...4");
   }
+  CVSCALAR(self)->val[idx] = NUM2DBL(value);
+  return self;
 }
 
 /*
@@ -158,12 +157,21 @@ rb_sub(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask;
   rb_scan_args(argc, argv, "11", &val, &mask);
-  if(rb_obj_is_kind_of(val, cCvMat::rb_class())){
-    VALUE dest = cCvMat::new_object(cvGetSize(CVARR(val)), cvGetElemType(CVARR(val)));
-    cvSubRS(CVARR(val), *CVSCALAR(self), CVARR(dest), MASK(mask));
+  if (rb_obj_is_kind_of(val, cCvMat::rb_class())) {
+    CvArr *val_ptr = CVARR(val);
+    VALUE dest = Qnil;
+    try {
+      dest = cCvMat::new_object(cvGetSize(val_ptr), cvGetElemType(val_ptr));
+      cvSubRS(val_ptr, *CVSCALAR(self), CVARR(dest), MASK(mask));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return dest;
-  }else{
-    CvScalar *src = CVSCALAR(self), scl = VALUE_TO_CVSCALAR(val);
+  }
+  else {
+    CvScalar *src = CVSCALAR(self);
+    CvScalar scl = VALUE_TO_CVSCALAR(val);
     return new_object(cvScalar(src->val[0] - scl.val[0],
                                src->val[1] - scl.val[1],
                                src->val[2] - scl.val[2],
