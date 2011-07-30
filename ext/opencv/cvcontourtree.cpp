@@ -14,11 +14,11 @@
  * Contour tree. CvContour#create_tree
  *
  * C structure is here.
- *  typedef struct CvContourTree{
+ *  typedef struct CvContourTree {
  *    CV_SEQUENCE_FIELDS()
  *    CvPoint p1;
  *    CvPoint p2;
- *  }CvContourTree;
+ *  } CvContourTree;
  * 
  */
 __NAMESPACE_BEGIN_OPENCV
@@ -49,8 +49,7 @@ define_ruby_class()
   rb_klass = rb_define_class_under(opencv, "CvContourTree", cvseq);
   rb_define_method(rb_klass, "p1", RUBY_METHOD_FUNC(rb_p1), 0);
   rb_define_method(rb_klass, "p2", RUBY_METHOD_FUNC(rb_p2), 0);
-  rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 0);
-
+  rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 1);
 }
 
 VALUE
@@ -74,13 +73,17 @@ rb_p2(VALUE self)
  * used for reconstruction, so it is possible to build approximated contour.
  */
 VALUE
-rb_contour(int argc, VALUE *argv, VALUE self)
+rb_contour(VALUE self, VALUE criteria)
 {
-  VALUE criteria, storage;
-  rb_scan_args(argc, argv, "01", &criteria);
-  storage = cCvMemStorage::new_object();
-  CvSeq *contour = cvContourFromContourTree(CVCONTOURTREE(self), CVMEMSTORAGE(storage),
-					    VALUE_TO_CVTERMCRITERIA(criteria));
+  VALUE storage = cCvMemStorage::new_object();
+  CvSeq *contour = NULL;
+  try {
+    contour = cvContourFromContourTree(CVCONTOURTREE(self), CVMEMSTORAGE(storage),
+				       VALUE_TO_CVTERMCRITERIA(criteria));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return cCvSeq::new_sequence(cCvContour::rb_class(), contour, cCvPoint::rb_class(), storage);
 }
 
