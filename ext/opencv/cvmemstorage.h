@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVMEMSTORAGE namespace cCvMemStorage{
+#define __NAMESPACE_BEGIN_CVMEMSTORAGE namespace cCvMemStorage {
 #define __NAMESPACE_END_CVMEMSTORAGE }
 
 __NAMESPACE_BEGIN_OPENCV

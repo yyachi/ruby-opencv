@@ -147,7 +147,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   else
     storage = rb_cvCreateMemStorage(0);
   
-  if(!rb_obj_is_kind_of(klass, rb_cClass))
+  if (!rb_obj_is_kind_of(klass, rb_cClass))
     raise_typeerror(klass, rb_cClass);
 
   int type = 0, size = 0;
@@ -404,7 +404,7 @@ rb_pop(VALUE self)
   if (seq->total == 0)
     return Qnil;
   
-  VALUE object;
+  VALUE object = Qnil;
   VALUE klass = seqblock_class(seq);
   try {
     if (klass == rb_cFixnum) {
