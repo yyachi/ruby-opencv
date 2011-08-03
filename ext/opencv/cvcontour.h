@@ -11,7 +11,7 @@
 #define RUBY_OPENCV_CVCONTOUR_H
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCONTOUR namespace cCvContour{
+#define __NAMESPACE_BEGIN_CVCONTOUR namespace cCvContour {
 #define __NAMESPACE_END_CVCONTOUR }
 
 __NAMESPACE_BEGIN_OPENCV

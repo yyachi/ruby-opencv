@@ -11,7 +11,7 @@
 #define RUBY_OPENCV_CVCHAIN_H
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCHAIN namespace cCvChain{
+#define __NAMESPACE_BEGIN_CVCHAIN namespace cCvChain {
 #define __NAMESPACE_END_CVCHAIN }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -22,7 +22,6 @@ VALUE rb_class();
 void define_ruby_class();
 
 VALUE rb_allocate(VALUE klass);
-void cvchain_free(void *ptr);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_origin(VALUE self);

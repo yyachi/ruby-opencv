@@ -67,18 +67,8 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvChain *ptr = ALLOC(CvChain);
-  return Data_Wrap_Struct(klass, 0, cvchain_free, ptr);
-}
-
-void
-cvchain_free(void *ptr)
-{
-  if (ptr) {
-    CvChain *chain = (CvChain*)ptr;
-    if (chain->storage)
-      cvReleaseMemStorage(&(chain->storage));
-  }
+  CvChain *ptr;
+  return Data_Make_Struct(klass, CvChain, 0, 0, ptr);
 }
 
 VALUE
