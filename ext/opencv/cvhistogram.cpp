@@ -54,8 +54,8 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  // not yet
-  return Qnil;
+  CvHistogram* ptr;
+  return Data_Make_Struct(klass, CvHistogram, 0, -1, ptr);
 }
 
 /*
@@ -97,11 +97,17 @@ rb_has_range(VALUE self)
 VALUE
 rb_dims(VALUE self)
 {
+  VALUE result = Qnil;
   int size[CV_MAX_DIM];
-  int dims = cvGetDims(CVHISTOGRAM(self)->bins, size);
-  VALUE result = rb_ary_new2(dims);
-  for(int i = 0; i < dims; i++){
-    rb_ary_store(result, i, INT2FIX(size[i]));
+  try {
+    int dims = cvGetDims(CVHISTOGRAM(self)->bins, size);
+    result = rb_ary_new2(dims);
+    for(int i = 0; i < dims; ++i){
+      rb_ary_store(result, i, INT2NUM(size[i]));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return result;
 }
@@ -128,7 +134,12 @@ rb_copy(VALUE self)
 {
   VALUE dest = 0;
   CvHistogram *hist = CVHISTOGRAM(dest);
-  cvCopyHist(CVHISTOGRAM(self), &hist);
+  try {
+    cvCopyHist(CVHISTOGRAM(self), &hist);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -141,7 +152,12 @@ rb_copy(VALUE self)
 VALUE
 rb_clear_bang(VALUE self)
 {
-  cvClearHist(CVHISTOGRAM(self));
+  try {
+    cvClearHist(CVHISTOGRAM(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -166,7 +182,12 @@ rb_normalize(VALUE self, VALUE factor)
 VALUE
 rb_normalize_bang(VALUE self, VALUE factor)
 {
-  cvNormalizeHist(CVHISTOGRAM(self), NUM2DBL(factor));
+  try {
+    cvNormalizeHist(CVHISTOGRAM(self), NUM2DBL(factor));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -191,10 +212,14 @@ rb_thresh(VALUE self, VALUE factor)
 VALUE
 rb_thresh_bang(VALUE self, VALUE factor)
 {
-  cvThreshHist(CVHISTOGRAM(self), NUM2DBL(factor));
+  try {
+    cvThreshHist(CVHISTOGRAM(self), NUM2DBL(factor));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
-
 
 __NAMESPACE_END_CVHISTOGRAM
 __NAMESPACE_END_OPENCV

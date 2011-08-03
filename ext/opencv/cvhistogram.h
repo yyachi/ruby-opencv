@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVHISTOGRAM namespace cCvHistogram{
+#define __NAMESPACE_BEGIN_CVHISTOGRAM namespace cCvHistogram {
 #define __NAMESPACE_END_CVHISTOGRAM }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -38,8 +38,8 @@ VALUE rb_thresh_bang(VALUE self, VALUE factor);
 
 __NAMESPACE_END_CVHISTOGRAM
 
-inline CvHistogram
-*CVHISTOGRAM(VALUE object)
+inline CvHistogram*
+CVHISTOGRAM(VALUE object)
 {
   CvHistogram *ptr;
   Data_Get_Struct(object, CvHistogram, ptr);
