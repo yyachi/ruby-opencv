@@ -10,7 +10,7 @@
 #ifndef RUBY_OPENCV_POINTSET_H
 #define RUBY_OPENCV_POINTSET_H
 
-#define __NAMESPACE_BEGIN_POINT_SET namespace mPointSet{
+#define __NAMESPACE_BEGIN_POINT_SET namespace mPointSet {
 #define __NAMESPACE_END_POINT_SET }
 
 #include"opencv.h"
@@ -22,12 +22,12 @@ VALUE rb_module();
 
 void define_ruby_module();
 VALUE rb_contour_area(int argc, VALUE *argv, VALUE self);
-VALUE rb_fit_ellipse(VALUE self);
+VALUE rb_fit_ellipse2(VALUE self);
+VALUE rb_convex_hull2(int argc, VALUE *argv, VALUE self);
 VALUE rb_fit_line(int argc, VALUE *argv, VALUE self);
-VALUE rb_convex_hull(int argc, VALUE *argv, VALUE self);
 VALUE rb_check_contour_convexity(VALUE self);
-VALUE rb_convexity_defects(int argc, VALUE *argv, VALUE self);
-VALUE rb_min_area_rect(VALUE self);
+VALUE rb_convexity_defects(VALUE self, VALUE hull);
+VALUE rb_min_area_rect2(VALUE self);
 VALUE rb_min_enclosing_circle(VALUE self);
 VALUE rb_calc_pgh(VALUE self);
 

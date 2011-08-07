@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVMEMSTORAGE namespace cCvMemStorage{
+#define __NAMESPACE_BEGIN_CVMEMSTORAGE namespace cCvMemStorage {
 #define __NAMESPACE_END_CVMEMSTORAGE }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -39,10 +39,10 @@ CVMEMSTORAGE(VALUE object)
 inline VALUE
 CHECK_CVMEMSTORAGE(VALUE object)
 {
-  if(rb_obj_is_kind_of(object, cCvMemStorage::rb_class()))
+  if (rb_obj_is_kind_of(object, cCvMemStorage::rb_class()))
     return object;
-  else{
-    if(!NIL_P(object))
+  else {
+    if (!NIL_P(object))
       rb_warn("invalid CvMemStorage object given. allocate new memory storage automatically.");
     return cCvMemStorage::new_object();
   }

@@ -55,25 +55,11 @@ define_ruby_class()
   rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 0);
 }
 
-void
-cvconnectedcomp_free(void *ptr)
-{
-  if (ptr) {
-    CvConnectedComp* connected_comp = (CvConnectedComp*)ptr;
-    if (connected_comp->contour) {
-      CvContour *contour = (CvContour*)connected_comp->contour;
-      if (contour->storage)
-	cvReleaseMemStorage(&(contour->storage));
-    }
-    free(ptr);
-  }
-}
-
 VALUE
 rb_allocate(VALUE klass)
 {
   CvConnectedComp *ptr;
-  return Data_Make_Struct(klass, CvConnectedComp, 0, cvconnectedcomp_free, ptr);
+  return Data_Make_Struct(klass, CvConnectedComp, 0, -1, ptr);
 }
 
 VALUE

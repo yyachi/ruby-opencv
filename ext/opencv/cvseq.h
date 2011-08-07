@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSEQ namespace cCvSeq{
+#define __NAMESPACE_BEGIN_CVSEQ namespace cCvSeq {
 #define __NAMESPACE_END_CVSEQ }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -24,8 +24,6 @@ void define_ruby_class();
 VALUE seqblock_class(void *ptr);
 
 VALUE rb_allocate(VALUE klass);
-void free(void *ptr);
-void resist_class_information_of_sequence(CvSeq *seq, VALUE klass);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_total(VALUE self);
