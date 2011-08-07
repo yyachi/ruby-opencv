@@ -5387,36 +5387,34 @@ rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VAL
 
 /*
  * call-seq:
- *   extract_surf(params[,mask,keypoints]) -> [cvseq(cvsurfpoint), array(float)]
+ *   extract_surf(params[,mask]) -> [cvseq(cvsurfpoint), array(float)]
  * Extracts Speeded Up Robust Features from an image
  *
  * <i>params</i> (CvSURFParams) - Various algorithm parameters put to the structure CvSURFParams.
  * <i>mask</i> (CvMat) - The optional input 8-bit mask. The features are only found in the areas that contain more than 50% of non-zero mask pixels.
- * <i>keypoints</i> (CvSeq which includes CvSURFPoint) - Provided keypoints
  */
 VALUE
 rb_extract_surf(int argc, VALUE *argv, VALUE self)
 {
-  VALUE _params, _mask, _keypoints;
-  rb_scan_args(argc, argv, "12", &_params, &_mask, &_keypoints);
+  VALUE _params, _mask;
+  rb_scan_args(argc, argv, "11", &_params, &_mask);
 
   // Prepare arguments
   CvSURFParams params = *CVSURFPARAMS_WITH_CHECK(_params);
   CvMat* mask = MASK(_mask);
-  CvSeq* keypoints = NIL_P(_keypoints) ? NULL : CVSEQ_WITH_CHECK(_keypoints);
-  int use_provided = (keypoints == NULL) ? 0 : 1;
   VALUE storage = cCvMemStorage::new_object();
+  CvSeq* keypoints = NULL;
   CvSeq* descriptors = NULL;
 
   // Compute SURF keypoints and descriptors
   try {
     cvExtractSURF(CVARR(self), mask, &keypoints, &descriptors, CVMEMSTORAGE(storage),
-		  params, use_provided);
+		  params, 0);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  _keypoints = cCvSeq::new_sequence(cCvSeq::rb_class(), keypoints, cCvSURFPoint::rb_class(), storage);
+  VALUE _keypoints = cCvSeq::new_sequence(cCvSeq::rb_class(), keypoints, cCvSURFPoint::rb_class(), storage);
   
   // Create descriptor array
   const int DIM_SIZE = (params.extended) ? 128 : 64;

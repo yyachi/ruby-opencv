@@ -1843,13 +1843,6 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal(Array, descriptors2[0].class)
     assert_equal(64, descriptors2[0].size)
 
-    # use provided keypoints
-    keypoints3, descriptors3 = mat0.extract_surf(CvSURFParams.new(500, true), mask, keypoints1)
-    assert_equal(CvSeq, keypoints3.class)
-    assert_equal(254, keypoints3.size)
-    assert_equal(Array, descriptors3.class)
-    assert_equal(254, descriptors3.size)
-
     # raise exceptions because of invalid arguments
     assert_raise(TypeError) {
       mat0.extract_surf(DUMMY_OBJ)
@@ -1857,13 +1850,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(TypeError) {
       mat0.extract_surf(CvSURFParams.new(500), DUMMY_OBJ)
     }
-    assert_raise(TypeError) {
-      mat0.extract_surf(CvSURFParams.new(500), mask, DUMMY_OBJ)
-    }
 
-    ## Uncomment the following lines to show the result
+    # Uncomment the following lines to show the result
     # results = []
-    # [keypoints1, keypoints2, keypoints3].each { |kpts|
+    # [keypoints1, keypoints2].each { |kpts|
     #   tmp = mat0.GRAY2BGR
     #   kpts.each { |kp|
     #     tmp.circle!(kp.pt, 3, :color => CvColor::Red, :thickness => 1, :line_type => :aa)
