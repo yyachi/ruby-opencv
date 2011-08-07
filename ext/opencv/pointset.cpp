@@ -7,7 +7,7 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#include"pointset.h"
+#include "pointset.h"
 /*
  * Document-class: OpenCV::PointSet
  */

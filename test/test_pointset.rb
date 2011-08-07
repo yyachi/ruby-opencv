@@ -6,8 +6,8 @@ require File.expand_path(File.dirname(__FILE__)) + '/helper'
 
 include OpenCV
 
-# Tests for OpenCV::Pointset
-class TestPointset < OpenCVTestCase
+# Tests for OpenCV::PointSet
+class TestPointSet < OpenCVTestCase
   def setup
     mat0 = create_cvmat(128, 128, :cv8u, 1) { |j, i|
       (j - 64) ** 2 + (i - 64) ** 2 <= (32 ** 2) ? CvColor::White : CvColor::Black
@@ -42,7 +42,7 @@ class TestPointset < OpenCVTestCase
     assert_in_delta(63.116, size.height, 0.001)
     assert_in_delta(180, box.angle, 0.001)
 
-    assert_raise(CvStsBadSize) {
+    assert_raise(CvStsBadArg) {
       @contour2.fit_ellipse2
     }
   end
@@ -107,7 +107,7 @@ class TestPointset < OpenCVTestCase
     assert_equal(64, center.y.to_i)
     assert_in_delta(32.959, circle.radius, 0.001)
 
-    assert_raise(CvStsBadSize) {
+    assert_raise(CvStsBadArg) {
       @contour2.min_enclosing_circle
     }
   end
