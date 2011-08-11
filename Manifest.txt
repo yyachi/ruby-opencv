@@ -106,8 +106,6 @@ ext/opencv/mouseevent.cpp
 ext/opencv/mouseevent.h
 ext/opencv/opencv.cpp
 ext/opencv/opencv.h
-ext/opencv/point3dset.cpp
-ext/opencv/point3dset.h
 ext/opencv/pointset.cpp
 ext/opencv/pointset.h
 ext/opencv/trackbar.cpp

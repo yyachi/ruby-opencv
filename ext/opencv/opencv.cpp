@@ -605,7 +605,6 @@ extern "C" {
     mOpenCV::cCvSeq::define_ruby_class();
     mOpenCV::mCurve::define_ruby_module();
     mOpenCV::mPointSet::define_ruby_module();
-    mOpenCV::mPoint3DSet::define_ruby_module();
     mOpenCV::cCvSet::define_ruby_class();
     mOpenCV::cCvChain::define_ruby_class();
     mOpenCV::cCvContour::define_ruby_class();
