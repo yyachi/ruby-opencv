@@ -7,7 +7,7 @@
    Copyright (C) 2005 Masakazu Yonekura
 
 ************************************************************/
-#include"cvpoint2d32f.h"
+#include "cvpoint2d32f.h"
 /*
  * Document-class: OpenCV::CvPoint2D32f
  *
@@ -34,7 +34,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

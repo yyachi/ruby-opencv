@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVBOX2D_H
 #define RUBY_OPENCV_CVBOX2D_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVBOX2D namespace cCvBox2D{
+#define __NAMESPACE_BEGIN_CVBOX2D namespace cCvBox2D {
 #define __NAMESPACE_END_CVBOX2D }
 
 __NAMESPACE_BEGIN_OPENCV

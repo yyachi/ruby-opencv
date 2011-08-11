@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVTERMCRITERIA namespace cCvTermCriteria{
+#define __NAMESPACE_BEGIN_CVTERMCRITERIA namespace cCvTermCriteria {
 #define __NAMESPACE_END_CVTERMCRITERIA }
 
 __NAMESPACE_BEGIN_OPENCV

@@ -26,7 +26,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

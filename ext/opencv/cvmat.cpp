@@ -14,7 +14,7 @@
  * CvMat is basic 2D matrix class in OpenCV.
  *
  * C structure is here.
- *  typedef struct CvMat{
+ *  typedef struct CvMat {
  *    int type;
  *    int step;
  *    int *refcount;
@@ -460,7 +460,7 @@ rb_method_missing(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "1*", &name, &args);
   if (RARRAY_LEN(args) != 0)
     return rb_call_super(argc, argv);
-  if(rb_reg_match(rb_reg_new(to_str, strlen(to_str), 0), rb_funcall(name, rb_intern("to_s"), 0)) == Qnil)
+  if (rb_reg_match(rb_reg_new(to_str, strlen(to_str), 0), rb_funcall(name, rb_intern("to_s"), 0)) == Qnil)
     return rb_call_super(argc, argv);
   str[0] = rb_str_new2("%s2%s");
   str[1] = rb_color_model(self);
@@ -1017,7 +1017,7 @@ rb_get_cols(VALUE self, VALUE args)
 
 /*
  * call-seq:
- *   each_row{|row| ... } -> self
+ *   each_row {|row| ... } -> self
  *
  * Calls block once for each row in self, passing that element as a parameter.
  *
@@ -3591,7 +3591,7 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "21", &quality_level, &min_distance, &good_features_to_track_option);
   good_features_to_track_option = GOOD_FEATURES_TO_TRACK_OPTION(good_features_to_track_option);
   int np = GF_MAX(good_features_to_track_option);
-  if(np <= 0)
+  if (np <= 0)
     rb_raise(rb_eArgError, "option :max should be positive value.");
 
   CvMat *self_ptr = CVMAT(self);

@@ -10,10 +10,10 @@
 #ifndef RUBY_OPENCV_CVPOINT3D32F_H
 #define RUBY_OPENCV_CVPOINT3D32F_H
 
-#define __NAMESPACE_BEGIN_CVPOINT3D32F namespace cCvPoint3D32f{
+#define __NAMESPACE_BEGIN_CVPOINT3D32F namespace cCvPoint3D32f {
 #define __NAMESPACE_END_CVPOINT3D32F }
 
-#include"opencv.h"
+#include "opencv.h"
 
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVPOINT3D32F
@@ -56,7 +56,7 @@ VALUE_TO_CVPOINT3D32F(VALUE object)
                         NUM2DBL(rb_funcall(object, rb_intern("y"), 0)),
                         NUM2DBL(rb_funcall(object, rb_intern("z"), 0)));
   }
-  else{
+  else {
     raise_compatible_typeerror(object, cCvPoint3D32f::rb_class());
   }
 }

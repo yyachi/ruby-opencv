@@ -13,7 +13,7 @@
 #define __NAMESPACE_BEGIN_POINT_SET namespace mPointSet {
 #define __NAMESPACE_END_POINT_SET }
 
-#include"opencv.h"
+#include "opencv.h"
 
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_POINT_SET

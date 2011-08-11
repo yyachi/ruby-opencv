@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVSIZE_H
 #define RUBY_OPENCV_CVSIZE_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSIZE namespace cCvSize{
+#define __NAMESPACE_BEGIN_CVSIZE namespace cCvSize {
 #define __NAMESPACE_END_CVSIZE }
 
 __NAMESPACE_BEGIN_OPENCV

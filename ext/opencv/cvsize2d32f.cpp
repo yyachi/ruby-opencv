@@ -15,10 +15,10 @@
  * X and Y takes the value of the Float.
  * 
  * C structure is here, very simple.
- *   typdef struct CvSize2D32f{
+ *   typdef struct CvSize2D32f {
  *     float width;
  *     float height;
- *   }CvSize2D32f;
+ *   } CvSize2D32f;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVSIZE2D32F
@@ -34,7 +34,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

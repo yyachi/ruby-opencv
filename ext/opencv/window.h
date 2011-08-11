@@ -15,7 +15,7 @@
 #define RUBY_OPENCV_GUI_WINDOW_H
 
 #include "opencv.h"
-#define __NAMESPACE_BEGIN_WINDOW namespace cWindow{
+#define __NAMESPACE_BEGIN_WINDOW namespace cWindow {
 #define __NAMESPACE_END_WINDOW }
 
 __NAMESPACE_BEGIN_OPENCV

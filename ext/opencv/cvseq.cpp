@@ -469,7 +469,7 @@ VALUE
 rb_shift(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  if(seq->total == 0)
+  if (seq->total == 0)
     return Qnil;
 
   VALUE object = Qnil;

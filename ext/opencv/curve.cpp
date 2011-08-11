@@ -7,7 +7,7 @@
    Copyright (C) 2005 Masakazu Yonekura
 
 ************************************************************/
-#include"curve.h"
+#include "curve.h"
 /*
  * Document-class: OpenCV::Curve
  *
@@ -27,7 +27,7 @@ rb_module()
 void
 define_ruby_module()
 {
-  if(module)
+  if (module)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

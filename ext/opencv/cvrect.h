@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVRECT_H
 #define RUBY_OPENCV_CVRECT_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVRECT namespace cCvRect{
+#define __NAMESPACE_BEGIN_CVRECT namespace cCvRect {
 #define __NAMESPACE_END_CVRECT }
 
 __NAMESPACE_BEGIN_OPENCV
