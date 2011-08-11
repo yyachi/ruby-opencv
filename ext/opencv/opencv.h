@@ -10,7 +10,7 @@
 #ifndef RUBY_OPENCV_H
 #define RUBY_OPENCV_H
 
-#define __NAMESPACE_BEGIN_OPENCV namespace mOpenCV{
+#define __NAMESPACE_BEGIN_OPENCV namespace mOpenCV {
 #define __NAMESPACE_END_OPENCV }
 
 /* include headers */
@@ -31,7 +31,7 @@
 #define ANYARGS ()
 #endif
 
-extern "C"{
+extern "C" {
 #ifdef HAVE_RUBY_ST_H
 #include <ruby/st.h>
 #else
@@ -148,7 +148,7 @@ extern "C"{
 
 #define IF_DEPTH(val, ifnone) NIL_P(val) ? ifnone : NUM2INT(val)
 
-#define RESIST_CVMETHOD(hash, str, value) rb_hash_aset(hash, ID2SYM(rb_intern(str)), INT2FIX(value))
+#define REGISTER_CVMETHOD(hash, str, value) rb_hash_aset(hash, ID2SYM(rb_intern(str)), INT2FIX(value))
 #define LOOKUP_CVMETHOD(hash, key_as_cstr) (rb_hash_lookup(hash, ID2SYM(rb_intern(key_as_cstr))))
 
 #define maxint(a,b) ({int _a = (a), _b = (b); _a > _b ? _a : _b; })
@@ -188,8 +188,8 @@ __NAMESPACE_BEGIN_OPENCV
 
 void mark_root_object(void *ptr);
 VALUE lookup_root_object(void *ptr);
-void resist_root_object(void *ptr, VALUE root);
-void unresist_object(void *ptr);
+void register_root_object(void *ptr, VALUE root);
+void unregister_object(void *ptr);
 void free_object(void *ptr);
 void release_object(void *ptr);
 void release_iplconvkernel_object(void *ptr);
@@ -227,15 +227,15 @@ GENERIC_OBJECT(VALUE klass, void *ptr)
 inline VALUE
 DEPEND_OBJECT(VALUE klass, void *ptr, VALUE root)
 {
-  resist_root_object(ptr, root);
+  register_root_object(ptr, root);
   return Data_Wrap_Struct(klass, mark_root_object, free_object, ptr);
 }
 
 inline VALUE
 REFER_OBJECT(VALUE klass, void *ptr, VALUE root)
 {
-  resist_root_object(ptr, root);
-  return Data_Wrap_Struct(klass, mark_root_object, unresist_object, ptr);
+  register_root_object(ptr, root);
+  return Data_Wrap_Struct(klass, mark_root_object, unregister_object, ptr);
 }
 
 inline VALUE

@@ -81,7 +81,7 @@ VALUE
 rb_allocate(VALUE klass)
 {
   CvContour *ptr;
-  return Data_Make_Struct(klass, CvContour, mark_root_object, unresist_object, ptr);
+  return Data_Make_Struct(klass, CvContour, mark_root_object, unregister_object, ptr);
 }
 
 VALUE
@@ -103,7 +103,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  resist_root_object((CvSeq*)contour, storage);
+  register_root_object((CvSeq*)contour, storage);
 
   return self;
 }

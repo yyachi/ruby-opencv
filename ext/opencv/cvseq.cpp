@@ -69,7 +69,7 @@ unregister_elem_class(void *ptr)
 {
   if (ptr) {
     st_delete(seqblock_klass_table, (st_data_t*)&ptr, NULL);
-    unresist_object(ptr);
+    unregister_object(ptr);
   }
 }
 
@@ -177,7 +177,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   DATA_PTR(self) = seq;
   register_elem_class(seq, klass);
-  resist_root_object(seq, storage_value);
+  register_root_object(seq, storage_value);
   
   return self;
 }
@@ -589,7 +589,7 @@ rb_remove(VALUE self, VALUE index)
 VALUE
 new_sequence(VALUE klass, CvSeq *seq, VALUE element_klass, VALUE storage)
 {
-  resist_root_object(seq, storage);
+  register_root_object(seq, storage);
   if (!NIL_P(element_klass))
     register_elem_class(seq, element_klass);
   return Data_Wrap_Struct(klass, mark_root_object, unregister_elem_class, seq);
