@@ -45,11 +45,6 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
 
-#define SUPPORT_8UC1_ONLY(value) if (cvGetElemType(CVARR(value)) != CV_8UC1) {rb_raise(rb_eNotImpError, "support single-channel 8bit unsigned image only.");}
-#define SUPPORT_8U_ONLY(value) if (CV_MAT_DEPTH(cvGetElemType(CVARR(value))) != CV_8U) {rb_raise(rb_eNotImpError, "support 8bit unsigned image only.");}
-#define SUPPORT_C1_ONLY(value) if (CV_MAT_CN(cvGetElemType(CVARR(value))) != 1) {rb_raise(rb_eNotImpError, "support single-channel image only.");}
-#define SUPPORT_C1C3_ONLY(value) if (CV_MAT_CN(cvGetElemType(CVARR(value))) != 1 && CV_MAT_CN(cvGetElemType(CVARR(value))) != 3) {rb_raise(rb_eNotImpError, "support single-channel or 3-channnel image only.");}
-
 #define DRAWING_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")), rb_intern("merge"), 1, op)
 #define DO_COLOR(op) VALUE_TO_CVSCALAR(rb_hash_aref(op, ID2SYM(rb_intern("color"))))
 #define DO_THICKNESS(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("thickness"))))
