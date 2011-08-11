@@ -368,7 +368,7 @@ on_mouse(int event, int x, int y, int flags, void* param) {
 /*
  * call-seq:
  *   set_mouse_callback(&block)
- *   set_mouse_callback{|| ... }
+ *   set_mouse_callback {|| ... }
  *
  * Set mouse callback.
  * When the mouse is operated on the window, block will be called.
@@ -379,7 +379,7 @@ on_mouse(int event, int x, int y, int flags, void* param) {
  *   window = OpenCV::GUI::Window.new "sample window"
  *   image = OpenCV::IplImage::load "sample.png"
  *   window.show(image)
- *   window.set_mouse_callback{|mouse|  
+ *   window.set_mouse_callback {|mouse|  
  *     e = "#{mouse.x}, #{mouse.y} : #{mouse.event} : "
  *     e << "<L>" if mouse.left_button?
  *     e << "<R>" if mouse.right_button?

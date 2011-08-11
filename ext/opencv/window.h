@@ -28,7 +28,6 @@ VALUE rb_allocate(VALUE klass);
 
 void mark(void *ptr);
 VALUE each_protect(VALUE key, VALUE value);
-//VALUE each_protect(void *key, VALUE value);
 void free(void *ptr);
 
 VALUE rb_aref(VALUE klass, VALUE name);

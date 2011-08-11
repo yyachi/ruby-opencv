@@ -40,7 +40,7 @@
  *  #else
  *    int rows; // number of row
  *    int cols; // number of columns
- *  }CvMat;
+ *  } CvMat;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
@@ -312,8 +312,6 @@ void define_ruby_class()
   rb_define_singleton_method(rb_klass, "rotation_matrix2D", RUBY_METHOD_FUNC(rb_rotation_matrix2D), 3);
   rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
   rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
-  //rb_define_method(rb_klass, "get_perspective_transform", RUBY_METHOD_FUNC(rb_get_perspective_transform), -1);
-  //rb_define_alias(rb_klass, "warp_perspective_q_matrix", "get_perspective_transform");
   rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
   //rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
 
@@ -447,29 +445,12 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
   return OPENCV_OBJECT(rb_klass, mat);
 }
 
-
 /*
  * nodoc
  */
 VALUE
 rb_method_missing(int argc, VALUE *argv, VALUE self)
 {
-  /*
-  const char *to_str = "\\Ato_(\\w+)";
-  VALUE name, args, str[3], method;
-  rb_scan_args(argc, argv, "1*", &name, &args);
-  if (RARRAY_LEN(args) != 0)
-    return rb_call_super(argc, argv);
-  if (rb_reg_match(rb_reg_new(to_str, strlen(to_str), 0), rb_funcall(name, rb_intern("to_s"), 0)) == Qnil)
-    return rb_call_super(argc, argv);
-  str[0] = rb_str_new2("%s2%s");
-  str[1] = rb_color_model(self);
-  str[2] = rb_reg_nth_match(1, rb_backref_get());
-  method = rb_f_sprintf(3, str);
-  if (rb_respond_to(rb_module_opencv(), rb_intern(StringValuePtr(method))))
-    return rb_funcall(rb_module_opencv(), rb_intern(StringValuePtr(method)), 1, self);
-  return rb_call_super(argc, argv);
-  */
   VALUE name, args, method;
   rb_scan_args(argc, argv, "1*", &name, &args);
   method = rb_funcall(name, rb_intern("to_s"), 0);
@@ -877,7 +858,7 @@ rb_square_q(VALUE self)
 VALUE
 rb_to_CvMat(VALUE self)
 {
-  // CvMat#to_CvMat aborts when self's class is CvMat. (I don't know why...)
+  // CvMat#to_CvMat aborts when self's class is CvMat.
   if (CLASS_OF(self) == rb_klass)
     return self;
 
@@ -1044,7 +1025,7 @@ rb_each_row(VALUE self)
 
 /*
  * call-seq:
- *   each_col{|col| ... } -> self
+ *   each_col {|col| ... } -> self
  *
  * Calls block once for each column in self, passing that element as a parameter.
  *
@@ -1112,12 +1093,6 @@ rb_size(VALUE self)
   }
   return cCvSize::new_object(size);
 }
-
-/*
-  VALUE rb_elem_type(VALUE self) {
-  return INT2FIX(cvGetElemType(CVARR(self)));
-  }
-*/
 
 /*
  * call-seq:
@@ -1255,7 +1230,7 @@ rb_set_data(VALUE self, VALUE data)
       ((uchar*)array)[i] = (uchar)(NUM2INT(rb_ary_entry(data, i)));
     break;
   case CV_8S:
-   array = rb_cvAlloc(sizeof(char) * DATA_LEN);
+    array = rb_cvAlloc(sizeof(char) * DATA_LEN);
     for (int i = 0; i < DATA_LEN; ++i)
       ((char*)array)[i] = (char)(NUM2INT(rb_ary_entry(data, i)));
     break;
@@ -2858,11 +2833,11 @@ rb_line_bang(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "21", &p1, &p2, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
   try {
-      cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
-	     DO_COLOR(drawing_option),
-	     DO_THICKNESS(drawing_option),
-	     DO_LINE_TYPE(drawing_option),
-	     DO_SHIFT(drawing_option));
+    cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
+	   DO_COLOR(drawing_option),
+	   DO_THICKNESS(drawing_option),
+	   DO_LINE_TYPE(drawing_option),
+	   DO_SHIFT(drawing_option));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -3551,16 +3526,16 @@ VALUE
 rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self)
 {
   /*
-  VALUE corners, win, zero_zone, criteria;
-  rb_scan_args(argc, argv, "13", &corners, &win, &zero_zone, &criteria);
-  if (!rb_obj_is_kind_of(corners, mPointSet::rb_module()))
+    VALUE corners, win, zero_zone, criteria;
+    rb_scan_args(argc, argv, "13", &corners, &win, &zero_zone, &criteria);
+    if (!rb_obj_is_kind_of(corners, mPointSet::rb_module()))
     rb_raise(rb_eTypeError, "argument 1 (corners) should be %s.", rb_class2name(mPointSet::rb_module()));
-  int count = CVSEQ(corners)->total;
-  VALUE storage = cCvMemStorage::new_object();
-  CvPoint2D32f *pointset = POINTSET2D32f(corners);
-  //cvFindCornerSubPix(CVARR(self), pointset, count, VALUE_TO_CVSIZE(win), VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
-  //return cCvSeq::new_sequence();
-  */
+    int count = CVSEQ(corners)->total;
+    VALUE storage = cCvMemStorage::new_object();
+    CvPoint2D32f *pointset = POINTSET2D32f(corners);
+    //cvFindCornerSubPix(CVARR(self), pointset, count, VALUE_TO_CVSIZE(win), VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
+    //return cCvSeq::new_sequence();
+    */
   return Qnil;
 }
 
@@ -3634,30 +3609,30 @@ VALUE
 rb_sample_line(int argc, VALUE *argv, VALUE self)
 {
   /*
-  VALUE p1, p2, connectivity;
-  if (rb_scan_args(argc, argv, "21", &p1, &p2, &connectivity) < 3)
+    VALUE p1, p2, connectivity;
+    if (rb_scan_args(argc, argv, "21", &p1, &p2, &connectivity) < 3)
     connectivity = INT2FIX(8);
-  CvPoint point1 = VALUE_TO_CVPOINT(p1), point2 = VALUE_TO_CVPOINT(p2);
-  int size;
-  switch(FIX2INT(connectivity)) {
-  case 4:
+    CvPoint point1 = VALUE_TO_CVPOINT(p1), point2 = VALUE_TO_CVPOINT(p2);
+    int size;
+    switch(FIX2INT(connectivity)) {
+    case 4:
     size = abs(point2.x - point1.x) + abs(point2.y - point1.y) + 1;
     break;
-  case 8:
+    case 8:
     size = maxint(abs(point2.x - point1.x) + 1, abs(point2.y - point1.y) + 1);
     break;
-  default:
+    default:
     rb_raise(rb_eArgError, "argument 3(connectivity) should be 4 or 8. 8 is default.");
-  }
-  VALUE buf = cCvMat::new_object(1, size, cvGetElemType(CVARR(self)));
-  cvSampleLine(CVARR(self), point1, point2, CVMAT(buf)->data.ptr, FIX2INT(connectivity));
-  if (rb_block_given_p()) {
-    for(int i = 0; i < size; i++) {
-      //Data_Wrap_Struct(cCvScalar::rb_class(), 0, 0, CVMAT(buf)->data.ptr[]);
-      //rb_yield(cCvScalar::new_object);
     }
-  }
-  return buf;
+    VALUE buf = cCvMat::new_object(1, size, cvGetElemType(CVARR(self)));
+    cvSampleLine(CVARR(self), point1, point2, CVMAT(buf)->data.ptr, FIX2INT(connectivity));
+    if (rb_block_given_p()) {
+    for(int i = 0; i < size; i++) {
+    //Data_Wrap_Struct(cCvScalar::rb_class(), 0, 0, CVMAT(buf)->data.ptr[]);
+    //rb_yield(cCvScalar::new_object);
+    }
+    }
+    return buf;
   */
   return Qnil;
 }
@@ -3906,10 +3881,10 @@ rb_remap(int argc, VALUE *argv, VALUE self)
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-      cvRemap(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mapx), CVMAT_WITH_CHECK(mapy),
-	      CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
-	      | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS),
-	      VALUE_TO_CVSCALAR(fillval));
+    cvRemap(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mapx), CVMAT_WITH_CHECK(mapy),
+	    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
+	    | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS),
+	    VALUE_TO_CVSCALAR(fillval));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -3927,13 +3902,13 @@ VALUE
 rb_log_polar(int argc, VALUE *argv, VALUE self)
 {
   /*
-  VALUE size, center, m, flags, fillval, dest;
-  rb_scan_args(argc, argv, "3*", &size, &center, &m, &flags);
-  dest = cCvMat::new_object();
-  cvLogPolar(CVARR(self), CVARR(dest),
-	     VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m),
-	     CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIEARS), VALUE_TO_CVSCALAR(fillval));
-  return dest;
+    VALUE size, center, m, flags, fillval, dest;
+    rb_scan_args(argc, argv, "3*", &size, &center, &m, &flags);
+    dest = cCvMat::new_object();
+    cvLogPolar(CVARR(self), CVARR(dest),
+    VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m),
+    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIEARS), VALUE_TO_CVSCALAR(fillval));
+    return dest;
   */
   return Qnil;
 }
@@ -4177,29 +4152,29 @@ rb_smooth(int argc, VALUE *argv, VALUE self)
   VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
   argc--;
   switch (_smoothtype) {
-    case CV_BLUR_NO_SCALE:
-      smooth_func = rb_smooth_blur_no_scale;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    case CV_BLUR:
-      smooth_func = rb_smooth_blur;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    case CV_GAUSSIAN:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    case CV_MEDIAN:
-      smooth_func = rb_smooth_median;
-      argc = (argc > 1) ? 1 : argc;
-      break;
-    case CV_BILATERAL:
-      smooth_func = rb_smooth_bilateral;
-      argc = (argc > 2) ? 2 : argc;
-      break;
-    default:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    }
+  case CV_BLUR_NO_SCALE:
+    smooth_func = rb_smooth_blur_no_scale;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  case CV_BLUR:
+    smooth_func = rb_smooth_blur;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  case CV_GAUSSIAN:
+    smooth_func = rb_smooth_gaussian;
+    break;
+  case CV_MEDIAN:
+    smooth_func = rb_smooth_median;
+    argc = (argc > 1) ? 1 : argc;
+    break;
+  case CV_BILATERAL:
+    smooth_func = rb_smooth_bilateral;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  default:
+    smooth_func = rb_smooth_gaussian;
+    break;
+  }
   VALUE result = Qnil;
   try {
     result = (*smooth_func)(argc, argv + 1, self);
@@ -4755,11 +4730,11 @@ rb_moments(int argc, VALUE *argv, VALUE self)
   IplImage image = *IPLIMAGE(self);
   VALUE moments = rb_ary_new();
   try {
-      int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
-      for (int i = 1; i <= cn; ++i) {
-	cvSetImageCOI(&image, i);
-	rb_ary_push(moments, cCvMoments::new_object(&image, TRUE_OR_FALSE(is_binary, 0)));
-      }
+    int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
+    for (int i = 1; i <= cn; ++i) {
+      cvSetImageCOI(&image, i);
+      rb_ary_push(moments, cCvMoments::new_object(&image, TRUE_OR_FALSE(is_binary, 0)));
+    }
   }
   catch (cv::Exception& e) {
     raise_cverror(e);

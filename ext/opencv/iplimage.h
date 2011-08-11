@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_IPLIMAGE namespace cIplImage{
+#define __NAMESPACE_BEGIN_IPLIMAGE namespace cIplImage {
 #define __NAMESPACE_END_IPLIMAGE }
 
 __NAMESPACE_BEGIN_OPENCV

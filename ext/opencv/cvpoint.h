@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVPOINT namespace cCvPoint{
+#define __NAMESPACE_BEGIN_CVPOINT namespace cCvPoint {
 #define __NAMESPACE_END_CVPOINT }
 
 __NAMESPACE_BEGIN_OPENCV

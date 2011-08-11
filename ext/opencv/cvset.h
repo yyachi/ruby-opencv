@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSET namespace cCvSet{
+#define __NAMESPACE_BEGIN_CVSET namespace cCvSet {
 #define __NAMESPACE_END_CVSET }
 
 __NAMESPACE_BEGIN_OPENCV

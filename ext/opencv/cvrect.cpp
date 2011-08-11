@@ -15,7 +15,7 @@
  * 
  * 
  * C stracture is here, very simple.
- *   typdef struct CvRect{
+ *   typdef struct CvRect {
  *     int x;
  *     int y;
  *     int width;

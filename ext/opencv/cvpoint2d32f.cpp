@@ -15,7 +15,7 @@
  * X and Y takes the value of the Float. see also CvPoint
  * 
  * C structure is here, very simple.
- *   typdef struct CvPoint2D32f{
+ *   typdef struct CvPoint2D32f {
  *     float x;
  *     float y;
  *   }

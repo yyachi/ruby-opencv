@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSIZE2D32F namespace cCvSize2D32f{
+#define __NAMESPACE_BEGIN_CVSIZE2D32F namespace cCvSize2D32f {
 #define __NAMESPACE_END_CVSIZE2D32F }
 
 __NAMESPACE_BEGIN_OPENCV

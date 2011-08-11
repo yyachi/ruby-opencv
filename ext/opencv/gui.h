@@ -10,7 +10,7 @@
 #ifndef RUBY_OPENCV_GUI_H
 #define RUBY_OPENCV_GUI_H
 
-#define __NAMESPACE_BEGIN_GUI namespace mGUI{
+#define __NAMESPACE_BEGIN_GUI namespace mGUI {
 #define __NAMESPACE_END_GUI }
 
 #include "opencv.h"

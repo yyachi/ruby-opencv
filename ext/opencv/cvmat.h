@@ -13,7 +13,7 @@
 #include "opencv.h"
 
 
-#define __NAMESPACE_BEGIN_CVMAT namespace cCvMat{
+#define __NAMESPACE_BEGIN_CVMAT namespace cCvMat {
 #define __NAMESPACE_END_CVMAT }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -136,8 +136,6 @@ VALUE rb_calc_covar_matrix(int argc, VALUE *argv, VALUE self);
 VALUE rb_mahalonobis(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_dft(int argc, VALUE *argv, VALUE self);
-//VALUE rb_optimal_dft_size(VALUE self);
-//VALUE rb_mul_spectrums(int argc, VALUE *argv, VALUE self);
 VALUE rb_dct(int argc, VALUE *argv, VALUE self);
 
 /* drawing function*/
@@ -179,7 +177,6 @@ VALUE rb_warp_affine(int argc, VALUE *argv, VALUE self);
 VALUE rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale);
 VALUE rb_warp_perspective(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_homograpy(int argc, VALUE *argv, VALUE self);
-//VALUE rb_perspective_transform();
 VALUE rb_remap(int argc, VALUE *argv, VALUE self);
 VALUE rb_log_polar(int argc, VALUE *argv);
 
@@ -218,7 +215,6 @@ VALUE rb_equalize_hist(VALUE self);
 /* Matching*/
 VALUE rb_match_template(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes(int argc, VALUE *argv, VALUE self);
-// VALUE rb_calc_emd(int argc, VALUE *argv, VALUE self);
 /* Object Tracking */
 VALUE rb_mean_shift(VALUE self, VALUE window, VALUE criteria);
 VALUE rb_cam_shift(VALUE self, VALUE window, VALUE criteria);

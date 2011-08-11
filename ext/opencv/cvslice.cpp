@@ -12,10 +12,10 @@
  * Document-class: OpenCV::CvClice
  *
  * C structure is here, very simple.
- *   typdef struct CvSlice{
+ *   typdef struct CvSlice {
  *     int start_index;
  *     int end_index;
- *   }CvSlice;
+ *   } CvSlice;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVSLICE

@@ -10,7 +10,7 @@
 #ifndef RUBY_OPENCV_AVGCOMP_H
 #define RUBY_OPENCV_AVGCOMP_H
 
-#define __NAMESPACE_BEGIN_AVGCOMP namespace cCvAvgComp{
+#define __NAMESPACE_BEGIN_AVGCOMP namespace cCvAvgComp {
 #define __NAMESPACE_END_AVGCOMP }
 
 #include <opencv.h>

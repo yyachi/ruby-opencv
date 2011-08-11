@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSCALAR namespace cCvScalar{
+#define __NAMESPACE_BEGIN_CVSCALAR namespace cCvScalar {
 #define __NAMESPACE_END_CVSCALAR }
 
 __NAMESPACE_BEGIN_OPENCV

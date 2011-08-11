@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCONNECTEDCOMP namespace cCvConnectedComp{
+#define __NAMESPACE_BEGIN_CVCONNECTEDCOMP namespace cCvConnectedComp {
 #define __NAMESPACE_END_CVCONNECTEDCOMP }
 
 __NAMESPACE_BEGIN_OPENCV

@@ -16,9 +16,9 @@
  * Therefore, CvScalar has 4-values.
  * 
  * C structure is here, very simple.
- *   typdef struct CvScalar{
+ *   typdef struct CvScalar {
  *     double val[4];
- *   }CvScalar;
+ *   } CvScalar;
  *
  * If obtain CvScalar-object from the method of CvMat(or IplImage),
  * the channel outside the range is obtained as all 0.

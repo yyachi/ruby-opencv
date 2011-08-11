@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCONDENSATION namespace cCvConDensation{
+#define __NAMESPACE_BEGIN_CVCONDENSATION namespace cCvConDensation {
 #define __NAMESPACE_END_CVCONDENSATION }
 
 __NAMESPACE_BEGIN_OPENCV

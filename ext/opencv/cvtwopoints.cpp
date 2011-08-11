@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum. see also CvTwopoints2D32F
  * 
  * C structure is here, very simple.
- *   typdef struct CvTwopoints{
+ *   typdef struct CvTwopoints {
  *     int x;
  *     int y;
  *   }

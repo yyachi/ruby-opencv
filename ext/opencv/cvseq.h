@@ -48,7 +48,6 @@ VALUE rb_clear(VALUE self);
 VALUE new_object(CvSeq *seq, VALUE klass);
 VALUE new_object(CvSeq *seq, VALUE klass, VALUE storage);
 VALUE new_sequence(VALUE klass, CvSeq *seq, VALUE element_klass, VALUE storage);
-VALUE auto_extend(VALUE object);
 
 __NAMESPACE_END_CVSEQ
 

@@ -12,11 +12,11 @@
  * Document-class: OpenCV::CvBox2D
  *
  * C structure is here.
- *   typdef struct CvBox2D{
+ *   typdef struct CvBox2D {
  *     CvPoint2D32f center; // center of the box.
  *     CvSize2D32f size;    // box width and length
  *     float angle;         // angle between the horizonal axis and the first side (i.e length) in radians
- *   }CvBox2D;
+ *   } CvBox2D;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVBOX2D

@@ -493,13 +493,13 @@ rb_shift(VALUE self)
 
 /*
  * call-seq:
- *   each{|obj| ... } -> self
+ *   each {|obj| ... } -> self
  *
  * Calls block once for each sequence-block in <i>self</i>,
  * passing that sequence-block as a parameter.
  *   seq = CvSeq.new(CvIndex)
  *   seq.push(5, 6, 7)
- *   seq.each{|x| print x, " -- " }
+ *   seq.each {|x| print x, " -- " }
  * produces:
  *   5 -- 6 -- 7 --
  */
@@ -526,7 +526,7 @@ rb_each(VALUE self)
 
 /*
  * call-seq:
- *    each_index{|index| ... } -> self
+ *    each_index {|index| ... } -> self
  *
  * Same as CvSeq#each, but passes the index of the element instead of the element itself.
  */
@@ -593,16 +593,6 @@ new_sequence(VALUE klass, CvSeq *seq, VALUE element_klass, VALUE storage)
   if (!NIL_P(element_klass))
     register_elem_class(seq, element_klass);
   return Data_Wrap_Struct(klass, mark_root_object, unregister_elem_class, seq);
-}
-
-VALUE
-auto_extend(VALUE object)
-{
-  CvSeq *seq = CVSEQ(object);
-  if (CV_IS_SEQ_POINT_SET(seq)) {
-    rb_extend_object(object, mPointSet::rb_module());
-  }
-  return object;
 }
 
 __NAMESPACE_END_CVSEQ

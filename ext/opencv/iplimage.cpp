@@ -313,7 +313,7 @@ rb_smoothness(int argc, VALUE *argv, VALUE self)
     pFourierImage = create_fourier_image(p64DepthImage);
   }
 
-  Smoothness result = compute_smoothness(pFourierImage, f_lowFreqRatio, f_blankDensity, f_messyDnsity,
+  Smoothness result = compute_smoothness(pFourierImage, f_lowFreqRatio, f_blankDensity, f_messyDensity,
 					 f_highFreqRatio, outLowDensity, outHighDensity);
 
   cvReleaseImage(&pFourierImage);
@@ -339,7 +339,7 @@ rb_smoothness(int argc, VALUE *argv, VALUE self)
  */
 Smoothness
 compute_smoothness(const IplImage *pFourierImage, const double lowFreqRatio, const double blankDensity,
-		   const double messyDensity, const double highFreqRatio, double &outLowDensity
+		   const double messyDensity, const double highFreqRatio, double &outLowDensity,
 		   double &outHighDensity)
 {
   int low, high;

@@ -190,7 +190,7 @@ rb_update_by_time(VALUE self)
 
 /*
  * call-seq:
- *   each_sample{|mat| ... }
+ *   each_sample {|mat| ... }
  *
  * Evaluate each sample by given block.
  */
@@ -208,7 +208,7 @@ rb_each_sample(VALUE self)
 
 /*
  * call-seq:
- *   calculate_confidence{|value| ... }
+ *   calculate_confidence {|value| ... }
  *
  * Evalute each sample by given block, then return value set to confidence.
  */

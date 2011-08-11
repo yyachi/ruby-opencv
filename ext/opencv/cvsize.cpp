@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum.
  * 
  * C structure is here, very simple.
- *   typdef struct CvSize{
+ *   typdef struct CvSize {
  *     int width;
  *     int height;
  *   }
