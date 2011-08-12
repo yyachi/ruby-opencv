@@ -83,7 +83,14 @@ VALUE
 rb_dynamic_matrix(VALUE self)
 {
   CvConDensation *cd = CVCONDENSATION(self);
-  return DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->DP, cd->DP, CV_MAKETYPE(CV_32F, 1), cd->DynamMatr), self);
+  CvMat* mat = NULL;
+  try {
+    mat = cvInitMatHeader(ALLOC(CvMat), cd->DP, cd->DP, CV_MAKETYPE(CV_32F, 1), cd->DynamMatr);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(cCvMat::rb_class(), mat, self);
 }
 
 /*
@@ -96,7 +103,14 @@ VALUE
 rb_confidence(VALUE self)
 {
   CvConDensation *cd = CVCONDENSATION(self);
-  return DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->SamplesNum, 1, CV_MAKETYPE(CV_32F, 1), cd->flConfidence), self);
+  CvMat* mat = NULL;
+  try {
+    mat = cvInitMatHeader(ALLOC(CvMat), cd->SamplesNum, 1, CV_MAKETYPE(CV_32F, 1), cd->flConfidence);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(cCvMat::rb_class(), mat, self);
 }
 
 /*
@@ -109,7 +123,14 @@ VALUE
 rb_cumulative(VALUE self)
 {
   CvConDensation *cd = CVCONDENSATION(self);
-  return DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->SamplesNum, 1, CV_MAKETYPE(CV_32F, 1), cd->flCumulative), self);
+  CvMat* mat = NULL;
+  try {
+    mat = cvInitMatHeader(ALLOC(CvMat), cd->SamplesNum, 1, CV_MAKETYPE(CV_32F, 1), cd->flCumulative);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(cCvMat::rb_class(), mat, self);
 }
 
 /*
@@ -122,7 +143,14 @@ VALUE
 rb_state(VALUE self)
 {
   CvConDensation *cd = CVCONDENSATION(self);
-  return DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->State), self);  
+  CvMat* mat = NULL;
+  try {
+    mat = cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->State);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(cCvMat::rb_class(), mat, self);  
 }
 
 /*
@@ -148,30 +176,37 @@ VALUE
 rb_init_sample_set(VALUE self, VALUE lower, VALUE upper)
 {
   CvConDensation *cd = CVCONDENSATION(self);
-  CvMat *lower_bound = CVMAT(lower), *upper_bound = CVMAT(upper), lb_stub, ub_stub;
+  CvMat *lower_bound = CVMAT_WITH_CHECK(lower), *upper_bound = CVMAT_WITH_CHECK(upper), lb_stub, ub_stub;
   int lower_type = lower_bound->type, upper_type = lower_bound->type;
-  if (lower_type != CV_32FC1 || lower_bound->cols != 1) {
-    if (CV_MAT_DEPTH(lower_type) == CV_32F) {
-      lower_bound = cvReshape(lower_bound, &lb_stub, 1, lower_bound->rows * lower_bound->cols);
-    } else {
-      lower = cCvMat::new_object(cvSize(lower_bound->rows * lower_bound->cols, 1), CV_MAKETYPE(CV_32S, 1));
-      cvConvertScale(lower_bound, CVARR(lower));
-      lower_bound = CVMAT(lower);      
+  try {
+    if (lower_type != CV_32FC1 || lower_bound->cols != 1) {
+      if (CV_MAT_DEPTH(lower_type) == CV_32F) {
+	lower_bound = cvReshape(lower_bound, &lb_stub, 1, lower_bound->rows * lower_bound->cols);
+      }
+      else {
+	lower = cCvMat::new_object(cvSize(lower_bound->rows * lower_bound->cols, 1), CV_MAKETYPE(CV_32S, 1));
+	cvConvertScale(lower_bound, CVARR(lower));
+	lower_bound = CVMAT(lower);      
+      }
     }
-  }
-  if (upper_type != CV_32FC1 || upper_bound->cols != 1) {
-    if (CV_MAT_DEPTH(upper_type) == CV_32F) {
-      upper_bound = cvReshape(upper_bound, &ub_stub, 1, upper_bound->rows * upper_bound->cols);
-    } else {
-      upper = cCvMat::new_object(cvSize(upper_bound->rows * upper_bound->cols, 1), CV_MAKETYPE(CV_32F, 1));
-      cvConvertScale(upper_bound, CVARR(upper));
-      upper_bound = CVMAT(upper);      
+    if (upper_type != CV_32FC1 || upper_bound->cols != 1) {
+      if (CV_MAT_DEPTH(upper_type) == CV_32F) {
+	upper_bound = cvReshape(upper_bound, &ub_stub, 1, upper_bound->rows * upper_bound->cols);
+      }
+      else {
+	upper = cCvMat::new_object(cvSize(upper_bound->rows * upper_bound->cols, 1), CV_MAKETYPE(CV_32F, 1));
+	cvConvertScale(upper_bound, CVARR(upper));
+	upper_bound = CVMAT(upper);      
+      }
     }
+    if (lower_bound->rows != cd->DP || upper_bound->rows != cd->DP) {
+      rb_raise(rb_eTypeError, "sample matrix step unmatch.");
+    }
+    cvConDensInitSampleSet(cd, lower_bound, upper_bound);
   }
-  if (lower_bound->rows != cd->DP || upper_bound->rows != cd->DP) {
-    rb_raise(rb_eTypeError, "sample matrix step unmatch.");
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
-  cvConDensInitSampleSet(cd, lower_bound, upper_bound);
   return self;
 }
 
@@ -184,7 +219,12 @@ rb_init_sample_set(VALUE self, VALUE lower, VALUE upper)
 VALUE
 rb_update_by_time(VALUE self)
 {
-  cvConDensUpdateByTime(CVCONDENSATION(self));
+  try {
+    cvConDensUpdateByTime(CVCONDENSATION(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -199,9 +239,15 @@ rb_each_sample(VALUE self)
 {
   CvConDensation *cd = CVCONDENSATION(self);
   if (rb_block_given_p()) {
-    for (int i = 0; i < cd->SamplesNum; i++) {
-      rb_yield(DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->flSamples[i]), self));
+    try {
+      for (int i = 0; i < cd->SamplesNum; ++i) {
+	CvMat* mat = cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->flSamples[i]);
+	rb_yield(DEPEND_OBJECT(cCvMat::rb_class(), mat, self));
       }
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
   return self;
 }
@@ -218,9 +264,15 @@ rb_calculate_confidence(VALUE self)
   VALUE value;
   CvConDensation *cd = CVCONDENSATION(self);
   if (rb_block_given_p()) {
-    for (int i = 0; i < cd->SamplesNum; i++) {
-      value = rb_yield(DEPEND_OBJECT(cCvMat::rb_class(), cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->flSamples[i]), self));
-      cd->flConfidence[i] = NUM2DBL(value);
+    try {
+      for (int i = 0; i < cd->SamplesNum; ++i) {
+	CvMat* mat = cvInitMatHeader(ALLOC(CvMat), cd->DP, 1, CV_MAKETYPE(CV_32F, 1), cd->flSamples[i]);
+	value = rb_yield(DEPEND_OBJECT(cCvMat::rb_class(), mat, self));
+	cd->flConfidence[i] = NUM2DBL(value);
+      }
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
     }
   }
   return self;
