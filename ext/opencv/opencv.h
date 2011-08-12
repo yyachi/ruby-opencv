@@ -104,7 +104,6 @@ extern "C" {
 #include "cvseq.h"
 #include "curve.h"
 #include "pointset.h"
-#include "cvset.h"
 #include "cvchain.h"
 #include "cvcontour.h"
 #include "cvcontourtree.h"

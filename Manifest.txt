@@ -72,8 +72,6 @@ ext/opencv/cvscalar.cpp
 ext/opencv/cvscalar.h
 ext/opencv/cvseq.cpp
 ext/opencv/cvseq.h
-ext/opencv/cvset.cpp
-ext/opencv/cvset.h
 ext/opencv/cvsize.cpp
 ext/opencv/cvsize.h
 ext/opencv/cvsize2d32f.cpp
