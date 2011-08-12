@@ -28,7 +28,7 @@ rb_module_GUI()
 void
 define_ruby_module()
 {
-  if(rb_module)
+  if (rb_module)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");      

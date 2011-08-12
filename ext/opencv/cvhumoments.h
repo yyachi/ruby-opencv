@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVHUMOMENTS namespace cCvHuMoments{
+#define __NAMESPACE_BEGIN_CVHUMOMENTS namespace cCvHuMoments {
 #define __NAMESPACE_END_CVHUMOMENTS }
 
 __NAMESPACE_BEGIN_OPENCV

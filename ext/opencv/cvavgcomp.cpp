@@ -14,7 +14,7 @@
  * CvRect with parameter "neighbors".
  * CvHaarClassifierCascade#detect_object. 
  *
- *   typedef struct CvAvgComp{
+ *   typedef struct CvAvgComp {
  *     CvRect rect;
  *     int neighbors;
  *   }

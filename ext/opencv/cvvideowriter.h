@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVVIDEOWRITER namespace cCvVideoWriter{
+#define __NAMESPACE_BEGIN_CVVIDEOWRITER namespace cCvVideoWriter {
 #define __NAMESPACE_END_CVVIDEOWRITER }
 
 __NAMESPACE_BEGIN_OPENCV

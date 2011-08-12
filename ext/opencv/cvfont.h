@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVFONT namespace cCvFont{
+#define __NAMESPACE_BEGIN_CVFONT namespace cCvFont {
 #define __NAMESPACE_END_CVFONT }
 
 __NAMESPACE_BEGIN_OPENCV

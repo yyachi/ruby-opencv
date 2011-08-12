@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCONVEXITYDEFECT namespace cCvConvexityDefect{
+#define __NAMESPACE_BEGIN_CVCONVEXITYDEFECT namespace cCvConvexityDefect {
 #define __NAMESPACE_END_CVCONVEXITYDEFECT }
 
 __NAMESPACE_BEGIN_OPENCV

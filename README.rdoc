@@ -89,7 +89,7 @@ subfolder called data.
   data = "./data/haarcascades/haarcascade_frontalface_alt.xml"
   detector = OpenCV::CvHaarClassifierCascade::load(data)
   image = OpenCV::IplImage.load(ARGV[0])
-  detector.detect_objects(image) do |region|
+  detector.detect_objects(image).each do |region|
     color = OpenCV::CvColor::Blue
     image.rectangle! region.top_left, region.bottom_right, :color => color
   end

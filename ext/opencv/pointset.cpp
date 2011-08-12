@@ -26,7 +26,7 @@ rb_module()
 void
 define_ruby_module()
 {
-  if(module)
+  if (module)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
@@ -44,18 +44,6 @@ define_ruby_module()
   rb_define_method(module, "convexity_defects", RUBY_METHOD_FUNC(rb_convexity_defects), 1);
   rb_define_method(module, "min_area_rect2", RUBY_METHOD_FUNC(rb_min_area_rect2), 0);
   rb_define_method(module, "min_enclosing_circle", RUBY_METHOD_FUNC(rb_min_enclosing_circle), 0);
-}
-
-VALUE
-rb_extend_object(VALUE self, VALUE object)
-{
-  CvSeq *seq = 0;
-  if(!rb_obj_is_kind_of(object, cCvSeq::rb_class()))
-    rb_raise(rb_eTypeError, "object is not %s.\n", rb_class2name(cCvSeq::rb_class()));
-  
-  if(!CV_IS_SEQ(seq))
-    rb_raise(rb_eTypeError, "object is not sequence.");  
-  return rb_call_super(1, &object);
 }
 
 /*

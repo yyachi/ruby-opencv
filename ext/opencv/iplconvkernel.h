@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_IPLCONVKERNEL namespace cIplConvKernel{
+#define __NAMESPACE_BEGIN_IPLCONVKERNEL namespace cIplConvKernel {
 #define __NAMESPACE_END_IPLCONVKERNEL }
 
 __NAMESPACE_BEGIN_OPENCV

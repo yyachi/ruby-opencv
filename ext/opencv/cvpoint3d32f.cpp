@@ -7,7 +7,7 @@
    Copyright (C) 2005-2008 Masakazu Yonekura
 
 ************************************************************/
-#include"cvpoint3d32f.h"
+#include "cvpoint3d32f.h"
 /*
  * Document-class: OpenCV::CvPoint3D32f
  *
@@ -15,7 +15,7 @@
  * X and Y takes the value of the Float. see also CvPoint
  * 
  * C structure is here, very simple.
- *   typdef struct CvPoint3D32f{
+ *   typdef struct CvPoint3D32f {
  *     float x;
  *     float y;
  *     float z;
@@ -35,7 +35,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

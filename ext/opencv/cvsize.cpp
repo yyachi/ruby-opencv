@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum.
  * 
  * C structure is here, very simple.
- *   typdef struct CvSize{
+ *   typdef struct CvSize {
  *     int width;
  *     int height;
  *   }
@@ -34,7 +34,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");

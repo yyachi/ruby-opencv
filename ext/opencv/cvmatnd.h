@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVMATND namespace cCvMatND{
+#define __NAMESPACE_BEGIN_CVMATND namespace cCvMatND {
 #define __NAMESPACE_END_CVMATND }
 
 __NAMESPACE_BEGIN_OPENCV

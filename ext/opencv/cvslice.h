@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSLICE namespace cCvSlice{
+#define __NAMESPACE_BEGIN_CVSLICE namespace cCvSlice {
 #define __NAMESPACE_END_CVSLICE }
 
 __NAMESPACE_BEGIN_OPENCV

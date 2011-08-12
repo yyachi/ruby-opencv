@@ -69,7 +69,7 @@ unregister_elem_class(void *ptr)
 {
   if (ptr) {
     st_delete(seqblock_klass_table, (st_data_t*)&ptr, NULL);
-    unresist_object(ptr);
+    unregister_object(ptr);
   }
 }
 
@@ -177,7 +177,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   DATA_PTR(self) = seq;
   register_elem_class(seq, klass);
-  resist_root_object(seq, storage_value);
+  register_root_object(seq, storage_value);
   
   return self;
 }
@@ -469,7 +469,7 @@ VALUE
 rb_shift(VALUE self)
 {
   CvSeq *seq = CVSEQ(self);
-  if(seq->total == 0)
+  if (seq->total == 0)
     return Qnil;
 
   VALUE object = Qnil;
@@ -493,13 +493,13 @@ rb_shift(VALUE self)
 
 /*
  * call-seq:
- *   each{|obj| ... } -> self
+ *   each {|obj| ... } -> self
  *
  * Calls block once for each sequence-block in <i>self</i>,
  * passing that sequence-block as a parameter.
  *   seq = CvSeq.new(CvIndex)
  *   seq.push(5, 6, 7)
- *   seq.each{|x| print x, " -- " }
+ *   seq.each {|x| print x, " -- " }
  * produces:
  *   5 -- 6 -- 7 --
  */
@@ -526,7 +526,7 @@ rb_each(VALUE self)
 
 /*
  * call-seq:
- *    each_index{|index| ... } -> self
+ *    each_index {|index| ... } -> self
  *
  * Same as CvSeq#each, but passes the index of the element instead of the element itself.
  */
@@ -589,20 +589,10 @@ rb_remove(VALUE self, VALUE index)
 VALUE
 new_sequence(VALUE klass, CvSeq *seq, VALUE element_klass, VALUE storage)
 {
-  resist_root_object(seq, storage);
+  register_root_object(seq, storage);
   if (!NIL_P(element_klass))
     register_elem_class(seq, element_klass);
   return Data_Wrap_Struct(klass, mark_root_object, unregister_elem_class, seq);
-}
-
-VALUE
-auto_extend(VALUE object)
-{
-  CvSeq *seq = CVSEQ(object);
-  if (CV_IS_SEQ_POINT_SET(seq)) {
-    rb_extend_object(object, mPointSet::rb_module());
-  }
-  return object;
 }
 
 __NAMESPACE_END_CVSEQ

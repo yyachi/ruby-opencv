@@ -7,7 +7,7 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#include"cvtermcriteria.h"
+#include "cvtermcriteria.h"
 /*
  * Document-class: OpenCV::CvTermCriteria
  *
@@ -150,7 +150,7 @@ VALUE
 rb_eps(VALUE self)
 {
   CvTermCriteria *ptr = CVTERMCRITERIA(self);
-  if(ptr->type & CV_TERMCRIT_EPS)
+  if (ptr->type & CV_TERMCRIT_EPS)
     return rb_float_new(ptr->epsilon);
   else
     return Qnil;
