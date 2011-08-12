@@ -101,7 +101,12 @@ free_object(void *ptr)
 {
   if (ptr) {
     unregister_object(ptr);
-    cvFree(&ptr);
+    try {
+      cvFree(&ptr);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
 }
 
@@ -113,7 +118,12 @@ release_object(void *ptr)
 {
   if (ptr) {
     unregister_object(ptr);
-    cvRelease(&ptr);
+    try {
+      cvRelease(&ptr);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
 }
 
@@ -125,7 +135,12 @@ release_iplconvkernel_object(void *ptr)
 {
   if (ptr) {
     unregister_object(ptr);
-    cvReleaseStructuringElement((IplConvKernel**)(&ptr));
+    try {
+      cvReleaseStructuringElement((IplConvKernel**)(&ptr));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
 }
 

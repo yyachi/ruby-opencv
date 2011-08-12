@@ -48,7 +48,12 @@ rb_allocate(VALUE klass)
 void
 cvmemstorage_free(void *ptr)
 {
-  cvReleaseMemStorage((CvMemStorage**)&ptr);
+  try {
+    cvReleaseMemStorage((CvMemStorage**)&ptr);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 }
 
 VALUE
