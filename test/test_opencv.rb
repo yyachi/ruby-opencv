@@ -109,6 +109,16 @@ class TestOpenCV < OpenCVTestCase
 
     # Object detection mode
     assert_equal(1, CV_HAAR_DO_CANNY_PRUNING)
+    
+    # Interpolation methods
+    assert_equal(0, CV_INTER_NN)
+    assert_equal(1, CV_INTER_LINEAR)
+    assert_equal(2, CV_INTER_CUBIC)
+    assert_equal(3, CV_INTER_AREA)
+    
+    # Warp affine optional flags
+    assert_equal(8, CV_WARP_FILL_OUTLIERS)
+    assert_equal(16, CV_WARP_INVERSE_MAP)
   end
 
   def test_symbols

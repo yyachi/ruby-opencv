@@ -9,6 +9,7 @@ class OpenCVTestCase < Test::Unit::TestCase
   SAMPLE_DIR = File.expand_path(File.dirname(__FILE__)) + '/samples/'
   FILENAME_CAT = SAMPLE_DIR + 'cat.jpg'
   FILENAME_LENA256x256 = SAMPLE_DIR + 'lena-256x256.jpg'
+  FILENAME_FRUITS = SAMPLE_DIR + 'fruits.jpg'
   HAARCASCADE_FRONTALFACE_ALT = SAMPLE_DIR + 'haarcascade_frontalface_alt.xml.gz'
   AVI_SAMPLE = SAMPLE_DIR + 'movie_sample.avi'
   
