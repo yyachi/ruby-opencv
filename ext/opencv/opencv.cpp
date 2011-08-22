@@ -267,6 +267,16 @@ define_ruby_module()
 
   /* Object detection mode */
   rb_define_const(rb_module, "CV_HAAR_DO_CANNY_PRUNING", INT2FIX(CV_HAAR_DO_CANNY_PRUNING));
+
+  /* Interpolation methods */
+  rb_define_const(rb_module, "CV_INTER_NN", INT2FIX(CV_INTER_NN));
+  rb_define_const(rb_module, "CV_INTER_LINEAR", INT2FIX(CV_INTER_LINEAR));
+  rb_define_const(rb_module, "CV_INTER_AREA", INT2FIX(CV_INTER_AREA));
+  rb_define_const(rb_module, "CV_INTER_CUBIC", INT2FIX(CV_INTER_CUBIC));
+  
+  /* Warp affine optional flags */
+  rb_define_const(rb_module, "CV_WARP_FILL_OUTLIERS", INT2FIX(CV_WARP_FILL_OUTLIERS));
+  rb_define_const(rb_module, "CV_WARP_INVERSE_MAP", INT2FIX(CV_WARP_INVERSE_MAP));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */

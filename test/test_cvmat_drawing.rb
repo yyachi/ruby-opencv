@@ -46,7 +46,7 @@ class TestCvMat_drawing < OpenCVTestCase
     # assert_raise(CvError) {
     #   m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :thickness => DUMMY_OBJ)
     # }
-    m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
+    # m0.line(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
   end
 
   def test_rectangle
@@ -72,7 +72,7 @@ class TestCvMat_drawing < OpenCVTestCase
     # assert_raise(CvError) {
     #   m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :thickness => DUMMY_OBJ)
     # }
-    m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
+    # m0.rectangle(CvPoint.new(1, 0), CvPoint.new(1, 1), :line_type => DUMMY_OBJ)
   end
 
   def test_circle
@@ -186,7 +186,7 @@ class TestCvMat_drawing < OpenCVTestCase
     # assert_raise(CvError) {
     #   m1.fill_poly(pt, :thickness => DUMMY_OBJ)
     # }
-    m1.fill_poly(pt, :line_type => DUMMY_OBJ)
+    # m1.fill_poly(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_fill_convex_poly
@@ -213,7 +213,7 @@ class TestCvMat_drawing < OpenCVTestCase
     # assert_raise(CvError) {
     #   m1.fill_convex_poly(pt, :thickness => DUMMY_OBJ)
     # }
-    m1.fill_convex_poly(pt, :line_type => DUMMY_OBJ)
+    # m1.fill_convex_poly(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_poly_line
@@ -243,7 +243,7 @@ class TestCvMat_drawing < OpenCVTestCase
     # assert_raise(CvError) {
     #   m1.poly_line(pt, :thickness => DUMMY_OBJ)
     # }
-    m1.poly_line(pt, :line_type => DUMMY_OBJ)
+    # m1.poly_line(pt, :line_type => DUMMY_OBJ)
   end
 
   def test_put_text

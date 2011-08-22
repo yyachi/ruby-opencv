@@ -178,7 +178,7 @@ VALUE rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale);
 VALUE rb_warp_perspective(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_homograpy(int argc, VALUE *argv, VALUE self);
 VALUE rb_remap(int argc, VALUE *argv, VALUE self);
-VALUE rb_log_polar(int argc, VALUE *argv);
+VALUE rb_log_polar(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_erode(int argc, VALUE *argv, VALUE self);
 VALUE rb_erode_bang(int argc, VALUE *argv, VALUE self);

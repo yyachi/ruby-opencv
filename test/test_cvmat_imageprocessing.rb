@@ -489,7 +489,20 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   end
 
   def test_log_polar
-    flunk('FIXME: CvMat#log_polar is not implemented yet.')
+    mat0 = CvMat.load(FILENAME_FRUITS, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
+
+    mat1 = mat0.log_polar(CvSize.new(255, 255), CvPoint2D32f.new(mat0.width / 2, mat0.height / 2), 40)
+    assert_equal('d0425614b2f6e63ab2b6ef6637b4efcb', hash_img(mat1))
+    mat1 = mat0.log_polar(CvSize.new(255, 255), CvPoint2D32f.new(mat0.width / 2, mat0.height / 2), 40,
+                          CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS)
+    assert_equal('d0425614b2f6e63ab2b6ef6637b4efcb', hash_img(mat1))
+    
+    mat2 = mat1.log_polar(mat0.size, CvPoint2D32f.new(mat0.width / 2, mat0.height / 2), 40,
+                          CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS | CV_WARP_INVERSE_MAP)
+    assert_equal('52587e593fec1b0383731be53147e8cd', hash_img(mat2))
+
+    # Uncomment the following line to show the results
+    # snap mat0, mat1, mat2
   end
 
   def test_erode

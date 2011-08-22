@@ -313,7 +313,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
   rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
   rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
-  //rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
+  rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
 
   rb_define_method(rb_klass, "erode", RUBY_METHOD_FUNC(rb_erode), -1);
   rb_define_method(rb_klass, "erode!", RUBY_METHOD_FUNC(rb_erode_bang), -1);
@@ -3894,23 +3894,24 @@ rb_remap(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   log_polar(<i>center, magnitude, </i>)
+ *   log_polar(<i>size, center, magnitude[ ,flags=CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS]</i>)
  *
  * Remaps image to log-polar space.
  */
 VALUE
 rb_log_polar(int argc, VALUE *argv, VALUE self)
 {
-  /*
-    VALUE size, center, m, flags, fillval, dest;
-    rb_scan_args(argc, argv, "3*", &size, &center, &m, &flags);
-    dest = cCvMat::new_object();
-    cvLogPolar(CVARR(self), CVARR(dest),
-    VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m),
-    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIEARS), VALUE_TO_CVSCALAR(fillval));
-    return dest;
-  */
-  return Qnil;
+  VALUE dst_size, center, m, flags;
+  rb_scan_args(argc, argv, "31", &dst_size, &center, &m, &flags);
+  int _flags = NIL_P(flags) ? (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS) : NUM2INT(flags);
+  VALUE dest = new_mat_kind_object(VALUE_TO_CVSIZE(dst_size), self);
+  try {
+    cvLogPolar(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m), _flags);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return dest;
 }
 
 /*
