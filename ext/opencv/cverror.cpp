@@ -154,7 +154,7 @@ by_code(int error_code)
 void
 raise(cv::Exception e)
 {
-  rb_raise(by_code(e.code), e.what());
+  rb_raise(by_code(e.code), "%s", e.what());
 }
 
 __NAMESPACE_END_CVERROR

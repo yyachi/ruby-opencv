@@ -3449,7 +3449,7 @@ rb_canny(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pre_corner_detect(int argc, VALUE *argv, VALUE self)
 {
-  VALUE aperture_size, dest;
+  VALUE aperture_size, dest = Qnil;
   if (rb_scan_args(argc, argv, "01", &aperture_size) < 1)
     aperture_size = INT2FIX(3);
 
