@@ -1993,7 +1993,46 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_mul_transposed
-    flunk('FIXME: CvMat#mul_transposed is not implemented yet.')
+    mat0 = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new((c + 1) * 2)
+    }
+    delta = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c + 1)
+    }
+
+    [mat0.mul_transposed,
+     mat0.mul_transposed(:delta => nil),
+     mat0.mul_transposed(:order => 0),
+     mat0.mul_transposed(:scale => 1.0)].each { |m|
+      expected = [20, 44,
+                  44, 100]
+      assert_equal(2, m.rows)
+      assert_equal(2, m.cols)
+      assert_equal(:cv32f, m.depth)
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, m[i][0], 0.1)
+      }
+    }
+
+    m = mat0.mul_transposed(:delta => delta)
+    expected = [5, 11,
+                11, 25]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
+
+    m = mat0.mul_transposed(:delta => delta, :order => 1, :scale => 2.0)
+    expected = [20, 28,
+                28, 40]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
   end
 
   def test_trace

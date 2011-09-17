@@ -121,7 +121,7 @@ VALUE rb_cross_product(VALUE self, VALUE mat);
 // VALUE rb_gemm();
 VALUE rb_transform(int argc, VALUE *argv, VALUE self);
 VALUE rb_perspective_transform(VALUE self, VALUE mat);
-VALUE rb_mul_transposed(VALUE self, VALUE args);
+VALUE rb_mul_transposed(int argc, VALUE *argv, VALUE self);
 VALUE rb_trace(VALUE self);
 VALUE rb_transpose(VALUE self);
 VALUE rb_transpose_bang(VALUE self);

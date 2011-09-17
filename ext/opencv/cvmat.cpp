@@ -255,7 +255,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "cross_product", RUBY_METHOD_FUNC(rb_cross_product), 1);
   rb_define_method(rb_klass, "transform", RUBY_METHOD_FUNC(rb_transform), -1);
   rb_define_method(rb_klass, "perspective_transform", RUBY_METHOD_FUNC(rb_perspective_transform), 1);
-  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -2);
+  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -1);
   rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
   rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
   rb_define_alias(rb_klass, "t", "transpose");
@@ -2430,32 +2430,51 @@ rb_perspective_transform(VALUE self, VALUE mat)
 
 /*
  * call-seq:
- *  mul_transposed(<i>:order => :default or :inverse, :delta => nil or cvmat</i>)
+ *  mul_transposed(<i>:order => 0 or 1, :delta => cvmat, :scale => number</i>)
  *
  * Calculates the product of self and its transposition.
  *
  * options
- * * :order -> should be :default or :inverse (default is :default)
+ * * :order -> should be 0 or 1 (default is 0)
  *    see below.
- * * :delta -> should be nil or CvMat (default is nil)
+ * * :delta -> should be CvMat (default is nil)
  *     An optional array, subtracted from source before multiplication.
+ * * :scale -> should be a number (default is 1.0)
+ *     An optional scaling
  *
  * mul_transposed evaluates:
- *   :order => :default
- *     dst = (self - delta) * (self - delta)T
- *   :order => :inverse
- *     dst = (self - delta)T * (self - delta)
+ *   :order => 0
+ *     dst = scale * (self - delta) * (self - delta)T
+ *   :order => 1
+ *     dst = scale * (self - delta)T * (self - delta)
  *
  */
 VALUE
-rb_mul_transposed(VALUE self, VALUE args)
+rb_mul_transposed(int argc, VALUE *argv, VALUE self)
 {
-  //VALUE options = extract_options_from_args_bang(args);
-  //assert_valid_keys(options, 2, "order", "delta");
-  //VALUE order;
-  //OPTIONS(order, options, "order", ID2SYM(rb_intern("default")));
-  //ID2SYM(rb_intern("order")), rb_intern("")
-  return Qnil;
+  VALUE options = Qnil;
+  VALUE _delta = Qnil, _scale = Qnil, _order = Qnil;
+
+  if (rb_scan_args(argc, argv, "01", &options) > 0) {
+    Check_Type(options, T_HASH);
+    _delta = LOOKUP_CVMETHOD(options, "delta");
+    _scale = LOOKUP_CVMETHOD(options, "scale");
+    _order = LOOKUP_CVMETHOD(options, "order");
+  }
+
+  CvArr* delta = NIL_P(_delta) ? NULL : CVMAT_WITH_CHECK(_delta);
+  double scale = NIL_P(_scale) ? 1.0 : NUM2DBL(_scale);
+  int order = NIL_P(_order) ? 0 : NUM2INT(_order);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    cvMulTransposed(self_ptr, CVARR(dest), order, delta, scale);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return dest;
 }
 
 
