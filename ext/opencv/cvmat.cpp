@@ -255,12 +255,10 @@ void define_ruby_class()
   rb_define_method(rb_klass, "cross_product", RUBY_METHOD_FUNC(rb_cross_product), 1);
   rb_define_method(rb_klass, "transform", RUBY_METHOD_FUNC(rb_transform), -1);
   rb_define_method(rb_klass, "perspective_transform", RUBY_METHOD_FUNC(rb_perspective_transform), 1);
-  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -2);
+  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -1);
   rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
   rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
   rb_define_alias(rb_klass, "t", "transpose");
-  rb_define_method(rb_klass, "transpose!", RUBY_METHOD_FUNC(rb_transpose_bang), 0);
-  rb_define_alias(rb_klass, "t!", "transpose!");
   rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
   rb_define_alias(rb_klass, "determinant", "det");
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
@@ -2430,32 +2428,51 @@ rb_perspective_transform(VALUE self, VALUE mat)
 
 /*
  * call-seq:
- *  mul_transposed(<i>:order => :default or :inverse, :delta => nil or cvmat</i>)
+ *  mul_transposed(<i>:order => 0 or 1, :delta => cvmat, :scale => number</i>)
  *
  * Calculates the product of self and its transposition.
  *
  * options
- * * :order -> should be :default or :inverse (default is :default)
+ * * :order -> should be 0 or 1 (default is 0)
  *    see below.
- * * :delta -> should be nil or CvMat (default is nil)
+ * * :delta -> should be CvMat (default is nil)
  *     An optional array, subtracted from source before multiplication.
+ * * :scale -> should be a number (default is 1.0)
+ *     An optional scaling
  *
  * mul_transposed evaluates:
- *   :order => :default
- *     dst = (self - delta) * (self - delta)T
- *   :order => :inverse
- *     dst = (self - delta)T * (self - delta)
+ *   :order => 0
+ *     dst = scale * (self - delta) * (self - delta)T
+ *   :order => 1
+ *     dst = scale * (self - delta)T * (self - delta)
  *
  */
 VALUE
-rb_mul_transposed(VALUE self, VALUE args)
+rb_mul_transposed(int argc, VALUE *argv, VALUE self)
 {
-  //VALUE options = extract_options_from_args_bang(args);
-  //assert_valid_keys(options, 2, "order", "delta");
-  //VALUE order;
-  //OPTIONS(order, options, "order", ID2SYM(rb_intern("default")));
-  //ID2SYM(rb_intern("order")), rb_intern("")
-  return Qnil;
+  VALUE options = Qnil;
+  VALUE _delta = Qnil, _scale = Qnil, _order = Qnil;
+
+  if (rb_scan_args(argc, argv, "01", &options) > 0) {
+    Check_Type(options, T_HASH);
+    _delta = LOOKUP_CVMETHOD(options, "delta");
+    _scale = LOOKUP_CVMETHOD(options, "scale");
+    _order = LOOKUP_CVMETHOD(options, "order");
+  }
+
+  CvArr* delta = NIL_P(_delta) ? NULL : CVMAT_WITH_CHECK(_delta);
+  double scale = NIL_P(_scale) ? 1.0 : NUM2DBL(_scale);
+  int order = NIL_P(_order) ? 0 : NUM2INT(_order);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    cvMulTransposed(self_ptr, CVARR(dest), order, delta, scale);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return dest;
 }
 
 
@@ -2487,8 +2504,8 @@ rb_trace(VALUE self)
 VALUE
 rb_transpose(VALUE self)
 {
-  CvArr* self_ptr = CVARR(self);
-  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  CvMat* self_ptr = CVMAT(self);
+  VALUE dest = new_mat_kind_object(cvSize(self_ptr->rows, self_ptr->cols), self);
   try {
     cvTranspose(self_ptr, CVARR(dest));
   }
@@ -2496,27 +2513,6 @@ rb_transpose(VALUE self)
     raise_cverror(e);
   }
   return dest;
-}
-
-/*
- * call-seq:
- *   transpose! -> self
- *
- * Transposed matrix.
- *
- * <b>rectangular matrix only (CvMat#square? = true).</b>
- */
-VALUE
-rb_transpose_bang(VALUE self)
-{
-  CvArr* self_ptr = CVARR(self);
-  try {
-    cvTranspose(self_ptr, self_ptr);
-  }
-  catch (cv::Exception& e) {
-    raise_cverror(e);
-  }
-  return self;
 }
 
 /*
@@ -2611,24 +2607,47 @@ rb_solve(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   svd(u = nil, v = nil</i>)
+ *   svd(<i>l[flag=0]</i>)
  *
- * not implementated.
  * Performs singular value decomposition of real floating-point matrix.
  */
 VALUE
 rb_svd(int argc, VALUE *argv, VALUE self)
 {
-  rb_raise(rb_eNotImpError, "");
-  /*
-    VALUE u = Qnil, v = Qnil;
-    rb_scan_args(argc, argv, "02", &u, &v);
-    CvMat
-    *matU = NIL_P(u) ? NULL : CVARR(u),
-    *matV = NIL_P(v) ? NULL : CVARR(v);
-    cvSVD(CVARR(self), matU, matV);
-    return dest;
-  */
+  VALUE _flag = Qnil;
+  int flag = 0;
+  if (rb_scan_args(argc, argv, "01", &_flag) > 0) {
+    flag = NUM2INT(_flag);
+  }
+
+  CvMat* self_ptr = CVMAT(self);
+  VALUE w = new_mat_kind_object(cvSize(self_ptr->cols, self_ptr->rows), self);
+  
+  int rows = 0;
+  int cols = 0;
+  if (flag & CV_SVD_U_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->rows;
+  }
+  else {
+    rows = self_ptr->rows;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE u = new_mat_kind_object(cvSize(cols, rows), self);
+
+  if (flag & CV_SVD_V_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->cols;
+  }
+  else {
+    rows = self_ptr->cols;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE v = new_mat_kind_object(cvSize(cols, rows), self);
+
+  cvSVD(self_ptr, CVARR(w), CVARR(u), CVARR(v), flag);
+
+  return rb_ary_new3(3, w, u, v);
 }
 
 /*
@@ -3430,7 +3449,7 @@ rb_canny(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pre_corner_detect(int argc, VALUE *argv, VALUE self)
 {
-  VALUE aperture_size, dest;
+  VALUE aperture_size, dest = Qnil;
   if (rb_scan_args(argc, argv, "01", &aperture_size) < 1)
     aperture_size = INT2FIX(3);
 

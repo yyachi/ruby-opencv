@@ -119,6 +119,11 @@ class TestOpenCV < OpenCVTestCase
     # Warp affine optional flags
     assert_equal(8, CV_WARP_FILL_OUTLIERS)
     assert_equal(16, CV_WARP_INVERSE_MAP)
+
+    # SVD operation flags
+    assert_equal(1, CV_SVD_MODIFY_A)
+    assert_equal(2, CV_SVD_U_T)
+    assert_equal(4, CV_SVD_V_T)
   end
 
   def test_symbols

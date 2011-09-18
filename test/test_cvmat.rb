@@ -1993,7 +1993,46 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_mul_transposed
-    flunk('FIXME: CvMat#mul_transposed is not implemented yet.')
+    mat0 = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new((c + 1) * 2)
+    }
+    delta = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c + 1)
+    }
+
+    [mat0.mul_transposed,
+     mat0.mul_transposed(:delta => nil),
+     mat0.mul_transposed(:order => 0),
+     mat0.mul_transposed(:scale => 1.0)].each { |m|
+      expected = [20, 44,
+                  44, 100]
+      assert_equal(2, m.rows)
+      assert_equal(2, m.cols)
+      assert_equal(:cv32f, m.depth)
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, m[i][0], 0.1)
+      }
+    }
+
+    m = mat0.mul_transposed(:delta => delta)
+    expected = [5, 11,
+                11, 25]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
+
+    m = mat0.mul_transposed(:delta => delta, :order => 1, :scale => 2.0)
+    expected = [20, 28,
+                28, 40]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
   end
 
   def test_trace
@@ -2004,19 +2043,15 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_transpose
-    m0 = create_cvmat(5, 5, :cv32f, 4) { |j, i, c|
+    m0 = create_cvmat(2, 3, :cv32f, 4) { |j, i, c|
       CvScalar.new(c * 0.5, c * 1.0, c * 1.5, c * 2.0)
     }
-    m1 = m0.clone
-    m2 = m1.transpose
-    m1.transpose!
-    m3 = m0.t
-    m4 = m0.clone
-    m4.t!
+    m1 = m0.transpose
+    m2 = m0.t
 
-    [m1, m2, m3, m4].each { |m|
-      assert_equal(m0.width, m.width)
-      assert_equal(m0.height, m.height)
+    [m1, m2].each { |m|
+      assert_equal(m0.rows, m.cols)
+      assert_equal(m0.cols, m.rows)
       assert_each_cvscalar(m, 0.001) { |j, i, c|
         m0[i, j]
       }
@@ -2094,7 +2129,91 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_svd
-    flunk('FIXME: CvMat#svd is not implemented yet')
+    rows = 2
+    cols = 3
+    m0 = create_cvmat(rows, cols, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c + 1)
+    }
+
+    [m0.svd, m0.clone.svd(CV_SVD_MODIFY_A)].each { |w, u, v|
+      expected = [0.38632, -0.92237,
+                  0.92237, 0.38632]
+      assert_equal(rows, u.rows)
+      assert_equal(rows, u.cols)
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, u[i][0], 0.0001)
+      }
+
+      assert_equal(rows, w.rows)
+      assert_equal(cols, w.cols)
+      expected = [9.50803, 0, 0,
+                  0, 0.77287, 0]
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, w[i][0], 0.0001)
+      }
+
+      assert_equal(cols, v.rows)
+      assert_equal(rows, v.cols)
+      expected = [0.42867, 0.80596,
+                  0.56631, 0.11238,
+                  0.70395, -0.58120]
+      
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, v[i][0], 0.0001)
+      }
+    }
+
+    w, ut, v = m0.svd(CV_SVD_U_T)
+    expected = [0.38632, 0.92237,
+                -0.92237, 0.38632]
+    assert_equal(rows, ut.rows)
+    assert_equal(rows, ut.cols)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, ut[i][0], 0.0001)
+    }
+
+    assert_equal(rows, w.rows)
+    assert_equal(cols, w.cols)
+    expected = [9.50803, 0, 0,
+                0, 0.77287, 0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, w[i][0], 0.0001)
+    }
+
+    assert_equal(cols, v.rows)
+    assert_equal(rows, v.cols)
+    expected = [0.42867, 0.80596,
+                0.56631, 0.11238,
+                0.70395, -0.58120]
+    
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, v[i][0], 0.0001)
+    }
+
+    w, u, vt = m0.svd(CV_SVD_V_T)
+    expected = [0.38632, -0.92237,
+                0.92237, 0.38632]
+    assert_equal(rows, u.rows)
+    assert_equal(rows, u.cols)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, u[i][0], 0.0001)
+    }
+
+    assert_equal(rows, w.rows)
+    assert_equal(cols, w.cols)
+    expected = [9.50803, 0, 0,
+                0, 0.77287, 0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, w[i][0], 0.0001)
+    }
+
+    assert_equal(rows, vt.rows)
+    assert_equal(cols, vt.cols)
+    expected = [0.42867, 0.56631, 0.70395,
+                0.80596, 0.11238, -0.58120]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, vt[i][0], 0.0001)
+    }
   end
 
   def test_svdksb
