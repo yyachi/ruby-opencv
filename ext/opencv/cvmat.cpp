@@ -2630,24 +2630,47 @@ rb_solve(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   svd(u = nil, v = nil</i>)
+ *   svd(<i>l[flag=0]</i>)
  *
- * not implementated.
  * Performs singular value decomposition of real floating-point matrix.
  */
 VALUE
 rb_svd(int argc, VALUE *argv, VALUE self)
 {
-  rb_raise(rb_eNotImpError, "");
-  /*
-    VALUE u = Qnil, v = Qnil;
-    rb_scan_args(argc, argv, "02", &u, &v);
-    CvMat
-    *matU = NIL_P(u) ? NULL : CVARR(u),
-    *matV = NIL_P(v) ? NULL : CVARR(v);
-    cvSVD(CVARR(self), matU, matV);
-    return dest;
-  */
+  VALUE _flag = Qnil;
+  int flag = 0;
+  if (rb_scan_args(argc, argv, "01", &_flag) > 0) {
+    flag = NUM2INT(_flag);
+  }
+
+  CvMat* self_ptr = CVMAT(self);
+  VALUE w = new_mat_kind_object(cvSize(self_ptr->cols, self_ptr->rows), self);
+  
+  int rows = 0;
+  int cols = 0;
+  if (flag & CV_SVD_U_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->rows;
+  }
+  else {
+    rows = self_ptr->rows;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE u = new_mat_kind_object(cvSize(cols, rows), self);
+
+  if (flag & CV_SVD_V_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->cols;
+  }
+  else {
+    rows = self_ptr->cols;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE v = new_mat_kind_object(cvSize(cols, rows), self);
+
+  cvSVD(self_ptr, CVARR(w), CVARR(u), CVARR(v), flag);
+
+  return rb_ary_new3(3, w, u, v);
 }
 
 /*

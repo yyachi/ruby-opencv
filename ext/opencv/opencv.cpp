@@ -277,6 +277,11 @@ define_ruby_module()
   /* Warp affine optional flags */
   rb_define_const(rb_module, "CV_WARP_FILL_OUTLIERS", INT2FIX(CV_WARP_FILL_OUTLIERS));
   rb_define_const(rb_module, "CV_WARP_INVERSE_MAP", INT2FIX(CV_WARP_INVERSE_MAP));
+
+  /* SVD optional flags */
+  rb_define_const(rb_module, "CV_SVD_MODIFY_A", INT2FIX(CV_SVD_MODIFY_A));
+  rb_define_const(rb_module, "CV_SVD_U_T", INT2FIX(CV_SVD_U_T));
+  rb_define_const(rb_module, "CV_SVD_V_T", INT2FIX(CV_SVD_V_T));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
