@@ -259,8 +259,6 @@ void define_ruby_class()
   rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
   rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
   rb_define_alias(rb_klass, "t", "transpose");
-  rb_define_method(rb_klass, "transpose!", RUBY_METHOD_FUNC(rb_transpose_bang), 0);
-  rb_define_alias(rb_klass, "t!", "transpose!");
   rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
   rb_define_alias(rb_klass, "determinant", "det");
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
@@ -2506,8 +2504,8 @@ rb_trace(VALUE self)
 VALUE
 rb_transpose(VALUE self)
 {
-  CvArr* self_ptr = CVARR(self);
-  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  CvMat* self_ptr = CVMAT(self);
+  VALUE dest = new_mat_kind_object(cvSize(self_ptr->rows, self_ptr->cols), self);
   try {
     cvTranspose(self_ptr, CVARR(dest));
   }
@@ -2515,27 +2513,6 @@ rb_transpose(VALUE self)
     raise_cverror(e);
   }
   return dest;
-}
-
-/*
- * call-seq:
- *   transpose! -> self
- *
- * Transposed matrix.
- *
- * <b>rectangular matrix only (CvMat#square? = true).</b>
- */
-VALUE
-rb_transpose_bang(VALUE self)
-{
-  CvArr* self_ptr = CVARR(self);
-  try {
-    cvTranspose(self_ptr, self_ptr);
-  }
-  catch (cv::Exception& e) {
-    raise_cverror(e);
-  }
-  return self;
 }
 
 /*

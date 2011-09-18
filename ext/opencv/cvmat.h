@@ -124,7 +124,6 @@ VALUE rb_perspective_transform(VALUE self, VALUE mat);
 VALUE rb_mul_transposed(int argc, VALUE *argv, VALUE self);
 VALUE rb_trace(VALUE self);
 VALUE rb_transpose(VALUE self);
-VALUE rb_transpose_bang(VALUE self);
 VALUE rb_det(VALUE self);
 VALUE rb_invert(int argc, VALUE *argv, VALUE self);
 VALUE rb_solve(int argc, VALUE *argv, VALUE self);

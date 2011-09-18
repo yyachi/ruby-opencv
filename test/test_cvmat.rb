@@ -2043,19 +2043,15 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_transpose
-    m0 = create_cvmat(5, 5, :cv32f, 4) { |j, i, c|
+    m0 = create_cvmat(2, 3, :cv32f, 4) { |j, i, c|
       CvScalar.new(c * 0.5, c * 1.0, c * 1.5, c * 2.0)
     }
-    m1 = m0.clone
-    m2 = m1.transpose
-    m1.transpose!
-    m3 = m0.t
-    m4 = m0.clone
-    m4.t!
+    m1 = m0.transpose
+    m2 = m0.t
 
-    [m1, m2, m3, m4].each { |m|
-      assert_equal(m0.width, m.width)
-      assert_equal(m0.height, m.height)
+    [m1, m2].each { |m|
+      assert_equal(m0.rows, m.cols)
+      assert_equal(m0.cols, m.rows)
       assert_each_cvscalar(m, 0.001) { |j, i, c|
         m0[i, j]
       }
