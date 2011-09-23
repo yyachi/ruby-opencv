@@ -3,66 +3,78 @@
 The initial Open Computer Vision library was originally developed by Intel 
 Corporation. Recent development has been headed by Willow Garage, Inc.
 
-OpenCV Sourceforge Project
-http://opencv.willowgarage.com/wiki/
-
-Sourceforge
-http://sourceforge.net/projects/opencvlibrary/
-
-Ruby/OpenCV Author's Web Page
-http://blueruby.mydns.jp/opencv
+* OpenCV project home http://opencv.willowgarage.com/wiki/
+  * Download http://sourceforge.net/projects/opencvlibrary/
+* Ruby/OpenCV original author's web page http://blueruby.mydns.jp/opencv
 
 == DESCRIPTION:
 
-OpenCV Ruby Wrapper
+OpenCV wrapper for Ruby
 
 == FEATURES/PROBLEMS:
 
-* First release rubygems, Some OpenCV functions wrapped.
+* Some OpenCV functions are wrapped.
 * Ruby 1.8.7, 1.9.2 and OpenCV 2.3 are supported.
 
 == DEPENDENCIES:
 
-This library relies on the OpenCV project. The following page shows how to install it:
+* OpenCV (required)
+Ruby/OpenCV relies on the OpenCV library.
 
-http://opencv.willowgarage.com/wiki/InstallGuide
+See http://opencv.willowgarage.com/wiki/InstallGuide
+
+
+* ffcall (optional)
+ffcall is needed to use GUI trackbar component.
+Other GUI components work without ffcall.
+
+See http://www.haible.de/bruno/packages-ffcall.html
+
 
 == INSTALLATION:
+=== Install Ruby/OpenCV manually
 
-You can install by cloning this repository:
+  $ git clone git://github.com/ser1zw/ruby-opencv.git
+  $ cd ruby-opencv
+  $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
+  $ ruby extconf.rb --with-opencv-dir=/path/to/opencvdir
+  $ make
+  $ make install
 
-  git clone git://github.com/ser1zw/ruby-opencv.git
-  
-Then inside the ruby-opencv folder run:
+*/path/to/opencvdir* is the path you installs OpenCV library (default: /usr/local).
 
-  rake install_gem
+For example, if you install OpenCV library to */opt/local/* like:
 
-Or
+  $ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/opt/local/ ./OpenCV-2.3.1
+  $ make
+  $ make install
 
-  ruby extconf.rb
-  make
-  make install
+Install Ruby/OpenCV with the following command:
 
-You can also add ruby-opencv in your Gemfile:
+  $ ruby extconf.rb --with-opencv-dir=/opt/local
+  $ make
+  $ make install
 
-  echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
-  bundle install # or bundle update
 
-=== Installing ruby-opencv with all dependencies on Mac OS X using macports
+=== Create Ruby/OpenCV Gem
+You can also install this library creating a gem like:
 
-  sudo port install ffcall
-  sudo port install opencv
+  $ git clone git://github.com/ser1zw/ruby-opencv.git
+  $ cd ruby-opencv
+  $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
+  $ bundle install
+  $ rake gem
+  $ gem install pkg/opencv-*.gem -- --with-opencv-dir=/path/to/opencvdir
 
-Follow INSTALLATION but use this command when compiling the gem:
-  ruby extconf.rb --with-opencv-lib=/opt/local/lib --with-opencv-include=/opt/local/include/opencv2
-  make
-  make install
+To add ruby-opencv in your Gemfile:
 
-Installing ffcall might not work (that's because ffcall at the moment can't be compiled on 64bit systems).
-That's ok.
+  $ echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
+  $ bundle install  # or bundle update
 
 == SYNOPSIS:
+=== Show Image using GUI Component
 
+  #!/usr/bin/env ruby
   require "opencv"
 
   image = OpenCV::IplImage.load("sample.jpg")
@@ -70,9 +82,7 @@ That's ok.
   window.show(image)
   OpenCV::GUI::wait_key
 
-For more samples, see examples/*.rb
-
-== FACE DETECTION:
+=== Face Detection
 
 Here is a sample face detection program that doesn't rely on the GUI components.
 In order for this to work you must copy the OpenCV haarcascades data into a 
@@ -95,15 +105,11 @@ subfolder called data.
   end
   image.save_image(ARGV[1])
 
-== REQUIREMENTS:
-
-* OpenCV 2.3 or later
-  http://opencv.willowgarage.com/wiki/
-* ffcall (optional)
-  http://www.haible.de/bruno/packages-ffcall.html
+For more samples, see examples/*.rb
 
 == LICENSE:
 
 The BSD Liscense
 
 see LICENSE.txt
+
