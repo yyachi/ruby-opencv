@@ -282,6 +282,18 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_SVD_MODIFY_A", INT2FIX(CV_SVD_MODIFY_A));
   rb_define_const(rb_module, "CV_SVD_U_T", INT2FIX(CV_SVD_U_T));
   rb_define_const(rb_module, "CV_SVD_V_T", INT2FIX(CV_SVD_V_T));
+
+  /* Histogram representation format */
+  rb_define_const(rb_module, "CV_HIST_ARRAY", INT2FIX(CV_HIST_ARRAY));
+  rb_define_const(rb_module, "CV_HIST_SPARSE", INT2FIX(CV_HIST_SPARSE));
+  rb_define_const(rb_module, "CV_HIST_TREE", INT2FIX(CV_HIST_TREE));
+  rb_define_const(rb_module, "CV_HIST_UNIFORM", INT2FIX(CV_HIST_UNIFORM));
+
+  /* Histogram comparison method */
+  rb_define_const(rb_module, "CV_COMP_CORREL", INT2FIX(CV_COMP_CORREL));
+  rb_define_const(rb_module, "CV_COMP_CHISQR", INT2FIX(CV_COMP_CHISQR));
+  rb_define_const(rb_module, "CV_COMP_INTERSECT", INT2FIX(CV_COMP_INTERSECT));
+  rb_define_const(rb_module, "CV_COMP_BHATTACHARYYA", INT2FIX(CV_COMP_BHATTACHARYYA));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
