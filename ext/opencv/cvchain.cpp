@@ -17,11 +17,11 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCHAIN
 
-#define APPROX_CHAIN_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("APPROX_CHAIN_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("APPROX_CHAIN_OPTION")), rb_intern("merge"), 1, op)
-#define APPROX_CHAIN_METHOD(op) CVMETHOD("APPROX_CHAIN_METHOD", rb_hash_aref(op, ID2SYM(rb_intern("method"))), CV_CHAIN_APPROX_SIMPLE)
-#define APPROX_CHAIN_PARAMETER(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("parameter"))))
-#define APPROX_CHAIN_MINIMAL_PARAMETER(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("minimal_parameter"))))
-#define APPROX_CHAIN_RECURSIVE(op) ({VALUE _recursive = rb_hash_aref(op, ID2SYM(rb_intern("recursive"))); NIL_P(_recursive) ? 0 : _recursive == Qfalse ? 0 : 1;})
+#define APPROX_CHAIN_OPTION(op) rb_get_option_table(rb_klass, "APPROX_CHAIN_OPTION", op)
+#define APPROX_CHAIN_METHOD(op) CVMETHOD("APPROX_CHAIN_METHOD", LOOKUP_CVMETHOD(op, "method"), CV_CHAIN_APPROX_SIMPLE)
+#define APPROX_CHAIN_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "parameter"))
+#define APPROX_CHAIN_MINIMAL_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "minimal_parameter"))
+#define APPROX_CHAIN_RECURSIVE(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "recursive"))
 
 VALUE rb_klass;
 

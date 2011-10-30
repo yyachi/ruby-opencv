@@ -257,7 +257,7 @@ CVMETHOD(const char *name, VALUE method, int ifnone = 0)
 }
 
 inline int
-TRUE_OR_FALSE(VALUE object, int ifnone)
+TRUE_OR_FALSE(VALUE object, int ifnone = 0)
 {
   int value = ifnone;
   switch (TYPE(object)) {

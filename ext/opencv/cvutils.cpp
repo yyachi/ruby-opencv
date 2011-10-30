@@ -170,3 +170,13 @@ rb_cvCreateMemStorage(int block_size)
   return ptr;
 }
 
+VALUE
+rb_get_option_table(VALUE klass, const char* table_name, VALUE option)
+{
+  VALUE table = rb_const_get(klass, rb_intern(table_name));
+  if (NIL_P(option))
+    return table;
+  else
+    return rb_funcall(table, rb_intern("merge"), 1, option);
+}
+

@@ -45,45 +45,58 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
 
-#define DRAWING_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")), rb_intern("merge"), 1, op)
-#define DO_COLOR(op) VALUE_TO_CVSCALAR(rb_hash_aref(op, ID2SYM(rb_intern("color"))))
-#define DO_THICKNESS(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("thickness"))))
-#define DO_LINE_TYPE(op) (FIXNUM_P(op) ? FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("line_type")))) : CV_AA) // Quick fix
-#define DO_SHIFT(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("shift"))))
-#define DO_IS_CLOSED(op) ({VALUE _is_closed = rb_hash_aref(op, ID2SYM(rb_intern("is_closed"))); NIL_P(_is_closed) ? 0 : _is_closed == Qfalse ? 0 : 1;})
+#define DRAWING_OPTION(opt) rb_get_option_table(rb_klass, "DRAWING_OPTION", opt)
+#define DO_COLOR(opt) VALUE_TO_CVSCALAR(LOOKUP_CVMETHOD(opt, "color"))
+#define DO_THICKNESS(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "thickness"))
+#define DO_LINE_TYPE(opt) rb_drawing_option_line_type(opt)
+#define DO_SHIFT(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "shift"))
+#define DO_IS_CLOSED(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "is_closed"))
 
-#define GOOD_FEATURES_TO_TRACK_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")), rb_intern("merge"), 1, op)
-#define GF_MAX(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("max"))))
-#define GF_MASK(op) MASK(rb_hash_aref(op, ID2SYM(rb_intern("mask"))))
-#define GF_BLOCK_SIZE(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define GF_USE_HARRIS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("use_harris"))), 0)
-#define GF_K(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("k"))))
+#define GOOD_FEATURES_TO_TRACK_OPTION(opt) rb_get_option_table(rb_klass, "GOOD_FEATURES_TO_TRACK_OPTION", opt)
+#define GF_MAX(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "max"))
+#define GF_MASK(opt) MASK(LOOKUP_CVMETHOD(opt, "mask"))
+#define GF_BLOCK_SIZE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "block_size"))
+#define GF_USE_HARRIS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "use_harris"))
+#define GF_K(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "k"))
 
-#define FLOOD_FILL_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")), rb_intern("merge"), 1, op)
-#define FF_CONNECTIVITY(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("connectivity"))))
-#define FF_FIXED_RANGE(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("fixed_range"))), 0)
-#define FF_MASK_ONLY(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("mask_only"))), 0)
+#define FLOOD_FILL_OPTION(opt) rb_get_option_table(rb_klass, "FLOOD_FILL_OPTION", opt)
+#define FF_CONNECTIVITY(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "connectivity"))
+#define FF_FIXED_RANGE(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "fixed_range"))
+#define FF_MASK_ONLY(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "mask_only"))
 
-#define FIND_CONTOURS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")), rb_intern("merge"), 1, op)
-#define FC_MODE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("mode"))))
-#define FC_METHOD(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("method"))))
-#define FC_OFFSET(op)VALUE_TO_CVPOINT(rb_hash_aref(op, ID2SYM(rb_intern("offset"))))
+#define FIND_CONTOURS_OPTION(opt) rb_get_option_table(rb_klass, "FIND_CONTOURS_OPTION", opt)
+#define FC_MODE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "mode"))
+#define FC_METHOD(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "method"))
+#define FC_OFFSET(opt) VALUE_TO_CVPOINT(LOOKUP_CVMETHOD(opt, "offset"))
 
-#define OPTICAL_FLOW_HS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")), rb_intern("merge"), 1, op)
-#define HS_LAMBDA(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("lambda"))))
-#define HS_CRITERIA(op) VALUE_TO_CVTERMCRITERIA(rb_hash_aref(op, ID2SYM(rb_intern("criteria"))))
+#define OPTICAL_FLOW_HS_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_HS_OPTION", opt)
+#define HS_LAMBDA(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "lambda"))
+#define HS_CRITERIA(opt) VALUE_TO_CVTERMCRITERIA(LOOKUP_CVMETHOD(opt, "criteria"))
 
-#define OPTICAL_FLOW_BM_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")), rb_intern("merge"), 1, op)
-#define BM_BLOCK_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define BM_SHIFT_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("shift_size"))))
-#define BM_MAX_RANGE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("max_range"))))
+#define OPTICAL_FLOW_BM_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_BM_OPTION", opt)
+#define BM_BLOCK_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "block_size"))
+#define BM_SHIFT_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "shift_size"))
+#define BM_MAX_RANGE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "max_range"))
 
-#define FIND_FUNDAMENTAL_MAT_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")), rb_intern("merge"), 1, op)
-#define FFM_WITH_STATUS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("with_status"))), 0)
-#define FFM_MAXIMUM_DISTANCE(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("maximum_distance"))))
-#define FFM_DESIRABLE_LEVEL(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("desirable_level"))))
+#define FIND_FUNDAMENTAL_MAT_OPTION(opt) rb_get_option_table(rb_klass, "FIND_FUNDAMENTAL_MAT_OPTION", opt)
+#define FFM_WITH_STATUS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "with_status"))
+#define FFM_MAXIMUM_DISTANCE(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "maximum_distance"))
+#define FFM_DESIRABLE_LEVEL(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "desirable_level"))
 
 VALUE rb_klass;
+
+int
+rb_drawing_option_line_type(VALUE drawing_option)
+{
+  VALUE line_type = LOOKUP_CVMETHOD(drawing_option, "line_type");
+  if (FIXNUM_P(line_type)) {
+    return FIX2INT(line_type);
+  }
+  else if (line_type == ID2SYM(rb_intern("aa"))) {
+    return CV_AA;
+  }
+  return 0;
+}
 
 VALUE
 rb_class()
