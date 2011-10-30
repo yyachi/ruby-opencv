@@ -517,7 +517,7 @@ define_ruby_module()
   VALUE rb_func_name(VALUE klass, VALUE image)				\
   {									\
     VALUE dest = Qnil;							\
-    CvArr* img_ptr = CVMAT_WITH_CHECK(image);				\
+    CvArr* img_ptr = CVARR(image);					\
     try {								\
       int type = cvGetElemType(img_ptr);				\
       if (CV_MAT_CN(type) != src_cn)					\
