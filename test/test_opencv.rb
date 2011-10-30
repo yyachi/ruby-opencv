@@ -8,6 +8,12 @@ include OpenCV
 
 class TestOpenCV < OpenCVTestCase
   def test_constants
+    # OpenCV version
+    assert_equal('2.3.1', CV_VERSION)
+    assert_equal(2, CV_MAJOR_VERSION)
+    assert_equal(3, CV_MINOR_VERSION)
+    assert_equal(1, CV_SUBMINOR_VERSION)
+
     # Depths
     assert_equal(0, CV_8U)
     assert_equal(1, CV_8S)
