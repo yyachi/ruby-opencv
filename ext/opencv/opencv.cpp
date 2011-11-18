@@ -161,7 +161,7 @@ define_ruby_module()
   rb_module = rb_define_module("OpenCV");
 
   /* OpenCV version */
-  rb_define_const(rb_module, "CV_VERSION", rb_str_new_cstr(CV_VERSION));
+  rb_define_const(rb_module, "CV_VERSION", rb_str_new2(CV_VERSION));
   rb_define_const(rb_module, "CV_MAJOR_VERSION", INT2FIX(CV_MAJOR_VERSION));
   rb_define_const(rb_module, "CV_MINOR_VERSION", INT2FIX(CV_MINOR_VERSION));
   rb_define_const(rb_module, "CV_SUBMINOR_VERSION", INT2FIX(CV_SUBMINOR_VERSION));
