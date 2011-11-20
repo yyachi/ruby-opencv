@@ -1502,9 +1502,8 @@ rb_reshape(VALUE self, VALUE hash)
 VALUE
 rb_repeat(VALUE self, VALUE object)
 {
-  CvMat* obj_ptr = CVMAT_WITH_CHECK(object);
   try {
-    cvRepeat(CVARR(self), obj_ptr);
+    cvRepeat(CVARR(self), CVARR_WITH_CHECK(object));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -1710,7 +1709,7 @@ rb_lut(VALUE self, VALUE lut)
 {
   VALUE dest = copy(self);
   try {
-    cvLUT(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(lut));
+    cvLUT(CVARR(self), CVARR(dest), CVARR_WITH_CHECK(lut));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -1882,9 +1881,9 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
   dest = new_mat_kind_object(cvGetSize(self_ptr), self);
   try {
     if (NIL_P(shiftvec))
-      cvMatMul(self_ptr, CVMAT_WITH_CHECK(val), CVARR(dest));
+      cvMatMul(self_ptr, CVARR_WITH_CHECK(val), CVARR(dest));
     else
-      cvMatMulAdd(self_ptr, CVMAT_WITH_CHECK(val), CVMAT_WITH_CHECK(shiftvec), CVARR(dest));
+      cvMatMulAdd(self_ptr, CVARR_WITH_CHECK(val), CVARR_WITH_CHECK(shiftvec), CVARR(dest));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2354,7 +2353,7 @@ rb_dot_product(VALUE self, VALUE mat)
 {
   double result = 0.0;
   try {
-    result = cvDotProduct(CVARR(self), CVMAT_WITH_CHECK(mat));
+    result = cvDotProduct(CVARR(self), CVARR_WITH_CHECK(mat));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2376,7 +2375,7 @@ rb_cross_product(VALUE self, VALUE mat)
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvCrossProduct(self_ptr, CVMAT_WITH_CHECK(mat), CVARR(dest));
+    cvCrossProduct(self_ptr, CVARR_WITH_CHECK(mat), CVARR(dest));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2473,7 +2472,7 @@ rb_mul_transposed(int argc, VALUE *argv, VALUE self)
     _order = LOOKUP_CVMETHOD(options, "order");
   }
 
-  CvArr* delta = NIL_P(_delta) ? NULL : CVMAT_WITH_CHECK(_delta);
+  CvArr* delta = NIL_P(_delta) ? NULL : CVARR_WITH_CHECK(_delta);
   double scale = NIL_P(_scale) ? 1.0 : NUM2DBL(_scale);
   int order = NIL_P(_order) ? 0 : NUM2INT(_order);
   CvArr* self_ptr = CVARR(self);
@@ -2607,10 +2606,10 @@ rb_solve(int argc, VALUE *argv, VALUE self)
   VALUE mat, symbol;
   rb_scan_args(argc, argv, "11", &mat, &symbol);
   VALUE dest = Qnil;
-  CvMat* mat_ptr = CVMAT_WITH_CHECK(mat);
+  CvArr* arr_ptr = CVARR_WITH_CHECK(mat);
   try {
-    dest = new_mat_kind_object(cvGetSize(mat_ptr), self);
-    cvSolve(CVARR(self), mat_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+    dest = new_mat_kind_object(cvGetSize(arr_ptr), self);
+    cvSolve(CVARR(self), arr_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -3913,7 +3912,7 @@ rb_remap(int argc, VALUE *argv, VALUE self)
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvRemap(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mapx), CVMAT_WITH_CHECK(mapy),
+    cvRemap(self_ptr, CVARR(dest), CVARR_WITH_CHECK(mapx), CVARR_WITH_CHECK(mapy),
 	    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
 	    | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS),
 	    VALUE_TO_CVSCALAR(fillval));
@@ -4741,7 +4740,7 @@ VALUE
 rb_watershed(VALUE self, VALUE markers)
 {
   try {
-    cvWatershed(CVARR(self), CVMAT_WITH_CHECK(markers));
+    cvWatershed(CVARR(self), CVARR_WITH_CHECK(markers));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -4960,7 +4959,7 @@ rb_match_template(int argc, VALUE *argv, VALUE self)
     method_flag = CVMETHOD("MATCH_TEMPLATE_METHOD", method);
 
   CvArr* self_ptr = CVARR(self);
-  CvMat* templ_ptr = CVMAT_WITH_CHECK(templ);
+  CvArr* templ_ptr = CVARR_WITH_CHECK(templ);
   VALUE result = Qnil;
   try {
     CvSize src_size = cvGetSize(self_ptr);

@@ -17,7 +17,9 @@
 #define raise_cverror(e) cCvError::raise(e)
 
 void raise_typeerror(VALUE object, VALUE expected_class);
+void raise_typeerror(VALUE object, const char* expected_class_name);
 void raise_compatible_typeerror(VALUE object, VALUE expected_class);
+void raise_compatible_typeerror(VALUE object, const char* expected_class_name);
 void* rb_cvAlloc(size_t size);
 CvMat* rb_cvCreateMat(int height, int width, int type);
 IplImage* rb_cvCreateImage(CvSize size, int depth, int channels);

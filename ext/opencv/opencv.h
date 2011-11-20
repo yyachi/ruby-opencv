@@ -204,6 +204,21 @@ CVARR(VALUE object)
   return ptr;
 }  
 
+inline CvArr*
+CVARR_WITH_CHECK(VALUE object)
+{
+  Check_Type(object, T_DATA);
+  void *ptr = DATA_PTR(object);
+  if (CV_IS_IMAGE(ptr) || CV_IS_MAT(ptr) || CV_IS_SEQ(ptr) ||
+      CV_IS_MATND(ptr) || CV_IS_SPARSE_MAT(ptr)) {
+    return CVARR(object);
+  }
+  else {
+    raise_compatible_typeerror(object, (char*)"CvArr");
+  }
+  return NULL;
+}  
+
 inline VALUE
 OPENCV_OBJECT(VALUE klass, void *ptr)
 {
