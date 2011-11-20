@@ -116,8 +116,8 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat2 = mat0.pre_corner_detect(3)
     mat3 = mat0.pre_corner_detect(5)
 
-    assert_equal('fe7c8a1d07a3dd0fb6a02d6a6de0fe9f', hash_img(mat1))
-    assert_equal('fe7c8a1d07a3dd0fb6a02d6a6de0fe9f', hash_img(mat2))
+    assert_equal('1ec909dfa2e497c7f454e39aefd764f5', hash_img(mat1))
+    assert_equal('1ec909dfa2e497c7f454e39aefd764f5', hash_img(mat2))
     assert_equal('42e7443ffd389d15343d3c6bdc42f553', hash_img(mat3))
 
     # Uncomment the following lines to show the images
@@ -166,11 +166,10 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat3 = mat0.corner_harris(3, 3, 0.04)
     mat4 = mat0.corner_harris(3, 7, 0.01)
 
-    assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat1))
-    assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat2))
-    assert_equal('6ceb54b54cc98a72de7cb75649fb0a12', hash_img(mat3))
-    # assert_equal('4e703deb9a418bbf37e3283f4a7d4d32', hash_img(mat4))
-    assert_equal('d689b19c786c5693da7282ab9fdb7921', hash_img(mat4))
+    assert_equal('fbb4e04c86f906c83fe17fd148675f90', hash_img(mat1))
+    assert_equal('fbb4e04c86f906c83fe17fd148675f90', hash_img(mat2))
+    assert_equal('fbb4e04c86f906c83fe17fd148675f90', hash_img(mat3))
+    assert_equal('6515d75f6223806f077cebc7b3927a13', hash_img(mat4))
 
     # Uncomment the following lines to show the images
     # snap(['original', mat0], ['corner_harris(3)', mat1], ['corner_harris(3,3)', mat2],
@@ -342,7 +341,7 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_equal('b2203ccca2c17b042a90b79704c0f535', hash_img(mat1))
     assert_equal('b2203ccca2c17b042a90b79704c0f535', hash_img(mat2))
     assert_equal('ba8f2dee2329aaa6309de4770fc8fa55', hash_img(mat3))
-    assert_equal('8a28a2748b0cfc87205d65c625187867', hash_img(mat4))
+    assert_equal('10cf18adaa8548101cc230206624133a', hash_img(mat4))
     assert_equal('de5c30fcd9e817aa282ab05388de995b', hash_img(mat5))
 
     assert_raise(TypeError) {
@@ -1752,12 +1751,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
     
     velx, vely = curr.optical_flow_lk(prev, CvSize.new(3, 3))
-    assert_equal('bea0c4c2b4b89ed1bb5e9ef5b68b8759', hash_img(velx))
-    assert_equal('aa643584d4eb175ab48896ff44646e06', hash_img(vely))
+    assert_equal('13333362f0daf6ad732006bd2a32e177', hash_img(velx))
+    assert_equal('45dc42034ab606dd61e34a5adc6a1c1b', hash_img(vely))
 
     velx, vely = curr.optical_flow_lk(prev, CvSize.new(5, 5))
-    assert_equal('00d5889a8e62f7c5fc695ba3556cc374', hash_img(velx))
-    assert_equal('e7524c292e95e374fdb588f0b516938e', hash_img(vely))
+    assert_equal('d83c57805f9c074d0ad33a7522a75952', hash_img(velx))
+    assert_equal('df8fb2010b00d89090e7d9653781a68d', hash_img(vely))
 
     assert_raise(TypeError) {
       curr.optical_flow_lk(DUMMY_OBJ, CvSize.new(3, 3))

@@ -20,6 +20,19 @@ __NAMESPACE_BEGIN_CVFONT
 
 VALUE rb_klass;
 
+int
+rb_font_option_line_type(VALUE font_option)
+{
+  VALUE line_type = LOOKUP_CVMETHOD(font_option, "line_type");
+  if (FIXNUM_P(line_type)) {
+    return FIX2INT(line_type);
+  }
+  else if (line_type == ID2SYM(rb_intern("aa"))) {
+    return CV_AA;
+  }
+  return 0;
+}
+
 VALUE
 rb_class()
 {

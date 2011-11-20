@@ -45,45 +45,58 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
 
-#define DRAWING_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")), rb_intern("merge"), 1, op)
-#define DO_COLOR(op) VALUE_TO_CVSCALAR(rb_hash_aref(op, ID2SYM(rb_intern("color"))))
-#define DO_THICKNESS(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("thickness"))))
-#define DO_LINE_TYPE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("line_type"))))
-#define DO_SHIFT(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("shift"))))
-#define DO_IS_CLOSED(op) ({VALUE _is_closed = rb_hash_aref(op, ID2SYM(rb_intern("is_closed"))); NIL_P(_is_closed) ? 0 : _is_closed == Qfalse ? 0 : 1;})
+#define DRAWING_OPTION(opt) rb_get_option_table(rb_klass, "DRAWING_OPTION", opt)
+#define DO_COLOR(opt) VALUE_TO_CVSCALAR(LOOKUP_CVMETHOD(opt, "color"))
+#define DO_THICKNESS(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "thickness"))
+#define DO_LINE_TYPE(opt) rb_drawing_option_line_type(opt)
+#define DO_SHIFT(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "shift"))
+#define DO_IS_CLOSED(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "is_closed"))
 
-#define GOOD_FEATURES_TO_TRACK_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")), rb_intern("merge"), 1, op)
-#define GF_MAX(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("max"))))
-#define GF_MASK(op) MASK(rb_hash_aref(op, ID2SYM(rb_intern("mask"))))
-#define GF_BLOCK_SIZE(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define GF_USE_HARRIS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("use_harris"))), 0)
-#define GF_K(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("k"))))
+#define GOOD_FEATURES_TO_TRACK_OPTION(opt) rb_get_option_table(rb_klass, "GOOD_FEATURES_TO_TRACK_OPTION", opt)
+#define GF_MAX(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "max"))
+#define GF_MASK(opt) MASK(LOOKUP_CVMETHOD(opt, "mask"))
+#define GF_BLOCK_SIZE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "block_size"))
+#define GF_USE_HARRIS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "use_harris"))
+#define GF_K(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "k"))
 
-#define FLOOD_FILL_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")), rb_intern("merge"), 1, op)
-#define FF_CONNECTIVITY(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("connectivity"))))
-#define FF_FIXED_RANGE(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("fixed_range"))), 0)
-#define FF_MASK_ONLY(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("mask_only"))), 0)
+#define FLOOD_FILL_OPTION(opt) rb_get_option_table(rb_klass, "FLOOD_FILL_OPTION", opt)
+#define FF_CONNECTIVITY(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "connectivity"))
+#define FF_FIXED_RANGE(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "fixed_range"))
+#define FF_MASK_ONLY(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "mask_only"))
 
-#define FIND_CONTOURS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")), rb_intern("merge"), 1, op)
-#define FC_MODE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("mode"))))
-#define FC_METHOD(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("method"))))
-#define FC_OFFSET(op)VALUE_TO_CVPOINT(rb_hash_aref(op, ID2SYM(rb_intern("offset"))))
+#define FIND_CONTOURS_OPTION(opt) rb_get_option_table(rb_klass, "FIND_CONTOURS_OPTION", opt)
+#define FC_MODE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "mode"))
+#define FC_METHOD(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "method"))
+#define FC_OFFSET(opt) VALUE_TO_CVPOINT(LOOKUP_CVMETHOD(opt, "offset"))
 
-#define OPTICAL_FLOW_HS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")), rb_intern("merge"), 1, op)
-#define HS_LAMBDA(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("lambda"))))
-#define HS_CRITERIA(op) VALUE_TO_CVTERMCRITERIA(rb_hash_aref(op, ID2SYM(rb_intern("criteria"))))
+#define OPTICAL_FLOW_HS_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_HS_OPTION", opt)
+#define HS_LAMBDA(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "lambda"))
+#define HS_CRITERIA(opt) VALUE_TO_CVTERMCRITERIA(LOOKUP_CVMETHOD(opt, "criteria"))
 
-#define OPTICAL_FLOW_BM_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")), rb_intern("merge"), 1, op)
-#define BM_BLOCK_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define BM_SHIFT_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("shift_size"))))
-#define BM_MAX_RANGE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("max_range"))))
+#define OPTICAL_FLOW_BM_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_BM_OPTION", opt)
+#define BM_BLOCK_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "block_size"))
+#define BM_SHIFT_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "shift_size"))
+#define BM_MAX_RANGE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "max_range"))
 
-#define FIND_FUNDAMENTAL_MAT_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")), rb_intern("merge"), 1, op)
-#define FFM_WITH_STATUS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("with_status"))), 0)
-#define FFM_MAXIMUM_DISTANCE(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("maximum_distance"))))
-#define FFM_DESIRABLE_LEVEL(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("desirable_level"))))
+#define FIND_FUNDAMENTAL_MAT_OPTION(opt) rb_get_option_table(rb_klass, "FIND_FUNDAMENTAL_MAT_OPTION", opt)
+#define FFM_WITH_STATUS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "with_status"))
+#define FFM_MAXIMUM_DISTANCE(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "maximum_distance"))
+#define FFM_DESIRABLE_LEVEL(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "desirable_level"))
 
 VALUE rb_klass;
+
+int
+rb_drawing_option_line_type(VALUE drawing_option)
+{
+  VALUE line_type = LOOKUP_CVMETHOD(drawing_option, "line_type");
+  if (FIXNUM_P(line_type)) {
+    return FIX2INT(line_type);
+  }
+  else if (line_type == ID2SYM(rb_intern("aa"))) {
+    return CV_AA;
+  }
+  return 0;
+}
 
 VALUE
 rb_class()
@@ -1489,9 +1502,8 @@ rb_reshape(VALUE self, VALUE hash)
 VALUE
 rb_repeat(VALUE self, VALUE object)
 {
-  CvMat* obj_ptr = CVMAT_WITH_CHECK(object);
   try {
-    cvRepeat(CVARR(self), obj_ptr);
+    cvRepeat(CVARR(self), CVARR_WITH_CHECK(object));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -1697,7 +1709,7 @@ rb_lut(VALUE self, VALUE lut)
 {
   VALUE dest = copy(self);
   try {
-    cvLUT(CVARR(self), CVARR(dest), CVMAT_WITH_CHECK(lut));
+    cvLUT(CVARR(self), CVARR(dest), CVARR_WITH_CHECK(lut));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -1869,9 +1881,9 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
   dest = new_mat_kind_object(cvGetSize(self_ptr), self);
   try {
     if (NIL_P(shiftvec))
-      cvMatMul(self_ptr, CVMAT_WITH_CHECK(val), CVARR(dest));
+      cvMatMul(self_ptr, CVARR_WITH_CHECK(val), CVARR(dest));
     else
-      cvMatMulAdd(self_ptr, CVMAT_WITH_CHECK(val), CVMAT_WITH_CHECK(shiftvec), CVARR(dest));
+      cvMatMulAdd(self_ptr, CVARR_WITH_CHECK(val), CVARR_WITH_CHECK(shiftvec), CVARR(dest));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2341,7 +2353,7 @@ rb_dot_product(VALUE self, VALUE mat)
 {
   double result = 0.0;
   try {
-    result = cvDotProduct(CVARR(self), CVMAT_WITH_CHECK(mat));
+    result = cvDotProduct(CVARR(self), CVARR_WITH_CHECK(mat));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2363,7 +2375,7 @@ rb_cross_product(VALUE self, VALUE mat)
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvCrossProduct(self_ptr, CVMAT_WITH_CHECK(mat), CVARR(dest));
+    cvCrossProduct(self_ptr, CVARR_WITH_CHECK(mat), CVARR(dest));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2460,7 +2472,7 @@ rb_mul_transposed(int argc, VALUE *argv, VALUE self)
     _order = LOOKUP_CVMETHOD(options, "order");
   }
 
-  CvArr* delta = NIL_P(_delta) ? NULL : CVMAT_WITH_CHECK(_delta);
+  CvArr* delta = NIL_P(_delta) ? NULL : CVARR_WITH_CHECK(_delta);
   double scale = NIL_P(_scale) ? 1.0 : NUM2DBL(_scale);
   int order = NIL_P(_order) ? 0 : NUM2INT(_order);
   CvArr* self_ptr = CVARR(self);
@@ -2594,10 +2606,10 @@ rb_solve(int argc, VALUE *argv, VALUE self)
   VALUE mat, symbol;
   rb_scan_args(argc, argv, "11", &mat, &symbol);
   VALUE dest = Qnil;
-  CvMat* mat_ptr = CVMAT_WITH_CHECK(mat);
+  CvArr* arr_ptr = CVARR_WITH_CHECK(mat);
   try {
-    dest = new_mat_kind_object(cvGetSize(mat_ptr), self);
-    cvSolve(CVARR(self), mat_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+    dest = new_mat_kind_object(cvGetSize(arr_ptr), self);
+    cvSolve(CVARR(self), arr_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -3900,7 +3912,7 @@ rb_remap(int argc, VALUE *argv, VALUE self)
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvRemap(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mapx), CVMAT_WITH_CHECK(mapy),
+    cvRemap(self_ptr, CVARR(dest), CVARR_WITH_CHECK(mapx), CVARR_WITH_CHECK(mapy),
 	    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
 	    | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS),
 	    VALUE_TO_CVSCALAR(fillval));
@@ -4728,7 +4740,7 @@ VALUE
 rb_watershed(VALUE self, VALUE markers)
 {
   try {
-    cvWatershed(CVARR(self), CVMAT_WITH_CHECK(markers));
+    cvWatershed(CVARR(self), CVARR_WITH_CHECK(markers));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -4947,7 +4959,7 @@ rb_match_template(int argc, VALUE *argv, VALUE self)
     method_flag = CVMETHOD("MATCH_TEMPLATE_METHOD", method);
 
   CvArr* self_ptr = CVARR(self);
-  CvMat* templ_ptr = CVMAT_WITH_CHECK(templ);
+  CvArr* templ_ptr = CVARR_WITH_CHECK(templ);
   VALUE result = Qnil;
   try {
     CvSize src_size = cvGetSize(self_ptr);

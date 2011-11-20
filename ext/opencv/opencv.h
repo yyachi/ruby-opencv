@@ -204,6 +204,21 @@ CVARR(VALUE object)
   return ptr;
 }  
 
+inline CvArr*
+CVARR_WITH_CHECK(VALUE object)
+{
+  Check_Type(object, T_DATA);
+  void *ptr = DATA_PTR(object);
+  if (CV_IS_IMAGE(ptr) || CV_IS_MAT(ptr) || CV_IS_SEQ(ptr) ||
+      CV_IS_MATND(ptr) || CV_IS_SPARSE_MAT(ptr)) {
+    return CVARR(object);
+  }
+  else {
+    raise_compatible_typeerror(object, (char*)"CvArr");
+  }
+  return NULL;
+}  
+
 inline VALUE
 OPENCV_OBJECT(VALUE klass, void *ptr)
 {
@@ -257,7 +272,7 @@ CVMETHOD(const char *name, VALUE method, int ifnone = 0)
 }
 
 inline int
-TRUE_OR_FALSE(VALUE object, int ifnone)
+TRUE_OR_FALSE(VALUE object, int ifnone = 0)
 {
   int value = ifnone;
   switch (TYPE(object)) {

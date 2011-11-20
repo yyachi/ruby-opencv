@@ -8,6 +8,12 @@ include OpenCV
 
 class TestOpenCV < OpenCVTestCase
   def test_constants
+    # OpenCV version
+    assert_equal('2.3.1', CV_VERSION)
+    assert_equal(2, CV_MAJOR_VERSION)
+    assert_equal(3, CV_MINOR_VERSION)
+    assert_equal(1, CV_SUBMINOR_VERSION)
+
     # Depths
     assert_equal(0, CV_8U)
     assert_equal(1, CV_8S)
@@ -124,6 +130,18 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(1, CV_SVD_MODIFY_A)
     assert_equal(2, CV_SVD_U_T)
     assert_equal(4, CV_SVD_V_T)
+
+    # Histogram representation format
+    assert_equal(0, CV_HIST_ARRAY)
+    assert_equal(1, CV_HIST_SPARSE)
+    assert_equal(1, CV_HIST_TREE)
+    assert_equal(1, CV_HIST_UNIFORM)
+
+    # Histogram comparison method
+    assert_equal(0, CV_COMP_CORREL)
+    assert_equal(1, CV_COMP_CHISQR)
+    assert_equal(2, CV_COMP_INTERSECT)
+    assert_equal(3, CV_COMP_BHATTACHARYYA)
   end
 
   def test_symbols

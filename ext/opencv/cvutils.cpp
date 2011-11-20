@@ -12,15 +12,27 @@
 void
 raise_typeerror(VALUE object, VALUE expected_class)
 {
+  raise_typeerror(object, rb_class2name(expected_class));
+}
+
+void
+raise_typeerror(VALUE object, const char* expected_class_name)
+{
   rb_raise(rb_eTypeError, "wrong argument type %s (expected %s)",
-  	   rb_obj_classname(object), rb_class2name(expected_class));
+  	   rb_obj_classname(object), expected_class_name);
 }
 
 void
 raise_compatible_typeerror(VALUE object, VALUE expected_class)
 {
+  raise_compatible_typeerror(object, rb_class2name(expected_class));
+}
+
+void
+raise_compatible_typeerror(VALUE object, const char* expected_class_name)
+{
   rb_raise(rb_eTypeError, "wrong argument type %s (expected %s or compatible object)",
-  	   rb_obj_classname(object), rb_class2name(expected_class));
+  	   rb_obj_classname(object), expected_class_name);
 }
 
 /*
@@ -168,5 +180,15 @@ rb_cvCreateMemStorage(int block_size)
     }
   }
   return ptr;
+}
+
+VALUE
+rb_get_option_table(VALUE klass, const char* table_name, VALUE option)
+{
+  VALUE table = rb_const_get(klass, rb_intern(table_name));
+  if (NIL_P(option))
+    return table;
+  else
+    return rb_funcall(table, rb_intern("merge"), 1, option);
 }
 
