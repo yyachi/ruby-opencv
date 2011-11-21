@@ -12,12 +12,12 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCIRCLE32F namespace cCvCircle32f{
+#define __NAMESPACE_BEGIN_CVCIRCLE32F namespace cCvCircle32f {
 #define __NAMESPACE_END_CVCIRCLE32F }
 
 __NAMESPACE_BEGIN_OPENCV
 
-typedef struct CvCircle32f{
+typedef struct CvCircle32f {
   CvPoint2D32f center;
   float radius;
 } CvCircle32f;

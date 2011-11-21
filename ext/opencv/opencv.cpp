@@ -76,10 +76,10 @@ lookup_root_object(void *ptr)
 }
 
 /*
- * Resist root object.
+ * Register root object.
  */
 void
-resist_root_object(void *ptr, VALUE root)
+register_root_object(void *ptr, VALUE root)
 {
   st_insert(root_table, (st_data_t)ptr, (st_data_t)root);
 }
@@ -88,7 +88,7 @@ resist_root_object(void *ptr, VALUE root)
  * Delete mark symbol from hashtable only, not free memory.
  */
 void
-unresist_object(void *ptr)
+unregister_object(void *ptr)
 {
   st_delete(root_table, (st_data_t*)&ptr, 0);
 }
@@ -100,8 +100,13 @@ void
 free_object(void *ptr)
 {
   if (ptr) {
-    unresist_object(ptr);
-    cvFree(&ptr);
+    unregister_object(ptr);
+    try {
+      cvFree(&ptr);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
 }
 
@@ -112,8 +117,13 @@ void
 release_object(void *ptr)
 {
   if (ptr) {
-    unresist_object(ptr);
-    cvRelease(&ptr);
+    unregister_object(ptr);
+    try {
+      cvRelease(&ptr);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
   }
 }
 
@@ -124,156 +134,14 @@ void
 release_iplconvkernel_object(void *ptr)
 {
   if (ptr) {
-    unresist_object(ptr);
-    cvReleaseStructuringElement((IplConvKernel**)(&ptr));
-  }
-}
-
-/*
- * Allocates a memory buffer
- * When memory allocation is failed, run GC and retry it
- */
-void*
-rb_cvAlloc(size_t size)
-{
-  void* ptr = NULL;
-  try {
-    ptr = cvAlloc(size);
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem)
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-
-    rb_gc_start();
+    unregister_object(ptr);
     try {
-      ptr = cvAlloc(size);
+      cvReleaseStructuringElement((IplConvKernel**)(&ptr));
     }
     catch (cv::Exception& e) {
-      if (e.code == CV_StsNoMem)
-	rb_raise(rb_eNoMemError, "%s", e.what());
-      else
-	rb_raise(rb_eRuntimeError, "%s", e.what());
+      raise_cverror(e);
     }
   }
-  return ptr;
-}
-
-/*
- * Creates CvMat and underlying data
- * When memory allocation is failed, run GC and retry it
- */
-CvMat*
-rb_cvCreateMat(int height, int width, int type)
-{
-  CvMat* ptr = NULL;
-  try {
-    ptr = cvCreateMat(height, width, type);
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem)
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-
-    rb_gc_start();
-    try {
-      ptr = cvCreateMat(height, width, type);
-    }
-    catch (cv::Exception& e) {
-      if (e.code == CV_StsNoMem)
-	rb_raise(rb_eNoMemError, "%s", e.what());
-      else
-	rb_raise(rb_eRuntimeError, "%s", e.what());
-    }
-  }
-  return ptr;
-}
-
-/*
- * Create IplImage header and allocate underlying data
- * When memory allocation is failed, run GC and retry it
- */
-IplImage*
-rb_cvCreateImage(CvSize size, int depth, int channels)
-{
-  IplImage* ptr = NULL;
-  try {
-    ptr = cvCreateImage(size, depth, channels);
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem)
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-
-    rb_gc_start();
-    try {
-      ptr = cvCreateImage(size, depth, channels);
-    }
-    catch (cv::Exception& e) {
-      if (e.code == CV_StsNoMem)
-	rb_raise(rb_eNoMemError, "%s", e.what());
-      else
-	rb_raise(rb_eRuntimeError, "%s", e.what());
-    }
-  }
-  return ptr;
-}
-
-/*
- * Creates a structuring element
- * When memory allocation is failed, run GC and retry it
- */
-IplConvKernel*
-rb_cvCreateStructuringElementEx(int cols, int rows,
-				int anchorX, int anchorY,
-				int shape, int *values)
-{
-  IplConvKernel* ptr = NULL;
-  try {
-    ptr = cvCreateStructuringElementEx(cols, rows, anchorX, anchorY, shape, values);
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem)
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-
-    rb_gc_start();
-    try {
-      ptr = cvCreateStructuringElementEx(cols, rows, anchorX, anchorY, shape, values);
-    }
-    catch (cv::Exception& e) {
-      if (e.code == CV_StsNoMem)
-	rb_raise(rb_eNoMemError, "%s", e.what());
-      else
-	rb_raise(rb_eRuntimeError, "%s", e.what());
-    }
-  }
-  return ptr;
-}
-
-/*
- * Creates memory storage
- * When memory allocation is failed, run GC and retry it
- */
-CvMemStorage*
-rb_cvCreateMemStorage(int block_size)
-{
-  CvMemStorage* ptr = NULL;
-  try {
-    ptr = cvCreateMemStorage(block_size);
-  }
-  catch(cv::Exception& e) {
-    if (e.code != CV_StsNoMem)
-      rb_raise(rb_eRuntimeError, "%s", e.what());
-
-    rb_gc_start();
-    try {
-      ptr = cvCreateMemStorage(block_size);
-    }
-    catch (cv::Exception& e) {
-      if (e.code == CV_StsNoMem)
-	rb_raise(rb_eNoMemError, "%s", e.what());
-      else
-	rb_raise(rb_eRuntimeError, "%s", e.what());
-    }
-  }
-  return ptr;
 }
 
 VALUE rb_module;
@@ -285,33 +153,19 @@ rb_module_opencv()
   return rb_module;
 }
 
-/*
- * convert OpenCV internal error to Ruby exception.
- */
-int
-error_callback(int status,
-               const char *function_name,
-               const char *error_message,
-               const char *file_name,
-               int line,
-               void *user_data)
-{
-  int error_code = (CvStatus)cvGetErrStatus();
-  if (error_code) {
-    OPENCV_RSTERR(); // = CV_StsOk
-    rb_warn("OpenCV error code (%d) : %s (%d in %s)", error_code, function_name, line, file_name);
-    rb_raise(mCvError::by_code(error_code), "%s", error_message);
-  }
-  return 0;
-}
-
 void
 define_ruby_module()
 {
   if (rb_module)
     return;
   rb_module = rb_define_module("OpenCV");
-  
+
+  /* OpenCV version */
+  rb_define_const(rb_module, "CV_VERSION", rb_str_new2(CV_VERSION));
+  rb_define_const(rb_module, "CV_MAJOR_VERSION", INT2FIX(CV_MAJOR_VERSION));
+  rb_define_const(rb_module, "CV_MINOR_VERSION", INT2FIX(CV_MINOR_VERSION));
+  rb_define_const(rb_module, "CV_SUBMINOR_VERSION", INT2FIX(CV_SUBMINOR_VERSION));
+
   /* 0: 8bit unsigned */
   rb_define_const(rb_module, "CV_8U", INT2FIX(CV_8U));
   /* 1: 8bit signed */
@@ -362,6 +216,10 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_THRESH_TOZERO_INV", INT2FIX(CV_THRESH_TOZERO_INV));
   rb_define_const(rb_module, "CV_THRESH_OTSU", INT2FIX(CV_THRESH_OTSU));
 
+  /* Border type */
+  rb_define_const(rb_module, "IPL_BORDER_CONSTANT", INT2FIX(IPL_BORDER_CONSTANT));
+  rb_define_const(rb_module, "IPL_BORDER_REPLICATE", INT2FIX(IPL_BORDER_REPLICATE));
+  
   /* Retrieval mode */
   rb_define_const(rb_module, "CV_RETR_EXTERNAL", INT2FIX(CV_RETR_EXTERNAL));
   rb_define_const(rb_module, "CV_RETR_LIST", INT2FIX(CV_RETR_LIST));
@@ -415,149 +273,176 @@ define_ruby_module()
 
   /* Object detection mode */
   rb_define_const(rb_module, "CV_HAAR_DO_CANNY_PRUNING", INT2FIX(CV_HAAR_DO_CANNY_PRUNING));
+
+  /* Interpolation methods */
+  rb_define_const(rb_module, "CV_INTER_NN", INT2FIX(CV_INTER_NN));
+  rb_define_const(rb_module, "CV_INTER_LINEAR", INT2FIX(CV_INTER_LINEAR));
+  rb_define_const(rb_module, "CV_INTER_AREA", INT2FIX(CV_INTER_AREA));
+  rb_define_const(rb_module, "CV_INTER_CUBIC", INT2FIX(CV_INTER_CUBIC));
+  
+  /* Warp affine optional flags */
+  rb_define_const(rb_module, "CV_WARP_FILL_OUTLIERS", INT2FIX(CV_WARP_FILL_OUTLIERS));
+  rb_define_const(rb_module, "CV_WARP_INVERSE_MAP", INT2FIX(CV_WARP_INVERSE_MAP));
+
+  /* SVD optional flags */
+  rb_define_const(rb_module, "CV_SVD_MODIFY_A", INT2FIX(CV_SVD_MODIFY_A));
+  rb_define_const(rb_module, "CV_SVD_U_T", INT2FIX(CV_SVD_U_T));
+  rb_define_const(rb_module, "CV_SVD_V_T", INT2FIX(CV_SVD_V_T));
+
+  /* Histogram representation format */
+  rb_define_const(rb_module, "CV_HIST_ARRAY", INT2FIX(CV_HIST_ARRAY));
+  rb_define_const(rb_module, "CV_HIST_SPARSE", INT2FIX(CV_HIST_SPARSE));
+  rb_define_const(rb_module, "CV_HIST_TREE", INT2FIX(CV_HIST_TREE));
+  rb_define_const(rb_module, "CV_HIST_UNIFORM", INT2FIX(CV_HIST_UNIFORM));
+
+  /* Histogram comparison method */
+  rb_define_const(rb_module, "CV_COMP_CORREL", INT2FIX(CV_COMP_CORREL));
+  rb_define_const(rb_module, "CV_COMP_CHISQR", INT2FIX(CV_COMP_CHISQR));
+  rb_define_const(rb_module, "CV_COMP_INTERSECT", INT2FIX(CV_COMP_INTERSECT));
+  rb_define_const(rb_module, "CV_COMP_BHATTACHARYYA", INT2FIX(CV_COMP_BHATTACHARYYA));
   
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
   rb_define_const(rb_module, "INVERSION_METHOD", inversion_method);
-  RESIST_CVMETHOD(inversion_method, "lu", CV_LU);
-  RESIST_CVMETHOD(inversion_method, "svd", CV_SVD);
-  RESIST_CVMETHOD(inversion_method, "svd_sym", CV_SVD_SYM);
-  RESIST_CVMETHOD(inversion_method, "svd_symmetric", CV_SVD_SYM);
+  REGISTER_CVMETHOD(inversion_method, "lu", CV_LU);
+  REGISTER_CVMETHOD(inversion_method, "svd", CV_SVD);
+  REGISTER_CVMETHOD(inversion_method, "svd_sym", CV_SVD_SYM);
+  REGISTER_CVMETHOD(inversion_method, "svd_symmetric", CV_SVD_SYM);
     
   VALUE dxt_flag = rb_hash_new();
   /* {:forward, :inverse, :scale, :rows}: DFT and DCT flags */
   rb_define_const(rb_module, "DXT_FLAG", dxt_flag);
-  RESIST_CVMETHOD(dxt_flag, "forward", CV_DXT_FORWARD);
-  RESIST_CVMETHOD(dxt_flag, "inverse", CV_DXT_INVERSE);
-  RESIST_CVMETHOD(dxt_flag, "scale", CV_DXT_SCALE);
-  RESIST_CVMETHOD(dxt_flag, "rows", CV_DXT_ROWS);
+  REGISTER_CVMETHOD(dxt_flag, "forward", CV_DXT_FORWARD);
+  REGISTER_CVMETHOD(dxt_flag, "inverse", CV_DXT_INVERSE);
+  REGISTER_CVMETHOD(dxt_flag, "scale", CV_DXT_SCALE);
+  REGISTER_CVMETHOD(dxt_flag, "rows", CV_DXT_ROWS);
     
   VALUE interpolation_method = rb_hash_new();
   /* {:nn, :linear, :area, :cubic}: Interpolation method */
   rb_define_const(rb_module, "INTERPOLATION_METHOD", interpolation_method);
-  RESIST_CVMETHOD(interpolation_method, "nn", CV_INTER_NN);
-  RESIST_CVMETHOD(interpolation_method, "linear", CV_INTER_LINEAR);
-  RESIST_CVMETHOD(interpolation_method, "area", CV_INTER_AREA);
-  RESIST_CVMETHOD(interpolation_method, "cubic", CV_INTER_CUBIC);
+  REGISTER_CVMETHOD(interpolation_method, "nn", CV_INTER_NN);
+  REGISTER_CVMETHOD(interpolation_method, "linear", CV_INTER_LINEAR);
+  REGISTER_CVMETHOD(interpolation_method, "area", CV_INTER_AREA);
+  REGISTER_CVMETHOD(interpolation_method, "cubic", CV_INTER_CUBIC);
   
   VALUE warp_flag = rb_hash_new();
   /* {:fill_outliers, :inverse_map}: Warp affine optional flags */
   rb_define_const(rb_module, "WARP_FLAG", warp_flag);
-  RESIST_CVMETHOD(warp_flag, "fill_outliers", CV_WARP_FILL_OUTLIERS);
-  RESIST_CVMETHOD(warp_flag, "inverse_map", CV_WARP_INVERSE_MAP);
+  REGISTER_CVMETHOD(warp_flag, "fill_outliers", CV_WARP_FILL_OUTLIERS);
+  REGISTER_CVMETHOD(warp_flag, "inverse_map", CV_WARP_INVERSE_MAP);
 
   VALUE homography_calc_method = rb_hash_new();
   /* {:all, :ransac, :lmeds}: Methods used to computed homography matrix */
   rb_define_const(rb_module, "HOMOGRAPHY_CALC_METHOD", homography_calc_method);
-  RESIST_CVMETHOD(homography_calc_method, "all", 0);
-  RESIST_CVMETHOD(homography_calc_method, "ransac", CV_RANSAC);
-  RESIST_CVMETHOD(homography_calc_method, "lmeds", CV_LMEDS);
+  REGISTER_CVMETHOD(homography_calc_method, "all", 0);
+  REGISTER_CVMETHOD(homography_calc_method, "ransac", CV_RANSAC);
+  REGISTER_CVMETHOD(homography_calc_method, "lmeds", CV_LMEDS);
 
   VALUE depth = rb_hash_new();
   /* {:cv8u, :cv8s, :cv16u, :cv16s, :cv32s, :cv32f, :cv64f}: Depth of each pixel. */
   rb_define_const(rb_module, "DEPTH", depth);
-  RESIST_CVMETHOD(depth, "cv8u", CV_8U);
-  RESIST_CVMETHOD(depth, "cv8s", CV_8S);
-  RESIST_CVMETHOD(depth, "cv16u", CV_16U);
-  RESIST_CVMETHOD(depth, "cv16s", CV_16S);
-  RESIST_CVMETHOD(depth, "cv32s", CV_32S);
-  RESIST_CVMETHOD(depth, "cv32f", CV_32F);
-  RESIST_CVMETHOD(depth, "cv64f", CV_64F);
+  REGISTER_CVMETHOD(depth, "cv8u", CV_8U);
+  REGISTER_CVMETHOD(depth, "cv8s", CV_8S);
+  REGISTER_CVMETHOD(depth, "cv16u", CV_16U);
+  REGISTER_CVMETHOD(depth, "cv16s", CV_16S);
+  REGISTER_CVMETHOD(depth, "cv32s", CV_32S);
+  REGISTER_CVMETHOD(depth, "cv32f", CV_32F);
+  REGISTER_CVMETHOD(depth, "cv64f", CV_64F);
   
   VALUE connectivity = rb_hash_new();
   /* {:aa(:anti_alias)}: Determined by the closeness of pixel values */
   rb_define_const(rb_module, "CONNECTIVITY", connectivity);
-  RESIST_CVMETHOD(connectivity, "aa", CV_AA);
-  RESIST_CVMETHOD(connectivity, "anti_alias", CV_AA);
+  REGISTER_CVMETHOD(connectivity, "aa", CV_AA);
+  REGISTER_CVMETHOD(connectivity, "anti_alias", CV_AA);
 
   VALUE structuring_element_shape = rb_hash_new();
   /* {:rect, :cross, :ellipse, :custom}: Shape of the structuring elements */
   rb_define_const(rb_module, "STRUCTURING_ELEMENT_SHAPE", structuring_element_shape);
-  RESIST_CVMETHOD(structuring_element_shape, "rect", CV_SHAPE_RECT);
-  RESIST_CVMETHOD(structuring_element_shape, "cross", CV_SHAPE_CROSS);
-  RESIST_CVMETHOD(structuring_element_shape, "ellipse", CV_SHAPE_ELLIPSE);
-  RESIST_CVMETHOD(structuring_element_shape, "custom", CV_SHAPE_CUSTOM);
+  REGISTER_CVMETHOD(structuring_element_shape, "rect", CV_SHAPE_RECT);
+  REGISTER_CVMETHOD(structuring_element_shape, "cross", CV_SHAPE_CROSS);
+  REGISTER_CVMETHOD(structuring_element_shape, "ellipse", CV_SHAPE_ELLIPSE);
+  REGISTER_CVMETHOD(structuring_element_shape, "custom", CV_SHAPE_CUSTOM);
 
   VALUE retrieval_mode = rb_hash_new();
   /* {:external, :list, :ccomp, :tree}: Retrieval mode */
   rb_define_const(rb_module, "RETRIEVAL_MODE", retrieval_mode);
-  RESIST_CVMETHOD(retrieval_mode, "external", CV_RETR_EXTERNAL);
-  RESIST_CVMETHOD(retrieval_mode, "list", CV_RETR_LIST);
-  RESIST_CVMETHOD(retrieval_mode, "ccomp", CV_RETR_CCOMP);
-  RESIST_CVMETHOD(retrieval_mode, "tree", CV_RETR_TREE);
+  REGISTER_CVMETHOD(retrieval_mode, "external", CV_RETR_EXTERNAL);
+  REGISTER_CVMETHOD(retrieval_mode, "list", CV_RETR_LIST);
+  REGISTER_CVMETHOD(retrieval_mode, "ccomp", CV_RETR_CCOMP);
+  REGISTER_CVMETHOD(retrieval_mode, "tree", CV_RETR_TREE);
 
   VALUE approx_chain_method = rb_hash_new();
   /* {:code, :approx_none, :approx_simple, :apporx_tc89_11, :approx_tc89_kcos}: Approximation method */
   rb_define_const(rb_module, "APPROX_CHAIN_METHOD", approx_chain_method);
-  RESIST_CVMETHOD(approx_chain_method, "code", CV_CHAIN_CODE);
-  RESIST_CVMETHOD(approx_chain_method, "approx_none", CV_CHAIN_APPROX_NONE);
-  RESIST_CVMETHOD(approx_chain_method, "approx_simple", CV_CHAIN_APPROX_SIMPLE);
-  RESIST_CVMETHOD(approx_chain_method, "approx_tc89_l1", CV_CHAIN_APPROX_TC89_L1);
-  RESIST_CVMETHOD(approx_chain_method, "approx_tc89_kcos", CV_CHAIN_APPROX_TC89_KCOS);
+  REGISTER_CVMETHOD(approx_chain_method, "code", CV_CHAIN_CODE);
+  REGISTER_CVMETHOD(approx_chain_method, "approx_none", CV_CHAIN_APPROX_NONE);
+  REGISTER_CVMETHOD(approx_chain_method, "approx_simple", CV_CHAIN_APPROX_SIMPLE);
+  REGISTER_CVMETHOD(approx_chain_method, "approx_tc89_l1", CV_CHAIN_APPROX_TC89_L1);
+  REGISTER_CVMETHOD(approx_chain_method, "approx_tc89_kcos", CV_CHAIN_APPROX_TC89_KCOS);
   
   VALUE approx_poly_method = rb_hash_new();
   /* {:dp}: Approximation method (polygon) */
   rb_define_const(rb_module, "APPROX_POLY_METHOD", approx_poly_method);
-  RESIST_CVMETHOD(approx_poly_method, "dp", CV_POLY_APPROX_DP);
+  REGISTER_CVMETHOD(approx_poly_method, "dp", CV_POLY_APPROX_DP);
 
   VALUE match_template_method = rb_hash_new();
   /* {:sqdiff, :sqdiff_normed, :ccorr, :ccorr_normed, :ccoeff, :ccoeff_normed}: Match template method */
   rb_define_const(rb_module, "MATCH_TEMPLATE_METHOD", match_template_method);
-  RESIST_CVMETHOD(match_template_method, "sqdiff", CV_TM_SQDIFF);
-  RESIST_CVMETHOD(match_template_method, "sqdiff_normed", CV_TM_SQDIFF_NORMED);
-  RESIST_CVMETHOD(match_template_method, "ccorr", CV_TM_CCORR);
-  RESIST_CVMETHOD(match_template_method, "ccorr_normed", CV_TM_CCORR_NORMED);
-  RESIST_CVMETHOD(match_template_method, "ccoeff", CV_TM_CCOEFF);
-  RESIST_CVMETHOD(match_template_method, "ccoeff_normed", CV_TM_CCOEFF_NORMED);
+  REGISTER_CVMETHOD(match_template_method, "sqdiff", CV_TM_SQDIFF);
+  REGISTER_CVMETHOD(match_template_method, "sqdiff_normed", CV_TM_SQDIFF_NORMED);
+  REGISTER_CVMETHOD(match_template_method, "ccorr", CV_TM_CCORR);
+  REGISTER_CVMETHOD(match_template_method, "ccorr_normed", CV_TM_CCORR_NORMED);
+  REGISTER_CVMETHOD(match_template_method, "ccoeff", CV_TM_CCOEFF);
+  REGISTER_CVMETHOD(match_template_method, "ccoeff_normed", CV_TM_CCOEFF_NORMED);
 
   VALUE morphological_operation = rb_hash_new();
   /* {:open, :close, :gradient, :tophat, :blackhat}: Types of morphological operations */
   rb_define_const(rb_module, "MORPHOLOGICAL_OPERATION", morphological_operation);
-  RESIST_CVMETHOD(morphological_operation, "open", CV_MOP_OPEN);
-  RESIST_CVMETHOD(morphological_operation, "close", CV_MOP_CLOSE);
-  RESIST_CVMETHOD(morphological_operation, "gradient", CV_MOP_GRADIENT);
-  RESIST_CVMETHOD(morphological_operation, "tophat", CV_MOP_TOPHAT);
-  RESIST_CVMETHOD(morphological_operation, "blackhat", CV_MOP_BLACKHAT);
+  REGISTER_CVMETHOD(morphological_operation, "open", CV_MOP_OPEN);
+  REGISTER_CVMETHOD(morphological_operation, "close", CV_MOP_CLOSE);
+  REGISTER_CVMETHOD(morphological_operation, "gradient", CV_MOP_GRADIENT);
+  REGISTER_CVMETHOD(morphological_operation, "tophat", CV_MOP_TOPHAT);
+  REGISTER_CVMETHOD(morphological_operation, "blackhat", CV_MOP_BLACKHAT);
 
   VALUE smoothing_type = rb_hash_new();
   /* {:blur_no_scale, :blur, :gaussian, :median, :bilateral}: Types of smoothing */
   rb_define_const(rb_module, "SMOOTHING_TYPE", smoothing_type);
-  RESIST_CVMETHOD(smoothing_type, "blur_no_scale", CV_BLUR_NO_SCALE);
-  RESIST_CVMETHOD(smoothing_type, "blur", CV_BLUR);
-  RESIST_CVMETHOD(smoothing_type, "gaussian", CV_GAUSSIAN);
-  RESIST_CVMETHOD(smoothing_type, "median", CV_MEDIAN);
-  RESIST_CVMETHOD(smoothing_type, "bilateral", CV_BILATERAL);
+  REGISTER_CVMETHOD(smoothing_type, "blur_no_scale", CV_BLUR_NO_SCALE);
+  REGISTER_CVMETHOD(smoothing_type, "blur", CV_BLUR);
+  REGISTER_CVMETHOD(smoothing_type, "gaussian", CV_GAUSSIAN);
+  REGISTER_CVMETHOD(smoothing_type, "median", CV_MEDIAN);
+  REGISTER_CVMETHOD(smoothing_type, "bilateral", CV_BILATERAL);
 
   VALUE threshold_type = rb_hash_new();
   /* {:binary, :binary_inv, :trunc, :tozero, :tozero_inv, :otsu} : Thresholding types */
   rb_define_const(rb_module, "THRESHOLD_TYPE", threshold_type);
-  RESIST_CVMETHOD(threshold_type, "binary", CV_THRESH_BINARY);
-  RESIST_CVMETHOD(threshold_type, "binary_inv", CV_THRESH_BINARY_INV);
-  RESIST_CVMETHOD(threshold_type, "trunc", CV_THRESH_TRUNC);
-  RESIST_CVMETHOD(threshold_type, "tozero", CV_THRESH_TOZERO);
-  RESIST_CVMETHOD(threshold_type, "tozero_inv", CV_THRESH_TOZERO_INV);
-  RESIST_CVMETHOD(threshold_type, "otsu", CV_THRESH_OTSU);
+  REGISTER_CVMETHOD(threshold_type, "binary", CV_THRESH_BINARY);
+  REGISTER_CVMETHOD(threshold_type, "binary_inv", CV_THRESH_BINARY_INV);
+  REGISTER_CVMETHOD(threshold_type, "trunc", CV_THRESH_TRUNC);
+  REGISTER_CVMETHOD(threshold_type, "tozero", CV_THRESH_TOZERO);
+  REGISTER_CVMETHOD(threshold_type, "tozero_inv", CV_THRESH_TOZERO_INV);
+  REGISTER_CVMETHOD(threshold_type, "otsu", CV_THRESH_OTSU);
 
   VALUE hough_transform_method = rb_hash_new();
   /* {:standard, :probabilistic, :multi_scale} : Hough transform method */
   rb_define_const(rb_module, "HOUGH_TRANSFORM_METHOD", hough_transform_method);
-  RESIST_CVMETHOD(hough_transform_method, "standard", CV_HOUGH_STANDARD);
-  RESIST_CVMETHOD(hough_transform_method, "probabilistic", CV_HOUGH_PROBABILISTIC);
-  RESIST_CVMETHOD(hough_transform_method, "multi_scale", CV_HOUGH_MULTI_SCALE);
-  RESIST_CVMETHOD(hough_transform_method, "gradient", CV_HOUGH_GRADIENT);
+  REGISTER_CVMETHOD(hough_transform_method, "standard", CV_HOUGH_STANDARD);
+  REGISTER_CVMETHOD(hough_transform_method, "probabilistic", CV_HOUGH_PROBABILISTIC);
+  REGISTER_CVMETHOD(hough_transform_method, "multi_scale", CV_HOUGH_MULTI_SCALE);
+  REGISTER_CVMETHOD(hough_transform_method, "gradient", CV_HOUGH_GRADIENT);
 
   VALUE inpaint_method = rb_hash_new();
   /* {:ns, :telea} : Inpaint method */
   rb_define_const(rb_module, "INPAINT_METHOD", inpaint_method);
-  RESIST_CVMETHOD(inpaint_method, "ns", CV_INPAINT_NS);
-  RESIST_CVMETHOD(inpaint_method, "telea", CV_INPAINT_TELEA);
+  REGISTER_CVMETHOD(inpaint_method, "ns", CV_INPAINT_NS);
+  REGISTER_CVMETHOD(inpaint_method, "telea", CV_INPAINT_TELEA);
 
   VALUE comparison_method = rb_hash_new();
   /* Comparison method */
   rb_define_const(rb_module, "COMPARISON_METHOD", comparison_method);
-  RESIST_CVMETHOD(comparison_method, "i1", CV_CONTOURS_MATCH_I1);
-  RESIST_CVMETHOD(comparison_method, "i2", CV_CONTOURS_MATCH_I2);
-  RESIST_CVMETHOD(comparison_method, "i3", CV_CONTOURS_MATCH_I3);
+  REGISTER_CVMETHOD(comparison_method, "i1", CV_CONTOURS_MATCH_I1);
+  REGISTER_CVMETHOD(comparison_method, "i2", CV_CONTOURS_MATCH_I2);
+  REGISTER_CVMETHOD(comparison_method, "i3", CV_CONTOURS_MATCH_I3);
 
   /* color convert methods */
   rb_define_module_function(rb_module, "BGR2BGRA", RUBY_METHOD_FUNC(rb_BGR2BGRA), 1);
@@ -637,14 +522,18 @@ define_ruby_module()
 #define CREATE_CVTCOLOR_FUNC(rb_func_name, c_const_name, src_cn, dest_cn) \
   VALUE rb_func_name(VALUE klass, VALUE image)				\
   {									\
-    VALUE dest;								\
-    if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))			\
-      rb_raise(rb_eTypeError, "argument 1 should be %s.", rb_class2name(cCvMat::rb_class())); \
-    int type = cvGetElemType(CVARR(image));				\
-    if (CV_MAT_CN(type) != src_cn)					\
-      rb_raise(rb_eTypeError, "argument 1 should be %d-channel.", src_cn); \
-    dest = cIplImage::new_object(cvGetSize(CVARR(image)), CV_MAKETYPE(CV_MAT_DEPTH(type), dest_cn)); \
-    cvCvtColor(CVARR(image), CVARR(dest), c_const_name);		\
+    VALUE dest = Qnil;							\
+    CvArr* img_ptr = CVARR(image);					\
+    try {								\
+      int type = cvGetElemType(img_ptr);				\
+      if (CV_MAT_CN(type) != src_cn)					\
+	rb_raise(rb_eArgError, "argument 1 should be %d-channel.", src_cn); \
+      dest = cCvMat::new_mat_kind_object(cvGetSize(img_ptr), image, CV_MAT_DEPTH(type), dest_cn); \
+      cvCvtColor(img_ptr, CVARR(dest), c_const_name);			\
+    }									\
+    catch (cv::Exception& e) {						\
+      raise_cverror(e);							\
+    }									\
     return dest;							\
   }
 
@@ -721,17 +610,25 @@ CREATE_CVTCOLOR_FUNC(rb_Luv2RGB, CV_Luv2RGB, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2BGR, CV_HLS2BGR, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2RGB, CV_HLS2RGB, 3, 3);
 
+int
+error_callback(int status, const char *function_name, const char *error_message,
+	       const char *file_name, int line, void *user_data)
+{
+  // dummy 
+  return 0;
+}
+
 __NAMESPACE_END_OPENCV
 
-extern "C"{
+extern "C" {
   void
   Init_opencv()
   {
     cvRedirectError((CvErrorCallback)mOpenCV::error_callback);
-    
+
     mOpenCV::define_ruby_module();
     
-    mOpenCV::mCvError::define_ruby_module();
+    mOpenCV::cCvError::define_ruby_class();
     mOpenCV::cCvPoint::define_ruby_class();
     mOpenCV::cCvPoint2D32f::define_ruby_class();
     mOpenCV::cCvPoint3D32f::define_ruby_class();
@@ -748,13 +645,14 @@ extern "C"{
     mOpenCV::cCvHuMoments::define_ruby_class();
     mOpenCV::cCvConvexityDefect::define_ruby_class();
 
+    mOpenCV::cCvSURFPoint::define_ruby_class();
+    mOpenCV::cCvSURFParams::define_ruby_class();
+    
     mOpenCV::cCvMemStorage::define_ruby_class();
 
     mOpenCV::cCvSeq::define_ruby_class();
     mOpenCV::mCurve::define_ruby_module();
     mOpenCV::mPointSet::define_ruby_module();
-    mOpenCV::mPoint3DSet::define_ruby_module();
-    mOpenCV::cCvSet::define_ruby_class();
     mOpenCV::cCvChain::define_ruby_class();
     mOpenCV::cCvContour::define_ruby_class();
     mOpenCV::cCvContourTree::define_ruby_class();
@@ -765,6 +663,7 @@ extern "C"{
     mOpenCV::cCvSparseMat::define_ruby_class();
     mOpenCV::cCvHistogram::define_ruby_class();
     mOpenCV::cCvCapture::define_ruby_class();
+    mOpenCV::cCvVideoWriter::define_ruby_class();
 
     mOpenCV::cCvLine::define_ruby_class();
     mOpenCV::cCvTwoPoints::define_ruby_class();

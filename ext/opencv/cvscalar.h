@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSCALAR namespace cCvScalar{
+#define __NAMESPACE_BEGIN_CVSCALAR namespace cCvScalar {
 #define __NAMESPACE_END_CVSCALAR }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -50,12 +50,16 @@ CVSCALAR(VALUE object)
 inline CvScalar
 VALUE_TO_CVSCALAR(VALUE object)
 {
-  if(FIXNUM_P(object))
+  ID aref_id;
+  if (FIXNUM_P(object))
     return cvScalarAll(FIX2INT(object));
-  return cvScalar(NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(0))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(1))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(2))),
-                  NUM2DBL(rb_funcall(object, rb_intern("[]"), 1, INT2FIX(3))));
+  else if (rb_respond_to(object, (aref_id = rb_intern("[]"))))
+    return cvScalar(NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(0))),
+		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(1))),
+		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(2))),
+		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(3))));
+  else
+    raise_compatible_typeerror(object, cCvScalar::rb_class());
 }
 
 __NAMESPACE_END_OPENCV

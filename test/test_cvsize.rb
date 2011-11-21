@@ -48,8 +48,8 @@ class TestCvSize < OpenCVTestCase
     assert_equal(10, size.width)
     assert_equal(20, size.height)
 
-    assert_raise(ArgumentError) {
-      CvSize.new('string')
+    assert_raise(TypeError) {
+      CvSize.new(DUMMY_OBJ)
     }
     assert_raise(ArgumentError) {
       CvSize.new(1, 2, 3)

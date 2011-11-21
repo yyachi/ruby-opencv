@@ -7,18 +7,14 @@ include OpenCV
 
 window = GUI::Window.new("face detect")
 capture = CvCapture.open
-detector = CvHaarClassifierCascade::load("C:/Program Files/OpenCV/data/haarcascades/haarcascade_frontalface_alt.xml")
+detector = CvHaarClassifierCascade::load("./data/haarcascades/haarcascade_frontalface_alt.xml")
 
-while true
-  key = GUI::wait_key(1)
+loop {
   image = capture.query
-  detector.detect_objects(image){|i|
-    image.rectangle! i.top_left, i.bottom_right, :color => CvColor::Red
+  detector.detect_objects(image).each { |rect|
+    image.rectangle! rect.top_left, rect.bottom_right, :color => CvColor::Red
   }
   window.show image
-  next unless key
-  case key.chr
-  when "\e"
-    exit
-  end
-end
+  break if GUI::wait_key(100)
+}
+

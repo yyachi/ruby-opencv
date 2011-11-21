@@ -10,10 +10,10 @@
 #ifndef RUBY_OPENCV_CVHAARCLASSIFIERCASCADE_H
 #define RUBY_OPENCV_CVHAARCLASSIFIERCASCADE_H
 
-#define __NAMESPACE_BEGIN_CVHAARCLASSIFERCASCADE namespace cCvHaarClassifierCascade{
+#define __NAMESPACE_BEGIN_CVHAARCLASSIFERCASCADE namespace cCvHaarClassifierCascade {
 #define __NAMESPACE_END_CVHAARCLASSIFERCASCADE }
 
-#include"opencv.h"
+#include "opencv.h"
 
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVHAARCLASSIFERCASCADE
@@ -28,7 +28,8 @@ VALUE rb_load(VALUE klass, VALUE path);
 VALUE rb_detect_objects(int argc, VALUE *argv, VALUE self);
 
 __NAMESPACE_END_CVHAARCLASSIFERCASCADE
-inline CvHaarClassifierCascade *CVHAARCLASSIFIERCASCADE(VALUE object) {
+inline CvHaarClassifierCascade*
+CVHAARCLASSIFIERCASCADE(VALUE object) {
   CvHaarClassifierCascade *ptr;
   Data_Get_Struct(object, CvHaarClassifierCascade, ptr);
   return ptr;

@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_IPLCONVKERNEL namespace cIplConvKernel{
+#define __NAMESPACE_BEGIN_IPLCONVKERNEL namespace cIplConvKernel {
 #define __NAMESPACE_END_IPLCONVKERNEL }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -36,16 +36,35 @@ inline IplConvKernel*
 IPLCONVKERNEL(VALUE object)
 {
   IplConvKernel *ptr;
+  Data_Get_Struct(object, IplConvKernel, ptr);
+  return ptr;
+}
+
+inline IplConvKernel*
+IPLCONVKERNEL_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cIplConvKernel::rb_class()))
+    raise_typeerror(object, cIplConvKernel::rb_class());
+  return IPLCONVKERNEL(object);
+}
+
+/*
+inline IplConvKernel*
+IPLCONVKERNEL(VALUE object)
+{
+  IplConvKernel *ptr;
   if (NIL_P(object))
     return NULL;
   else if (rb_obj_is_kind_of(object, cIplConvKernel::rb_class())) {
     Data_Get_Struct(object, IplConvKernel, ptr);
     return ptr;
-  } else {
+  }
+  else {
     rb_warn("invalid kernel. use default kernel (3x3 rectangle).");
     return NULL;
   }
 }
+*/
 
 __NAMESPACE_END_OPENCV
 

@@ -15,7 +15,7 @@
 #define RUBY_OPENCV_GUI_WINDOW_H
 
 #include "opencv.h"
-#define __NAMESPACE_BEGIN_WINDOW namespace cWindow{
+#define __NAMESPACE_BEGIN_WINDOW namespace cWindow {
 #define __NAMESPACE_END_WINDOW }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -28,7 +28,6 @@ VALUE rb_allocate(VALUE klass);
 
 void mark(void *ptr);
 VALUE each_protect(VALUE key, VALUE value);
-//VALUE each_protect(void *key, VALUE value);
 void free(void *ptr);
 
 VALUE rb_aref(VALUE klass, VALUE name);

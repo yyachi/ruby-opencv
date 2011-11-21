@@ -12,10 +12,10 @@
  * Document-class: OpenCV::CvClice
  *
  * C structure is here, very simple.
- *   typdef struct CvSlice{
+ *   typdef struct CvSlice {
  *     int start_index;
  *     int end_index;
- *   }CvSlice;
+ *   } CvSlice;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVSLICE
@@ -64,8 +64,9 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(VALUE self, VALUE start, VALUE end)
 {
-  CVSLICE(self)->start_index = NUM2INT(start);
-  CVSLICE(self)->end_index = NUM2INT(end);
+  CvSlice *self_ptr = CVSLICE(self);
+  self_ptr->start_index = NUM2INT(start);
+  self_ptr->end_index = NUM2INT(end);
   return self;
 }
 
@@ -99,7 +100,7 @@ rb_end_index_aref(VALUE self)
 VALUE
 rb_start_index_aset(VALUE self, VALUE index)
 {
-  CVSLICE(self)->start_index = FIX2INT(index);
+  CVSLICE(self)->start_index = NUM2INT(index);
   return self;
 }
 
@@ -111,7 +112,7 @@ rb_start_index_aset(VALUE self, VALUE index)
 VALUE
 rb_end_index_aset(VALUE self, VALUE index)
 {
-  CVSLICE(self)->end_index = FIX2INT(index);
+  CVSLICE(self)->end_index = NUM2INT(index);
   return self;
 }
 

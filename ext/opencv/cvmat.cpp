@@ -14,7 +14,7 @@
  * CvMat is basic 2D matrix class in OpenCV.
  *
  * C structure is here.
- *  typedef struct CvMat{
+ *  typedef struct CvMat {
  *    int type;
  *    int step;
  *    int *refcount;
@@ -40,55 +40,63 @@
  *  #else
  *    int rows; // number of row
  *    int cols; // number of columns
- *  }CvMat;
+ *  } CvMat;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
 
-#define SUPPORT_8UC1_ONLY(value) if (cvGetElemType(CVARR(value)) != CV_8UC1) {rb_raise(rb_eNotImpError, "support single-channel 8bit unsigned image only.");}
-#define SUPPORT_8U_ONLY(value) if (CV_MAT_DEPTH(cvGetElemType(CVARR(value))) != CV_8U) {rb_raise(rb_eNotImpError, "support 8bit unsigned image only.");}
-#define SUPPORT_C1_ONLY(value) if (CV_MAT_CN(cvGetElemType(CVARR(value))) != 1) {rb_raise(rb_eNotImpError, "support single-channel image only.");}
-#define SUPPORT_C1C3_ONLY(value) if (CV_MAT_CN(cvGetElemType(CVARR(value))) != 1 && CV_MAT_CN(cvGetElemType(CVARR(value))) != 3) {rb_raise(rb_eNotImpError, "support single-channel or 3-channnel image only.");}
+#define DRAWING_OPTION(opt) rb_get_option_table(rb_klass, "DRAWING_OPTION", opt)
+#define DO_COLOR(opt) VALUE_TO_CVSCALAR(LOOKUP_CVMETHOD(opt, "color"))
+#define DO_THICKNESS(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "thickness"))
+#define DO_LINE_TYPE(opt) rb_drawing_option_line_type(opt)
+#define DO_SHIFT(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "shift"))
+#define DO_IS_CLOSED(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "is_closed"))
 
-#define DRAWING_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("DRAWING_OPTION")), rb_intern("merge"), 1, op)
-#define DO_COLOR(op) VALUE_TO_CVSCALAR(rb_hash_aref(op, ID2SYM(rb_intern("color"))))
-#define DO_THICKNESS(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("thickness"))))
-#define DO_LINE_TYPE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("line_type"))))
-#define DO_SHIFT(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("shift"))))
-#define DO_IS_CLOSED(op) ({VALUE _is_closed = rb_hash_aref(op, ID2SYM(rb_intern("is_closed"))); NIL_P(_is_closed) ? 0 : _is_closed == Qfalse ? 0 : 1;})
+#define GOOD_FEATURES_TO_TRACK_OPTION(opt) rb_get_option_table(rb_klass, "GOOD_FEATURES_TO_TRACK_OPTION", opt)
+#define GF_MAX(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "max"))
+#define GF_MASK(opt) MASK(LOOKUP_CVMETHOD(opt, "mask"))
+#define GF_BLOCK_SIZE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "block_size"))
+#define GF_USE_HARRIS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "use_harris"))
+#define GF_K(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "k"))
 
-#define GOOD_FEATURES_TO_TRACK_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("GOOD_FEATURES_TO_TRACK_OPTION")), rb_intern("merge"), 1, op)
-#define GF_MAX(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("max"))))
-#define GF_MASK(op) MASK(rb_hash_aref(op, ID2SYM(rb_intern("mask"))))
-#define GF_BLOCK_SIZE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define GF_USE_HARRIS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("use_harris"))), 0)
-#define GF_K(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("k"))))
+#define FLOOD_FILL_OPTION(opt) rb_get_option_table(rb_klass, "FLOOD_FILL_OPTION", opt)
+#define FF_CONNECTIVITY(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "connectivity"))
+#define FF_FIXED_RANGE(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "fixed_range"))
+#define FF_MASK_ONLY(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "mask_only"))
 
-#define FLOOD_FILL_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FLOOD_FILL_OPTION")), rb_intern("merge"), 1, op)
-#define FF_CONNECTIVITY(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("connectivity"))))
-#define FF_FIXED_RANGE(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("fixed_range"))), 0)
-#define FF_MASK_ONLY(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("mask_only"))), 0)
+#define FIND_CONTOURS_OPTION(opt) rb_get_option_table(rb_klass, "FIND_CONTOURS_OPTION", opt)
+#define FC_MODE(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "mode"))
+#define FC_METHOD(opt) NUM2INT(LOOKUP_CVMETHOD(opt, "method"))
+#define FC_OFFSET(opt) VALUE_TO_CVPOINT(LOOKUP_CVMETHOD(opt, "offset"))
 
-#define FIND_CONTOURS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_CONTOURS_OPTION")), rb_intern("merge"), 1, op)
-#define FC_MODE(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("mode"))))
-#define FC_METHOD(op) FIX2INT(rb_hash_aref(op, ID2SYM(rb_intern("method"))))
-#define FC_OFFSET(op)VALUE_TO_CVPOINT(rb_hash_aref(op, ID2SYM(rb_intern("offset"))))
+#define OPTICAL_FLOW_HS_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_HS_OPTION", opt)
+#define HS_LAMBDA(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "lambda"))
+#define HS_CRITERIA(opt) VALUE_TO_CVTERMCRITERIA(LOOKUP_CVMETHOD(opt, "criteria"))
 
-#define OPTICAL_FLOW_HS_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_HS_OPTION")), rb_intern("merge"), 1, op)
-#define HS_LAMBDA(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("lambda"))))
-#define HS_CRITERIA(op) VALUE_TO_CVTERMCRITERIA(rb_hash_aref(op, ID2SYM(rb_intern("criteria"))))
+#define OPTICAL_FLOW_BM_OPTION(opt) rb_get_option_table(rb_klass, "OPTICAL_FLOW_BM_OPTION", opt)
+#define BM_BLOCK_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "block_size"))
+#define BM_SHIFT_SIZE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "shift_size"))
+#define BM_MAX_RANGE(opt) VALUE_TO_CVSIZE(LOOKUP_CVMETHOD(opt, "max_range"))
 
-#define OPTICAL_FLOW_BM_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("OPTICAL_FLOW_BM_OPTION")), rb_intern("merge"), 1, op)
-#define BM_BLOCK_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("block_size"))))
-#define BM_SHIFT_SIZE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("shift_size"))))
-#define BM_MAX_RANGE(op) VALUE_TO_CVSIZE(rb_hash_aref(op, ID2SYM(rb_intern("max_range"))))
-
-#define FIND_FUNDAMENTAL_MAT_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("FIND_FUNDAMENTAL_MAT_OPTION")), rb_intern("merge"), 1, op)
-#define FFM_WITH_STATUS(op) TRUE_OR_FALSE(rb_hash_aref(op, ID2SYM(rb_intern("with_status"))), 0)
-#define FFM_MAXIMUM_DISTANCE(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("maximum_distance"))))
-#define FFM_DESIRABLE_LEVEL(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("desirable_level"))))
+#define FIND_FUNDAMENTAL_MAT_OPTION(opt) rb_get_option_table(rb_klass, "FIND_FUNDAMENTAL_MAT_OPTION", opt)
+#define FFM_WITH_STATUS(opt) TRUE_OR_FALSE(LOOKUP_CVMETHOD(opt, "with_status"))
+#define FFM_MAXIMUM_DISTANCE(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "maximum_distance"))
+#define FFM_DESIRABLE_LEVEL(opt) NUM2DBL(LOOKUP_CVMETHOD(opt, "desirable_level"))
 
 VALUE rb_klass;
+
+int
+rb_drawing_option_line_type(VALUE drawing_option)
+{
+  VALUE line_type = LOOKUP_CVMETHOD(drawing_option, "line_type");
+  if (FIXNUM_P(line_type)) {
+    return FIX2INT(line_type);
+  }
+  else if (line_type == ID2SYM(rb_intern("aa"))) {
+    return CV_AA;
+  }
+  return 0;
+}
 
 VALUE
 rb_class()
@@ -187,11 +195,8 @@ void define_ruby_class()
   rb_define_method(rb_klass, "to_CvMat", RUBY_METHOD_FUNC(rb_to_CvMat), 0);
   rb_define_method(rb_klass, "sub_rect", RUBY_METHOD_FUNC(rb_sub_rect), -2);
   rb_define_alias(rb_klass, "subrect", "sub_rect");
-  rb_define_method(rb_klass, "slice_width", RUBY_METHOD_FUNC(rb_slice_width), 1);
-  rb_define_method(rb_klass, "slice_height", RUBY_METHOD_FUNC(rb_slice_height), 1);
-  rb_define_method(rb_klass, "row", RUBY_METHOD_FUNC(rb_row), -2);
-  rb_define_method(rb_klass, "col", RUBY_METHOD_FUNC(rb_col), -2);
-  rb_define_alias(rb_klass, "column", "col");
+  rb_define_method(rb_klass, "get_rows", RUBY_METHOD_FUNC(rb_get_rows), -2);
+  rb_define_method(rb_klass, "get_cols", RUBY_METHOD_FUNC(rb_get_cols), -2);
   rb_define_method(rb_klass, "each_row", RUBY_METHOD_FUNC(rb_each_row), 0);
   rb_define_method(rb_klass, "each_col", RUBY_METHOD_FUNC(rb_each_col), 0);
   rb_define_alias(rb_klass, "each_column", "each_col");
@@ -214,8 +219,8 @@ void define_ruby_class()
   rb_define_alias(rb_klass, "set_zero!", "clear!");
   rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
   rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
-  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), -1);
-  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), -1);
+  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);
+  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), 2);
 
   rb_define_method(rb_klass, "reshape", RUBY_METHOD_FUNC(rb_reshape), 1);
   rb_define_method(rb_klass, "repeat", RUBY_METHOD_FUNC(rb_repeat), 1);
@@ -263,12 +268,10 @@ void define_ruby_class()
   rb_define_method(rb_klass, "cross_product", RUBY_METHOD_FUNC(rb_cross_product), 1);
   rb_define_method(rb_klass, "transform", RUBY_METHOD_FUNC(rb_transform), -1);
   rb_define_method(rb_klass, "perspective_transform", RUBY_METHOD_FUNC(rb_perspective_transform), 1);
-  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -2);
+  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -1);
   rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
   rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
   rb_define_alias(rb_klass, "t", "transpose");
-  rb_define_method(rb_klass, "transpose!", RUBY_METHOD_FUNC(rb_transpose_bang), 0);
-  rb_define_alias(rb_klass, "t!", "transpose!");
   rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
   rb_define_alias(rb_klass, "determinant", "det");
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
@@ -320,38 +323,20 @@ void define_ruby_class()
   rb_define_singleton_method(rb_klass, "rotation_matrix2D", RUBY_METHOD_FUNC(rb_rotation_matrix2D), 3);
   rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
   rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
-  //rb_define_method(rb_klass, "get_perspective_transform", RUBY_METHOD_FUNC(rb_get_perspective_transform), -1);
-  //rb_define_alias(rb_klass, "warp_perspective_q_matrix", "get_perspective_transform");
   rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
-  //rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
+  rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
 
   rb_define_method(rb_klass, "erode", RUBY_METHOD_FUNC(rb_erode), -1);
   rb_define_method(rb_klass, "erode!", RUBY_METHOD_FUNC(rb_erode_bang), -1);
   rb_define_method(rb_klass, "dilate", RUBY_METHOD_FUNC(rb_dilate), -1);
   rb_define_method(rb_klass, "dilate!", RUBY_METHOD_FUNC(rb_dilate_bang), -1);
   rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
-  rb_define_method(rb_klass, "morphology_open", RUBY_METHOD_FUNC(rb_morphology_open), -1);
-  rb_define_method(rb_klass, "morphology_close", RUBY_METHOD_FUNC(rb_morphology_close), -1);
-  rb_define_method(rb_klass, "morphology_gradient", RUBY_METHOD_FUNC(rb_morphology_gradient), -1);
-  rb_define_method(rb_klass, "morphology_tophat", RUBY_METHOD_FUNC(rb_morphology_tophat), -1);
-  rb_define_method(rb_klass, "morphology_blackhat", RUBY_METHOD_FUNC(rb_morphology_blackhat), -1);
 
   rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
-  rb_define_method(rb_klass, "smooth_blur_no_scale", RUBY_METHOD_FUNC(rb_smooth_blur_no_scale), -1);
-  rb_define_method(rb_klass, "smooth_blur", RUBY_METHOD_FUNC(rb_smooth_blur), -1);
-  rb_define_method(rb_klass, "smooth_gaussian", RUBY_METHOD_FUNC(rb_smooth_gaussian), -1);
-  rb_define_method(rb_klass, "smooth_median", RUBY_METHOD_FUNC(rb_smooth_median), -1);
-  rb_define_method(rb_klass, "smooth_bilateral", RUBY_METHOD_FUNC(rb_smooth_bilateral), -1);
+  rb_define_method(rb_klass, "copy_make_border", RUBY_METHOD_FUNC(rb_copy_make_border), -1);
   rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
-  rb_define_method(rb_klass, "copy_make_border_constant", RUBY_METHOD_FUNC(rb_copy_make_border_constant), -1);
-  rb_define_method(rb_klass, "copy_make_border_replicate", RUBY_METHOD_FUNC(rb_copy_make_border_replicate), -1);
   rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
   rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
-  rb_define_method(rb_klass, "threshold_binary", RUBY_METHOD_FUNC(rb_threshold_binary), -1);
-  rb_define_method(rb_klass, "threshold_binary_inverse", RUBY_METHOD_FUNC(rb_threshold_binary_inverse), -1);
-  rb_define_method(rb_klass, "threshold_trunc", RUBY_METHOD_FUNC(rb_threshold_trunc), -1);
-  rb_define_method(rb_klass, "threshold_to_zero", RUBY_METHOD_FUNC(rb_threshold_to_zero), -1);
-  rb_define_method(rb_klass, "threshold_to_zero_inverse", RUBY_METHOD_FUNC(rb_threshold_to_zero_inverse), -1);
 
   rb_define_method(rb_klass, "pyr_down", RUBY_METHOD_FUNC(rb_pyr_down), -1);
   rb_define_method(rb_klass, "pyr_up", RUBY_METHOD_FUNC(rb_pyr_up), -1);
@@ -360,30 +345,20 @@ void define_ruby_class()
   rb_define_method(rb_klass, "flood_fill!", RUBY_METHOD_FUNC(rb_flood_fill_bang), -1);
   rb_define_method(rb_klass, "find_contours", RUBY_METHOD_FUNC(rb_find_contours), -1);
   rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
-  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), -1);
+  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), 3);
   rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
   rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
 
   rb_define_method(rb_klass, "moments", RUBY_METHOD_FUNC(rb_moments), -1);
 
   rb_define_method(rb_klass, "hough_lines", RUBY_METHOD_FUNC(rb_hough_lines), -1);
-  rb_define_method(rb_klass, "hough_lines_standard", RUBY_METHOD_FUNC(rb_hough_lines_standard), 3);
-  rb_define_method(rb_klass, "hough_lines_probabilistic", RUBY_METHOD_FUNC(rb_hough_lines_probabilistic), 5);
-  rb_define_method(rb_klass, "hough_lines_multi_scale", RUBY_METHOD_FUNC(rb_hough_lines_multi_scale), 5);
   rb_define_method(rb_klass, "hough_circles", RUBY_METHOD_FUNC(rb_hough_circles), -1);
-  rb_define_method(rb_klass, "hough_circles_gradient", RUBY_METHOD_FUNC(rb_hough_circles_gradient), -1);
-  //rb_define_method(rb_klass, "dist_transform", RUBY_METHOD_FUNC(rb_dist_transform), -1);
 
   rb_define_method(rb_klass, "inpaint", RUBY_METHOD_FUNC(rb_inpaint), 3);
-  rb_define_method(rb_klass, "inpaint_ns", RUBY_METHOD_FUNC(rb_inpaint_ns), 2);
-  rb_define_method(rb_klass, "inpaint_telea", RUBY_METHOD_FUNC(rb_inpaint_telea), 2);
 
   rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
   rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
   rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
-  rb_define_method(rb_klass, "match_shapes_i1", RUBY_METHOD_FUNC(rb_match_shapes_i1), -1);
-  rb_define_method(rb_klass, "match_shapes_i2", RUBY_METHOD_FUNC(rb_match_shapes_i2), -1);
-  rb_define_method(rb_klass, "match_shapes_i3", RUBY_METHOD_FUNC(rb_match_shapes_i3), -1);
 
   rb_define_method(rb_klass, "mean_shift", RUBY_METHOD_FUNC(rb_mean_shift), 2);
   rb_define_method(rb_klass, "cam_shift", RUBY_METHOD_FUNC(rb_cam_shift), 2);
@@ -393,18 +368,12 @@ void define_ruby_class()
   rb_define_method(rb_klass, "optical_flow_lk", RUBY_METHOD_FUNC(rb_optical_flow_lk), 2);
   rb_define_method(rb_klass, "optical_flow_bm", RUBY_METHOD_FUNC(rb_optical_flow_bm), -1);
 
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_7point",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_7point), 2);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_8point",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_8point), 2);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_ransac",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_ransac), -1);
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat_lmeds",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat_lmeds), -1);
   rb_define_singleton_method(rb_klass, "find_fundamental_mat",
 			     RUBY_METHOD_FUNC(rb_find_fundamental_mat), -1);
   rb_define_singleton_method(rb_klass, "compute_correspond_epilines",
 			     RUBY_METHOD_FUNC(rb_compute_correspond_epilines), 3);
+
+  rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
 
   rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
 }
@@ -433,8 +402,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE row, column, depth, channel;
   rb_scan_args(argc, argv, "22", &row, &column, &depth, &channel);
 
-  CvMat *ptr = rb_cvCreateMat(FIX2INT(row), FIX2INT(column),
-			      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), argc < 4 ? 3 : FIX2INT(channel)));
+  int ch = (argc < 4) ? 3 : NUM2INT(channel);
+  CvMat *ptr = rb_cvCreateMat(NUM2INT(row), NUM2INT(column),
+			      CV_MAKETYPE(CVMETHOD("DEPTH", depth, CV_8U), ch));
   free(DATA_PTR(self));
   DATA_PTR(self) = ptr;
 
@@ -465,7 +435,7 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
   Check_Type(filename, T_STRING);
 
   int _iscolor;
-  if (TYPE(iscolor) == T_NIL) {
+  if (NIL_P(iscolor)) {
     _iscolor = CV_LOAD_IMAGE_COLOR;
   }
   else {
@@ -473,13 +443,18 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
     _iscolor = FIX2INT(iscolor);
   }
 
-  CvMat *mat;
-  if ((mat = cvLoadImageM(StringValueCStr(filename), _iscolor)) == NULL) {
+  CvMat *mat = NULL;
+  try {
+    mat = cvLoadImageM(StringValueCStr(filename), _iscolor);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  if (mat == NULL) {
     rb_raise(rb_eStandardError, "file does not exist or invalid format image.");
   }
   return OPENCV_OBJECT(rb_klass, mat);
 }
-
 
 /*
  * nodoc
@@ -487,22 +462,6 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_method_missing(int argc, VALUE *argv, VALUE self)
 {
-  /*
-  const char *to_str = "\\Ato_(\\w+)";
-  VALUE name, args, str[3], method;
-  rb_scan_args(argc, argv, "1*", &name, &args);
-  if (RARRAY_LEN(args) != 0)
-    return rb_call_super(argc, argv);
-  if(rb_reg_match(rb_reg_new(to_str, strlen(to_str), 0), rb_funcall(name, rb_intern("to_s"), 0)) == Qnil)
-    return rb_call_super(argc, argv);
-  str[0] = rb_str_new2("%s2%s");
-  str[1] = rb_color_model(self);
-  str[2] = rb_reg_nth_match(1, rb_backref_get());
-  method = rb_f_sprintf(3, str);
-  if (rb_respond_to(rb_module_opencv(), rb_intern(StringValuePtr(method))))
-    return rb_funcall(rb_module_opencv(), rb_intern(StringValuePtr(method)), 1, self);
-  return rb_call_super(argc, argv);
-  */
   VALUE name, args, method;
   rb_scan_args(argc, argv, "1*", &name, &args);
   method = rb_funcall(name, rb_intern("to_s"), 0);
@@ -549,9 +508,11 @@ rb_inside_q(VALUE self, VALUE object)
     if (cCvRect::rb_compatible_q(cCvRect::rb_class(), object)) {
       int width = NUM2INT(rb_funcall(object, rb_intern("width"), 0));
       int height = NUM2INT(rb_funcall(object, rb_intern("height"), 0));
-      return x >= 0 && y >= 0 && x < mat->width && x + width < mat->width && y < mat->height && y + height < mat->height ? Qtrue : Qfalse;
-    } else {
-      return x >= 0 && y >= 0 && x < mat->width && y < mat->height ? Qtrue : Qfalse;
+      return (x >= 0) && (y >= 0) && (x < mat->width) && ((x + width) < mat->width)
+	&& (y < mat->height) && ((y + height) < mat->height) ? Qtrue : Qfalse;
+    }
+    else {
+      return (x >= 0) && (y >= 0) && (x < mat->width) && (y < mat->height) ? Qtrue : Qfalse;
     }
   }
   rb_raise(rb_eArgError, "argument 1 should have method \"x\", \"y\"");
@@ -583,7 +544,12 @@ VALUE
 rb_create_mask(VALUE self)
 {
   VALUE mask = cCvMat::new_object(cvGetSize(CVARR(self)), CV_8UC1);
-  cvZero(CVARR(self));
+  try {
+    cvZero(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return mask;
 }
 
@@ -620,7 +586,8 @@ rb_height(VALUE self)
 VALUE
 rb_depth(VALUE self)
 {
-  return rb_hash_aref(rb_funcall(rb_const_get(rb_module_opencv(), rb_intern("DEPTH")), rb_intern("invert"), 0), INT2FIX(CV_MAT_DEPTH(CVMAT(self)->type)));
+  return rb_hash_aref(rb_funcall(rb_const_get(rb_module_opencv(), rb_intern("DEPTH")), rb_intern("invert"), 0),
+		      INT2FIX(CV_MAT_DEPTH(CVMAT(self)->type)));
 }
 
 /*
@@ -672,7 +639,12 @@ VALUE
 rb_clone(VALUE self)
 {
   VALUE clone = rb_obj_clone(self);
-  DATA_PTR(clone) = cvClone(CVARR(self));
+  try {
+    DATA_PTR(clone) = cvClone(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return clone;
 }
 
@@ -711,21 +683,36 @@ rb_copy(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "01", &value);
   if (argc == 0) {
     copied = new_mat_kind_object(size, self);
-    cvCopy(src, CVMAT(copied));
+    try {
+      cvCopy(src, CVMAT(copied));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return copied;
   }
   else {
     if (rb_obj_is_kind_of(value, rb_klass)) {
-      cvCopy(src, CVMAT(value));
+      try {
+	cvCopy(src, CVMAT(value));
+      }
+      catch (cv::Exception& e) {
+	raise_cverror(e);
+      }
       return Qnil;
     }
-    else if (rb_obj_is_kind_of(value, rb_cFixnum)) {
+    else if (FIXNUM_P(value)) {
       int n = FIX2INT(value);
       if (n > 0) {
         copied = rb_ary_new2(n);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; ++i) {
 	  VALUE tmp = new_mat_kind_object(size, self);
-	  cvCopy(src, CVMAT(tmp));
+	  try {
+	    cvCopy(src, CVMAT(tmp));
+	  }
+	  catch (cv::Exception& e) {
+	    raise_cverror(e);
+	  }
           rb_ary_store(copied, i, tmp);
         }
         return copied;
@@ -745,6 +732,19 @@ copy(VALUE mat)
   return rb_clone(mat);
 }
 
+inline VALUE
+rb_to_X_internal(VALUE self, int depth)
+{
+  CvMat *src = CVMAT(self);
+  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(depth, CV_MAT_CN(src->type)));
+  try {
+    cvConvert(src, CVMAT(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return dest;
+}
 
 /*
  * call-seq:
@@ -755,10 +755,7 @@ copy(VALUE mat)
 VALUE
 rb_to_8u(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_8U, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_8U);
 }
 
 /*
@@ -770,10 +767,7 @@ rb_to_8u(VALUE self)
 VALUE
 rb_to_8s(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_8S, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_8S);
 }
 
 /*
@@ -784,10 +778,7 @@ rb_to_8s(VALUE self)
  */
 VALUE rb_to_16u(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_16U, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_16U);
 }
 
 /*
@@ -799,10 +790,7 @@ VALUE rb_to_16u(VALUE self)
 VALUE
 rb_to_16s(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_16S, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_16S);
 }
 
 /*
@@ -814,10 +802,7 @@ rb_to_16s(VALUE self)
 VALUE
 rb_to_32s(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_32S, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_32S);
 }
 
 /*
@@ -829,10 +814,7 @@ rb_to_32s(VALUE self)
 VALUE
 rb_to_32f(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_32F, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_32F);
 }
 
 /*
@@ -844,10 +826,7 @@ rb_to_32f(VALUE self)
 VALUE
 rb_to_64f(VALUE self)
 {
-  CvMat *src = CVMAT(self);
-  VALUE dest = new_object(src->rows, src->cols, CV_MAKETYPE(CV_64F, CV_MAT_CN(src->type)));
-  cvConvert(src, CVMAT(dest));
-  return dest;
+  return rb_to_X_internal(self, CV_64F);
 }
 
 /*
@@ -890,11 +869,18 @@ rb_square_q(VALUE self)
 VALUE
 rb_to_CvMat(VALUE self)
 {
-  // CvMat#to_CvMat aborts when self's class is CvMat. (I don't know why...)
+  // CvMat#to_CvMat aborts when self's class is CvMat.
   if (CLASS_OF(self) == rb_klass)
     return self;
-  
-  return DEPEND_OBJECT(rb_klass, cvGetMat(CVARR(self), RB_CVALLOC(CvMat)), self);
+
+  CvMat *mat = NULL;
+  try {
+    mat = cvGetMat(CVARR(self), RB_CVALLOC(CvMat));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(rb_klass, mat, self);
 }
 
 /*
@@ -937,123 +923,93 @@ rb_sub_rect(VALUE self, VALUE args)
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%ld of 1 or 2 or 4)", RARRAY_LEN(args));
   }
-  return DEPEND_OBJECT(rb_klass,
-                       cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), area),
-                       self);
-}
 
-/*
- * call-seq:
- *   slice_width(<i>n</i>)
- *
- * The matrix is divided into <i>n</i> piece by the width.
- * If it cannot be just divided, warning is displayed.
- *
- * e.g.
- *   m = OpenCV::CvMat.new(10, 10) #=> size 10x10 matrix
- *   ml, mr = m.slice_width(2)     #=> 5x10 and 5x10 matrix
- *
- *   ml, mm, mr = m.slice_width(3)#=> 3x10 3x10 3x10 matrix
- *   warning : width does not div correctly.
- */
-VALUE
-rb_slice_width(VALUE self, VALUE num)
-{
-  int n = NUM2INT(num);
-  if (n < 1) {rb_raise(rb_eArgError, "number of piece should be > 0");}
-  CvSize size = cvGetSize(CVARR(self));
-  if (size.width % n != 0) {rb_warn("width does not div correctly.");}
-  int div_x = size.width / n;
-  VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; i++) {
-    CvRect rect = {div_x * i, 0, div_x, size.height};
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
+  CvMat* mat = NULL;
+  try {
+    mat = cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), area);
   }
-  return ary;
-}
-
-/*
- * call-seq:
- *   slice_height(<i>n</i>)
- *
- * The matrix is divided into <i>n</i> piece by the height.
- * If it cannot be just divided, warning is displayed.
- *
- * see also #slice_width.
- */
-VALUE
-rb_slice_height(VALUE self, VALUE num)
-{
-  int n = NUM2INT(num);
-  if (n < 1) {rb_raise(rb_eArgError, "number of piece should be > 0");}
-  CvSize size = cvGetSize(CVARR(self));
-  if (size.height % n != 0) {rb_warn("height does not div correctly.");}
-  int div_y = size.height / n;
-  VALUE ary = rb_ary_new2(n);
-  for (int i = 0; i < n; i++) {
-    CvRect rect = {0, div_y * i, size.width, div_y};
-    rb_ary_push(ary, DEPEND_OBJECT(rb_klass, cvGetSubRect(CVARR(self), RB_CVALLOC(CvMat), rect), self));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
-  return ary;
+  return DEPEND_OBJECT(rb_klass, mat, self);
 }
 
 /*
  * call-seq:
- *   row(<i>n</i>)            -> Return row
- *   row(<i>n1, n2, ...</i>)  -> Return Array of row
+ *   get_rows(<i>n</i>)            -> Return row
+ *   get_rows(<i>n1, n2, ...</i>)  -> Return Array of row
  *
  * Return row(or rows) of matrix.
  * argument should be Fixnum or CvSlice compatible object.
  */
 VALUE
-rb_row(VALUE self, VALUE args)
+rb_get_rows(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
-  if (len < 1) {rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");}
+  if (len < 1)
+    rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");
   VALUE ary = rb_ary_new2(len);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; ++i) {
     VALUE value = rb_ary_entry(args, i);
-    if (FIXNUM_P(value)) {
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
-    }else{
-      CvSlice slice = VALUE_TO_CVSLICE(value);
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetRows(CVARR(self), RB_CVALLOC(CvMat),
-							     slice.start_index, slice.end_index), self));
+    
+    CvMat* row = NULL;
+    try {
+      if (FIXNUM_P(value))
+	row = cvGetRow(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value));
+      else {
+	CvSlice slice = VALUE_TO_CVSLICE(value);
+	row = cvGetRows(CVARR(self), RB_CVALLOC(CvMat), slice.start_index, slice.end_index);
+      }
     }
+    catch (cv::Exception& e) {
+      if (row != NULL)
+	cvReleaseMat(&row);
+      raise_cverror(e);
+    }
+    rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, row, self));
   }
   return RARRAY_LEN(ary) > 1 ? ary : rb_ary_entry(ary, 0);
 }
 
 /*
  * call-seq:
- *   col(<i>n</i>)            -> Return column
- *   col(<i>n1, n2, ...</i>)  -> Return Array of columns
+ *   get_cols(<i>n</i>)            -> Return column
+ *   get_cols(<i>n1, n2, ...</i>)  -> Return Array of columns
  *
  * Return column(or columns) of matrix.
  * argument should be Fixnum or CvSlice compatible object.
  */
 VALUE
-rb_col(VALUE self, VALUE args)
+rb_get_cols(VALUE self, VALUE args)
 {
   int len = RARRAY_LEN(args);
-  if (len < 1) {rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");}
+  if (len < 1)
+    rb_raise(rb_eArgError, "wrong number of argument.(more than 1)");
   VALUE ary = rb_ary_new2(len);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; ++i) {
     VALUE value = rb_ary_entry(args, i);
-    if (FIXNUM_P(value)) {
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value)), self));
-    }else{
-      CvSlice slice = VALUE_TO_CVSLICE(value);
-      rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, cvGetCols(CVARR(self), RB_CVALLOC(CvMat),
-							     slice.start_index, slice.end_index), self));
+    CvMat* col = NULL;
+    try {
+      if (FIXNUM_P(value))
+	col = cvGetCol(CVARR(self), RB_CVALLOC(CvMat), FIX2INT(value));
+      else {
+	CvSlice slice = VALUE_TO_CVSLICE(value);
+	col = cvGetCols(CVARR(self), RB_CVALLOC(CvMat), slice.start_index, slice.end_index);
+      }
     }
+    catch (cv::Exception& e) {
+      if (col != NULL)
+	cvReleaseMat(&col);
+      raise_cverror(e);
+    }
+    rb_ary_store(ary, i, DEPEND_OBJECT(rb_klass, col, self));
   }
   return RARRAY_LEN(ary) > 1 ? ary : rb_ary_entry(ary, 0);
 }
 
 /*
  * call-seq:
- *   each_row{|row| ... } -> self
+ *   each_row {|row| ... } -> self
  *
  * Calls block once for each row in self, passing that element as a parameter.
  *
@@ -1063,15 +1019,24 @@ VALUE
 rb_each_row(VALUE self)
 {
   int rows = CVMAT(self)->rows;
-  for (int i = 0; i < rows; i++) {
-    rb_yield(DEPEND_OBJECT(rb_klass, cvGetRow(CVARR(self), RB_CVALLOC(CvMat), i), self));
+  CvMat* row = NULL;
+  for (int i = 0; i < rows; ++i) {
+    try {
+      row = cvGetRow(CVARR(self), RB_CVALLOC(CvMat), i);
+    }
+    catch (cv::Exception& e) {
+      if (row != NULL)
+	cvReleaseMat(&row);
+      raise_cverror(e);
+    }
+    rb_yield(DEPEND_OBJECT(rb_klass, row, self));
   }
   return self;
 }
 
 /*
  * call-seq:
- *   each_col{|col| ... } -> self
+ *   each_col {|col| ... } -> self
  *
  * Calls block once for each column in self, passing that element as a parameter.
  *
@@ -1081,8 +1046,17 @@ VALUE
 rb_each_col(VALUE self)
 {
   int cols = CVMAT(self)->cols;
-  for (int i = 0; i < cols; i++) {
-    rb_yield(DEPEND_OBJECT(rb_klass, cvGetCol(CVARR(self), RB_CVALLOC(CvMat), i), self));
+  CvMat *col = NULL;
+  for (int i = 0; i < cols; ++i) {
+    try {
+      col = cvGetCol(CVARR(self), RB_CVALLOC(CvMat), i);
+    }
+    catch (cv::Exception& e) {
+      if (col != NULL)
+	cvReleaseMat(&col);
+      raise_cverror(e);
+    }
+    rb_yield(DEPEND_OBJECT(rb_klass, col, self));
   }
   return self;
 }
@@ -1092,17 +1066,24 @@ rb_each_col(VALUE self)
  *   diag(<i>[val = 0]</i>) -> cvmat
  *
  * Return one of array diagonals.
- * <i>val</i> is zeo corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
+ * <i>val</i> is zero corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
  *
  */
 VALUE
 rb_diag(int argc, VALUE *argv, VALUE self)
 {
   VALUE val;
-  if (rb_scan_args(argc, argv, "01", &val) < 1) {
+  if (rb_scan_args(argc, argv, "01", &val) < 1)
     val = INT2FIX(0);
+  CvMat* diag = NULL;
+  try {
+    diag = cvGetDiag(CVARR(self), RB_CVALLOC(CvMat), NUM2INT(val));
   }
-  return DEPEND_OBJECT(rb_klass, cvGetDiag(CVARR(self), RB_CVALLOC(CvMat), NUM2INT(val)), self);
+  catch (cv::Exception& e) {
+    cvReleaseMat(&diag);
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(rb_klass, diag, self);
 }
 
 /*
@@ -1114,14 +1095,15 @@ rb_diag(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_size(VALUE self)
 {
-  return cCvSize::new_object(cvGetSize(CVARR(self)));
-}
-
-/*
-  VALUE rb_elem_type(VALUE self) {
-  return INT2FIX(cvGetElemType(CVARR(self)));
+  CvSize size;
+  try {
+    size = cvGetSize(CVARR(self));
   }
-*/
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvSize::new_object(size);
+}
 
 /*
  * call-seq:
@@ -1134,9 +1116,15 @@ VALUE
 rb_dims(VALUE self)
 {
   int size[CV_MAX_DIM];
-  int dims = cvGetDims(CVARR(self), size);
+  int dims = 0;
+  try {
+    dims = cvGetDims(CVARR(self), size);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   VALUE ary = rb_ary_new2(dims);
-  for (int i = 0; i < dims; i++) {
+  for (int i = 0; i < dims; ++i) {
     rb_ary_store(ary, i, INT2FIX(size[i]));
   }
   return ary;
@@ -1153,7 +1141,14 @@ rb_dims(VALUE self)
 VALUE
 rb_dim_size(VALUE self, VALUE index)
 {
-  return INT2FIX(cvGetDimSize(CVARR(self), FIX2INT(index)));
+  int dimsize = 0;
+  try {
+    dimsize = cvGetDimSize(CVARR(self), NUM2INT(index));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return INT2FIX(dimsize);
 }
 
 /*
@@ -1166,21 +1161,26 @@ VALUE
 rb_aref(VALUE self, VALUE args)
 {
   int index[CV_MAX_DIM];
-  for (int i = 0; i < RARRAY_LEN(args); i++) {
+  for (int i = 0; i < RARRAY_LEN(args); ++i)
     index[i] = NUM2INT(rb_ary_entry(args, i));
-  }
+  
   CvScalar scalar = cvScalarAll(0);
-  switch(RARRAY_LEN(args)) {
-  case 1:
-    scalar = cvGet1D(CVARR(self), index[0]);
-    break;
-  case 2:
-    scalar = cvGet2D(CVARR(self), index[0], index[1]);
-    break;
-  default:
-    scalar = cvGetND(CVARR(self), index);
+  try {
+    switch (RARRAY_LEN(args)) {
+    case 1:
+      scalar = cvGet1D(CVARR(self), index[0]);
+      break;
+    case 2:
+      scalar = cvGet2D(CVARR(self), index[0], index[1]);
+      break;
+    default:
+      scalar = cvGetND(CVARR(self), index);
+      break;      
+    }
   }
-
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return cCvScalar::new_object(scalar);
 }
 
@@ -1196,18 +1196,24 @@ rb_aset(VALUE self, VALUE args)
 {
   CvScalar scalar = VALUE_TO_CVSCALAR(rb_ary_pop(args));
   int index[CV_MAX_DIM];
-  for (int i = 0; i < RARRAY_LEN(args); i++) {
+  for (int i = 0; i < RARRAY_LEN(args); ++i)
     index[i] = NUM2INT(rb_ary_entry(args, i));
+
+  try {
+    switch (RARRAY_LEN(args)) {
+    case 1:
+      cvSet1D(CVARR(self), index[0], scalar);
+      break;
+    case 2:
+      cvSet2D(CVARR(self), index[0], index[1], scalar);
+      break;
+    default:
+      cvSetND(CVARR(self), index, scalar);
+      break;
+    }
   }
-  switch(RARRAY_LEN(args)) {
-  case 1:
-    cvSet1D(CVARR(self), index[0], scalar);
-    break;
-  case 2:
-    cvSet2D(CVARR(self), index[0], index[1], scalar);
-    break;
-  default:
-    cvSetND(CVARR(self), index, scalar);
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return self;
 }
@@ -1235,7 +1241,7 @@ rb_set_data(VALUE self, VALUE data)
       ((uchar*)array)[i] = (uchar)(NUM2INT(rb_ary_entry(data, i)));
     break;
   case CV_8S:
-   array = rb_cvAlloc(sizeof(char) * DATA_LEN);
+    array = rb_cvAlloc(sizeof(char) * DATA_LEN);
     for (int i = 0; i < DATA_LEN; ++i)
       ((char*)array)[i] = (char)(NUM2INT(rb_ary_entry(data, i)));
     break;
@@ -1265,9 +1271,16 @@ rb_set_data(VALUE self, VALUE data)
       ((double*)array)[i] = NUM2DBL(rb_ary_entry(data, i));
     break;
   default:
-    rb_raise(rb_eTypeError, "Invalid CvMat depth");
+    rb_raise(rb_eArgError, "Invalid CvMat depth");
+    break;
   }
-  cvSetData(self_ptr, array, self_ptr->step);
+
+  try {
+    cvSetData(self_ptr, array, self_ptr->step);    
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 
   return self;
 }
@@ -1304,7 +1317,12 @@ rb_fill_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE value, mask;
   rb_scan_args(argc, argv, "11", &value, &mask);
-  cvSet(CVARR(self), VALUE_TO_CVSCALAR(value), MASK(mask));
+  try {
+    cvSet(CVARR(self), VALUE_TO_CVSCALAR(value), MASK(mask));    
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1324,7 +1342,12 @@ VALUE
 rb_save_image(VALUE self, VALUE filename)
 {
   Check_Type(filename, T_STRING);
-  cvSaveImage(StringValueCStr(filename), CVARR(self));
+  try {
+    cvSaveImage(StringValueCStr(filename), CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1349,7 +1372,12 @@ rb_clear(VALUE self)
 VALUE
 rb_clear_bang(VALUE self)
 {
-  cvSetZero(CVARR(self));
+  try {
+    cvSetZero(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1382,12 +1410,17 @@ rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE val;
   CvScalar value;
-  if (rb_scan_args(argc, argv, "01",  &val) < 1) {
+  if (rb_scan_args(argc, argv, "01",  &val) < 1)
     value = cvRealScalar(1);
-  }else{
+  else
     value = VALUE_TO_CVSCALAR(val);
+
+  try {
+    cvSetIdentity(CVARR(self), value);
   }
-  cvSetIdentity(CVARR(self), value);
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1400,9 +1433,9 @@ rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
  * see range!
  */
 VALUE
-rb_range(int argc, VALUE *argv, VALUE self)
+rb_range(VALUE self, VALUE start, VALUE end)
 {
-  return rb_range_bang(argc, argv, copy(self));
+  return rb_range_bang(copy(self), start, end);
 }
 
 /*
@@ -1418,11 +1451,14 @@ rb_range(int argc, VALUE *argv, VALUE self)
  *   m.range!(0, m.cols);            // m will be initialized as [0,1,2,3,4,5,6,7,8,9]
  */
 VALUE
-rb_range_bang(int argc, VALUE *argv, VALUE self)
+rb_range_bang(VALUE self, VALUE start, VALUE end)
 {
-  VALUE start, end;
-  rb_scan_args(argc, argv, "20", &start, &end);
-  cvRange(CVARR(self), NUM2DBL(start), NUM2DBL(end));
+  try {
+    cvRange(CVARR(self), NUM2DBL(start), NUM2DBL(end));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1441,12 +1477,20 @@ rb_range_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_reshape(VALUE self, VALUE hash)
 {
-  if (TYPE(hash) != T_HASH)
-    rb_raise(rb_eTypeError, "argument should be Hash that contaion key (:row, :channel).");
+  Check_Type(hash, T_HASH);
   VALUE channel = rb_hash_aref(hash, ID2SYM(rb_intern("channel")));
   VALUE rows = rb_hash_aref(hash, ID2SYM(rb_intern("rows")));
-  return DEPEND_OBJECT(rb_klass, cvReshape(CVARR(self), RB_CVALLOC(CvMat), NIL_P(channel) ? 0 : FIX2INT(channel),
-					   NIL_P(rows) ? 0 : FIX2INT(rows)), self);
+  CvMat *mat = NULL;
+  try {
+    mat = cvReshape(CVARR(self), RB_CVALLOC(CvMat), NIL_P(channel) ? 0 : NUM2INT(channel),
+		    NIL_P(rows) ? 0 : NUM2INT(rows));
+  }
+  catch (cv::Exception& e) {
+    if (mat != NULL)
+      cvReleaseMat(&mat);
+    raise_cverror(e);
+  }
+  return DEPEND_OBJECT(rb_klass, mat, self);
 }
 
 /*
@@ -1458,9 +1502,12 @@ rb_reshape(VALUE self, VALUE hash)
 VALUE
 rb_repeat(VALUE self, VALUE object)
 {
-  if (!rb_obj_is_kind_of(object, rb_class()))
-    rb_raise(rb_eTypeError, "argument should be CvMat subclass.");
-  cvRepeat(CVARR(self), CVARR(object));
+  try {
+    cvRepeat(CVARR(self), CVARR_WITH_CHECK(object));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return object;
 }
 
@@ -1509,7 +1556,12 @@ rb_flip_bang(int argc, VALUE *argv, VALUE self)
     else
       rb_warn("argument may be :x or :y or :xy");
   }
-  cvFlip(CVARR(self), NULL, mode);
+  try {
+    cvFlip(CVARR(self), NULL, mode);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1531,14 +1583,20 @@ rb_flip_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_split(VALUE self)
 {
-  int type = CVMAT(self)->type, depth = CV_MAT_DEPTH(type), channel = CV_MAT_CN(type);
-  CvSize size = cvGetSize(CVARR(self));
-  CvMat *dest[] = {NULL, NULL, NULL, NULL};
-  for (int i = 0; i < channel; i++)
-    dest[i] = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
-  cvSplit(CVARR(self), dest[0], dest[1], dest[2], dest[3]);
+  CvMat* self_ptr = CVMAT(self);
+  int type = self_ptr->type, depth = CV_MAT_DEPTH(type), channel = CV_MAT_CN(type);
+  CvMat *dest[] = { NULL, NULL, NULL, NULL };
+  try {
+    CvSize size = cvGetSize(self_ptr);
+    for (int i = 0; i < channel; ++i)
+      dest[i] = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
+    cvSplit(self_ptr, dest[0], dest[1], dest[2], dest[3]);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   VALUE ary = rb_ary_new2(channel);
-  for (int i = 0; i < channel; i++)
+  for (int i = 0; i < channel; ++i)
     rb_ary_store(ary, i, OPENCV_OBJECT(rb_klass, dest[i]));
   return ary;
 }
@@ -1556,48 +1614,39 @@ rb_split(VALUE self)
 VALUE
 rb_merge(VALUE klass, VALUE args)
 {
-  VALUE object, dest;
   int len = RARRAY_LEN(args);
-  if (!(len > 0) || len > CV_CN_MAX) {
+  if (len <= 0 || len > 4) {
     rb_raise(rb_eArgError, "wrong number of argument (%d for 1..4)", len);
   }
-  CvMat *src[] = {NULL, NULL, NULL, NULL}, *tmp = 0;
-  for (int i = 0; i < len; i++) {
-    if (rb_obj_is_kind_of((object = rb_ary_entry(args, i)), rb_klass)) {
-      src[i] = CVMAT(object);
-      if (CV_MAT_CN(src[i]->type) != 1) {
-        rb_raise(rb_eStandardError, "image should be single-channel CvMat.");
-      }
-      if (!tmp)
-        tmp = src[i];
-      else{
-        if (!CV_ARE_SIZES_EQ(tmp, src[i]))
-          rb_raise(rb_eStandardError, "image size should be same.");
-        if (!CV_ARE_DEPTHS_EQ(tmp, src[i]))
-          rb_raise(rb_eStandardError, "image depth should be same.");
-      }
-    }else if (NIL_P(object)) {
+  CvMat *src[] = { NULL, NULL, NULL, NULL }, *prev_src = NULL;
+  for (int i = 0; i < len; ++i) {
+    VALUE object = rb_ary_entry(args, i);
+    if (NIL_P(object))
       src[i] = NULL;
-    }else
-      rb_raise(rb_eTypeError, "argument should be CvMat or subclass of it.");
+    else {
+      src[i] = CVMAT_WITH_CHECK(object);
+      if (CV_MAT_CN(src[i]->type) != 1)
+        rb_raise(rb_eArgError, "image should be single-channel CvMat.");
+      if (prev_src == NULL)
+        prev_src = src[i];
+      else {
+        if (!CV_ARE_SIZES_EQ(prev_src, src[i]))
+          rb_raise(rb_eArgError, "image size should be same.");
+        if (!CV_ARE_DEPTHS_EQ(prev_src, src[i]))
+          rb_raise(rb_eArgError, "image depth should be same.");
+      }
+    }
   }
   // TODO: adapt IplImage
-  dest = new_object(cvGetSize(tmp), CV_MAKETYPE(CV_MAT_DEPTH(tmp->type), len));
-  cvMerge(src[0], src[1], src[2], src[3], CVARR(dest));
+  VALUE dest = Qnil;
+  try {
+    dest = new_object(cvGetSize(src[0]), CV_MAKETYPE(CV_MAT_DEPTH(src[0]->type), len));
+    cvMerge(src[0], src[1], src[2], src[3], CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
-}
-
-/*
- * call-seq:
- *   CvMat.mix_channels(srcs,dests,from_to = {1 => 1, 2 => 2, 3 => 3, 4 => 4}) -> dests
- */
-VALUE
-rb_mix_channels(int argc, VALUE *argv, VALUE self)
-{
-  VALUE srcs, dests, from_to;
-  rb_scan_args(argc, argv, "21", &srcs, &dests, &from_to);
-  /* not yet */
-  return Qnil;
 }
 
 /*
@@ -1628,13 +1677,17 @@ VALUE
 rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE seed, iter;
-  CvRNG rng;
   rb_scan_args(argc, argv, "02", &seed, &iter);
-  if(NIL_P(seed))
-    cvRandShuffle(CVARR(self), NULL, IF_INT(iter, 1));
-  else{
-    rng = cvRNG(rb_num2ll(seed));
-    cvRandShuffle(CVARR(self), &rng, IF_INT(iter, 1));
+  try {
+    if (NIL_P(seed))
+      cvRandShuffle(CVARR(self), NULL, IF_INT(iter, 1));
+    else {
+      CvRNG rng = cvRNG(rb_num2ll(seed));
+      cvRandShuffle(CVARR(self), &rng, IF_INT(iter, 1));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return self;
 }
@@ -1655,7 +1708,12 @@ VALUE
 rb_lut(VALUE self, VALUE lut)
 {
   VALUE dest = copy(self);
-  cvLUT(CVARR(self), CVARR(dest), CVARR(lut));
+  try {
+    cvLUT(CVARR(self), CVARR(dest), CVARR_WITH_CHECK(lut));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1669,16 +1727,22 @@ rb_lut(VALUE self, VALUE lut)
 VALUE
 rb_convert_scale(VALUE self, VALUE hash)
 {
-  if (TYPE(hash) != T_HASH)
-    rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  Check_Type(hash, T_HASH);
   CvMat* self_ptr = CVMAT(self);
   VALUE depth = rb_hash_aref(hash, ID2SYM(rb_intern("depth"))),
     scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
-    shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
+    shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift")));
+
+  VALUE dest = Qnil;
+  try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self,
 			       CVMETHOD("DEPTH", depth, CV_MAT_DEPTH(self_ptr->type)),
 			       CV_MAT_CN(self_ptr->type));
-  cvConvertScale(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    cvConvertScale(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1693,14 +1757,18 @@ rb_convert_scale(VALUE self, VALUE hash)
 VALUE
 rb_convert_scale_abs(VALUE self, VALUE hash)
 {
-  if (TYPE(hash) != T_HASH)
-    rb_raise(rb_eTypeError, "argument should be Hash that contaion key [:depth, :scale, :shift].");
+  Check_Type(hash, T_HASH);
   CvMat* self_ptr = CVMAT(self);
-  VALUE
-    scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
-    shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift"))),
+  VALUE scale = rb_hash_aref(hash, ID2SYM(rb_intern("scale"))),
+    shift = rb_hash_aref(hash, ID2SYM(rb_intern("shift")));
+  VALUE dest = Qnil;
+  try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, CV_MAT_CN(CVMAT(self)->type));
-  cvConvertScaleAbs(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+    cvConvertScaleAbs(self_ptr, CVARR(dest), IF_DBL(scale, 1.0), IF_DBL(shift, 0.0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1721,10 +1789,15 @@ rb_add(int argc, VALUE *argv, VALUE self)
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
   dest = copy(self);
-  if (rb_obj_is_kind_of(val, rb_klass))
-    cvAdd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
-  else
-    cvAddS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvAdd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+    else
+      cvAddS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1744,13 +1817,15 @@ rb_sub(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
-
   dest = copy(self);
-  if (rb_obj_is_kind_of(val, rb_klass)) {
-    cvSub(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvSub(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+    else
+      cvSubS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
   }
-  else {
-    cvSubS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -1772,13 +1847,18 @@ rb_mul(int argc, VALUE *argv, VALUE self)
   if (rb_scan_args(argc, argv, "11", &val, &scale) < 2)
     scale = rb_float_new(1.0);
   dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (rb_obj_is_kind_of(val, rb_klass)) {
-    cvMul(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
-  }else{
-    CvScalar scl = VALUE_TO_CVSCALAR(val);
-    VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-    cvSet(CVARR(mat), scl);
-    cvMul(CVARR(self), CVARR(mat), CVARR(dest), NUM2DBL(scale));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvMul(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
+    else {
+      CvScalar scl = VALUE_TO_CVSCALAR(val);
+      VALUE mat = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
+      cvSet(CVARR(mat), scl);
+      cvMul(CVARR(self), CVARR(mat), CVARR(dest), NUM2DBL(scale));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -1797,11 +1877,17 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
 {
   VALUE val, shiftvec, dest;
   rb_scan_args(argc, argv, "11", &val, &shiftvec);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (NIL_P(shiftvec))
-    cvMatMul(CVARR(self), CVARR(val), CVARR(dest));
-  else
-    cvMatMulAdd(CVARR(self), CVARR(val), CVARR(shiftvec), CVARR(dest));
+  CvArr* self_ptr = CVARR(self);  
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    if (NIL_P(shiftvec))
+      cvMatMul(self_ptr, CVARR_WITH_CHECK(val), CVARR(dest));
+    else
+      cvMatMulAdd(self_ptr, CVARR_WITH_CHECK(val), CVARR_WITH_CHECK(shiftvec), CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1818,17 +1904,25 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_div(int argc, VALUE *argv, VALUE self)
 {
-  VALUE val, scale, dest;
+  VALUE val, scale;
   if (rb_scan_args(argc, argv, "11", &val, &scale) < 2)
     scale = rb_float_new(1.0);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (rb_obj_is_kind_of(val, rb_klass)) {
-    cvDiv(CVARR(self), CVARR(val), CVARR(dest), NUM2DBL(scale));
-  }else{
-    CvScalar scl = VALUE_TO_CVSCALAR(val);
-    VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-    cvSet(CVARR(mat), scl);
-    cvDiv(CVARR(self), CVARR(mat), CVARR(dest), NUM2DBL(scale));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvDiv(self_ptr, CVARR(val), CVARR(dest), NUM2DBL(scale));
+    else {
+      CvScalar scl = VALUE_TO_CVSCALAR(val);
+      VALUE mat = new_mat_kind_object(cvGetSize(self_ptr), self);
+      CvArr* mat_ptr = CVARR(mat);
+      cvSet(mat_ptr, scl);
+      cvDiv(self_ptr, mat_ptr, CVARR(dest), NUM2DBL(scale));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -1849,10 +1943,15 @@ rb_and(int argc, VALUE *argv, VALUE self)
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
   dest = copy(self);
-  if (rb_obj_is_kind_of(val, rb_klass))
-    cvAnd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
-  else
-    cvAndS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvAnd(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+    else
+      cvAndS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1872,10 +1971,15 @@ rb_or(int argc, VALUE *argv, VALUE self)
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
   dest = copy(self);
-  if (rb_obj_is_kind_of(val, rb_klass))
-    cvOr(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
-  else
-    cvOrS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvOr(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+    else
+      cvOrS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1895,10 +1999,15 @@ rb_xor(int argc, VALUE *argv, VALUE self)
   VALUE val, mask, dest;
   rb_scan_args(argc, argv, "11", &val, &mask);
   dest = copy(self);
-  if (rb_obj_is_kind_of(val, rb_klass))
-    cvXor(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
-  else
-    cvXorS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvXor(CVARR(self), CVARR(val), CVARR(dest), MASK(mask));
+    else
+      cvXorS(CVARR(self), VALUE_TO_CVSCALAR(val), CVARR(dest), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -1912,9 +2021,7 @@ rb_xor(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_not(VALUE self)
 {
-  VALUE dest = copy(self);
-  cvNot(CVARR(self), CVARR(dest));
-  return dest;
+  return rb_not_bang(copy(self));
 }
 
 /*
@@ -1926,7 +2033,12 @@ rb_not(VALUE self)
 VALUE
 rb_not_bang(VALUE self)
 {
-  cvNot(CVARR(self), CVARR(self));
+  try {
+    cvNot(CVARR(self), CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -1935,15 +2047,19 @@ rb_cmp_internal(VALUE self, VALUE val, int operand)
 {
   CvArr* self_ptr = CVARR(self);
   VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_8U, 1);
-  if (rb_obj_is_kind_of(val, rb_klass))
-    cvCmp(self_ptr, CVARR(val), CVARR(dest), operand);
-  else if (CV_MAT_CN(cvGetElemType(self_ptr)) == 1 && rb_obj_is_kind_of(val, rb_cNumeric)) {
-    cvCmpS(self_ptr, NUM2DBL(val), CVARR(dest), operand);
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvCmp(self_ptr, CVARR(val), CVARR(dest), operand);
+    else if (CV_MAT_CN(cvGetElemType(self_ptr)) == 1 && rb_obj_is_kind_of(val, rb_cNumeric))
+      cvCmpS(self_ptr, NUM2DBL(val), CVARR(dest), operand);
+    else {
+      VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
+      cvSet(CVARR(mat), VALUE_TO_CVSCALAR(val));
+      cvCmp(self_ptr, CVARR(mat), CVARR(dest), operand);
+    }
   }
-  else {
-    VALUE mat = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-    cvSet(CVARR(mat), VALUE_TO_CVSCALAR(val));
-    cvCmp(self_ptr, CVARR(mat), CVARR(dest), operand);
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -2038,19 +2154,28 @@ rb_ne(VALUE self, VALUE val)
 VALUE
 rb_in_range(VALUE self, VALUE min, VALUE max)
 {
-  VALUE dest = new_object(cvGetSize(CVARR(self)), CV_8UC1), tmp;
-  if (rb_obj_is_kind_of(min, rb_klass) && rb_obj_is_kind_of(max, rb_klass)) {
-    cvInRange(CVARR(self), CVARR(min), CVARR(max), CVARR(dest));
-  }else if (rb_obj_is_kind_of(min, rb_klass)) {
-    tmp = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-    cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(max));
-    cvInRange(CVARR(self), CVARR(min), CVARR(tmp), CVARR(dest));
-  }else if (rb_obj_is_kind_of(max, rb_klass)) {
-    tmp = new_object(cvGetSize(CVARR(self)), cvGetElemType(CVARR(self)));
-    cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(min));
-    cvInRange(CVARR(self), CVARR(tmp), CVARR(max), CVARR(dest));
-  }else
-    cvInRangeS(CVARR(self), VALUE_TO_CVSCALAR(min), VALUE_TO_CVSCALAR(max), CVARR(dest));
+  CvArr* self_ptr = CVARR(self);
+  CvSize size = cvGetSize(self_ptr);
+  VALUE dest = new_object(size, CV_8UC1);
+  try {
+    if (rb_obj_is_kind_of(min, rb_klass) && rb_obj_is_kind_of(max, rb_klass))
+      cvInRange(self_ptr, CVARR(min), CVARR(max), CVARR(dest));
+    else if (rb_obj_is_kind_of(min, rb_klass)) {
+      VALUE tmp = new_object(size, cvGetElemType(self_ptr));
+      cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(max));
+      cvInRange(self_ptr, CVARR(min), CVARR(tmp), CVARR(dest));
+    }
+    else if (rb_obj_is_kind_of(max, rb_klass)) {
+      VALUE tmp = new_object(size, cvGetElemType(self_ptr));
+      cvSet(CVARR(tmp), VALUE_TO_CVSCALAR(min));
+      cvInRange(self_ptr, CVARR(tmp), CVARR(max), CVARR(dest));
+    }
+    else
+      cvInRangeS(self_ptr, VALUE_TO_CVSCALAR(min), VALUE_TO_CVSCALAR(max), CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2065,11 +2190,16 @@ rb_in_range(VALUE self, VALUE min, VALUE max)
 VALUE
 rb_abs_diff(VALUE self, VALUE val)
 {
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (rb_obj_is_kind_of(val, rb_klass)) {
-    cvAbsDiff(CVARR(self), CVARR(val), CVARR(dest));
-  }else{
-    cvAbsDiffS(CVARR(self), CVARR(dest), VALUE_TO_CVSCALAR(val));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    if (rb_obj_is_kind_of(val, rb_klass))
+      cvAbsDiff(self_ptr, CVARR(val), CVARR(dest));
+    else
+      cvAbsDiffS(self_ptr, CVARR(dest), VALUE_TO_CVSCALAR(val));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -2086,7 +2216,14 @@ rb_abs_diff(VALUE self, VALUE val)
 VALUE
 rb_count_non_zero(VALUE self)
 {
-  return INT2FIX(cvCountNonZero(CVARR(self)));
+  int n = 0;
+  try {
+    n = cvCountNonZero(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return INT2FIX(n);
 }
 
 /*
@@ -2100,7 +2237,14 @@ rb_count_non_zero(VALUE self)
 VALUE
 rb_sum(VALUE self)
 {
-  return cCvScalar::new_object(cvSum(CVARR(self)));
+  CvScalar sum;
+  try {
+    sum = cvSum(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvScalar::new_object(sum);
 }
 
 /*
@@ -2112,10 +2256,16 @@ rb_sum(VALUE self)
 VALUE
 rb_avg(int argc, VALUE *argv, VALUE self)
 {
-  VALUE mask, mean;
+  VALUE mask;
   rb_scan_args(argc, argv, "01", &mask);
-
-  return cCvScalar::new_object(cvAvg(CVARR(self), MASK(mask)));
+  CvScalar avg;
+  try {
+    avg = cvAvg(CVARR(self), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvScalar::new_object(avg);
 }
 
 /*
@@ -2133,7 +2283,12 @@ rb_avg_sdv(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "01", &mask);
   mean = cCvScalar::new_object();
   std_dev = cCvScalar::new_object();
-  cvAvgSdv(CVARR(self), CVSCALAR(mean), CVSCALAR(std_dev), MASK(mask));
+  try {
+    cvAvgSdv(CVARR(self), CVSCALAR(mean), CVSCALAR(std_dev), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, mean, std_dev);
 }
 
@@ -2149,7 +2304,12 @@ rb_sdv(int argc, VALUE *argv, VALUE self)
   VALUE mask, std_dev;
   rb_scan_args(argc, argv, "01", &mask);
   std_dev = cCvScalar::new_object();
-  cvAvgSdv(CVARR(self), NULL, CVSCALAR(std_dev), MASK(mask));
+  try {
+    cvAvgSdv(CVARR(self), NULL, CVSCALAR(std_dev), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return std_dev;
 }
 
@@ -2170,12 +2330,13 @@ rb_min_max_loc(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "01", &mask);
   min_loc = cCvPoint::new_object();
   max_loc = cCvPoint::new_object();
-  cvMinMaxLoc(CVARR(self), &min_val, &max_val, CVPOINT(min_loc), CVPOINT(max_loc), MASK(mask));
-  return rb_ary_new3(4,
-		     rb_float_new(min_val),
-		     rb_float_new(max_val),
-		     min_loc,
-		     max_loc);
+  try {
+    cvMinMaxLoc(CVARR(self), &min_val, &max_val, CVPOINT(min_loc), CVPOINT(max_loc), MASK(mask));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_ary_new3(4, rb_float_new(min_val), rb_float_new(max_val), min_loc, max_loc);
 }
 
 /*
@@ -2190,9 +2351,14 @@ rb_min_max_loc(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_dot_product(VALUE self, VALUE mat)
 {
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument should be CvMat.");
-  return rb_float_new(cvDotProduct(CVARR(self), CVARR(mat)));
+  double result = 0.0;
+  try {
+    result = cvDotProduct(CVARR(self), CVARR_WITH_CHECK(mat));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
 }
 
 /*
@@ -2205,10 +2371,15 @@ rb_dot_product(VALUE self, VALUE mat)
 VALUE
 rb_cross_product(VALUE self, VALUE mat)
 {
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument should be CvMat.");
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvCrossProduct(CVARR(self), CVARR(mat), CVARR(dest));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvCrossProduct(self_ptr, CVARR_WITH_CHECK(mat), CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2224,11 +2395,16 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 {
   VALUE transmat, shiftvec;
   rb_scan_args(argc, argv, "11", &transmat, &shiftvec);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  if (NIL_P(shiftvec))
-    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), NULL);
-  else
-    cvTransform(CVARR(self), CVARR(dest), CVMAT(transmat), CVMAT(shiftvec));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvTransform(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(transmat),
+		NIL_P(shiftvec) ? NULL : CVMAT_WITH_CHECK(shiftvec));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2250,39 +2426,65 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_perspective_transform(VALUE self, VALUE mat)
 {
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvPerspectiveTransform(CVARR(self), CVARR(dest), CVMAT(mat));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvPerspectiveTransform(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(mat));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
 /*
  * call-seq:
- *  mul_transposed(<i>:order => :default or :inverse, :delta => nil or cvmat</i>)
+ *  mul_transposed(<i>:order => 0 or 1, :delta => cvmat, :scale => number</i>)
  *
  * Calculates the product of self and its transposition.
  *
  * options
- * * :order -> should be :default or :inverse (default is :default)
+ * * :order -> should be 0 or 1 (default is 0)
  *    see below.
- * * :delta -> should be nil or CvMat (default is nil)
+ * * :delta -> should be CvMat (default is nil)
  *     An optional array, subtracted from source before multiplication.
+ * * :scale -> should be a number (default is 1.0)
+ *     An optional scaling
  *
  * mul_transposed evaluates:
- *   :order => :default
- *     dst = (self - delta) * (self - delta)T
- *   :order => :inverse
- *     dst = (self - delta)T * (self - delta)
+ *   :order => 0
+ *     dst = scale * (self - delta) * (self - delta)T
+ *   :order => 1
+ *     dst = scale * (self - delta)T * (self - delta)
  *
  */
 VALUE
-rb_mul_transposed(VALUE self, VALUE args)
+rb_mul_transposed(int argc, VALUE *argv, VALUE self)
 {
-  //VALUE options = extract_options_from_args_bang(args);
-  //assert_valid_keys(options, 2, "order", "delta");
-  //VALUE order;
-  //OPTIONS(order, options, "order", ID2SYM(rb_intern("default")));
-  //ID2SYM(rb_intern("order")), rb_intern("")
-  return Qnil;
+  VALUE options = Qnil;
+  VALUE _delta = Qnil, _scale = Qnil, _order = Qnil;
+
+  if (rb_scan_args(argc, argv, "01", &options) > 0) {
+    Check_Type(options, T_HASH);
+    _delta = LOOKUP_CVMETHOD(options, "delta");
+    _scale = LOOKUP_CVMETHOD(options, "scale");
+    _order = LOOKUP_CVMETHOD(options, "order");
+  }
+
+  CvArr* delta = NIL_P(_delta) ? NULL : CVARR_WITH_CHECK(_delta);
+  double scale = NIL_P(_scale) ? 1.0 : NUM2DBL(_scale);
+  int order = NIL_P(_order) ? 0 : NUM2INT(_order);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    cvMulTransposed(self_ptr, CVARR(dest), order, delta, scale);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return dest;
 }
 
 
@@ -2295,7 +2497,14 @@ rb_mul_transposed(VALUE self, VALUE args)
 VALUE
 rb_trace(VALUE self)
 {
-  return cCvScalar::new_object(cvTrace(CVARR(self)));
+  CvScalar scalar;
+  try {
+    scalar = cvTrace(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvScalar::new_object(scalar);
 }
 
 /*
@@ -2307,24 +2516,15 @@ rb_trace(VALUE self)
 VALUE
 rb_transpose(VALUE self)
 {
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvTranspose(CVARR(self), CVARR(dest));
+  CvMat* self_ptr = CVMAT(self);
+  VALUE dest = new_mat_kind_object(cvSize(self_ptr->rows, self_ptr->cols), self);
+  try {
+    cvTranspose(self_ptr, CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
-}
-
-/*
- * call-seq:
- *   transpose! -> self
- *
- * Transposed matrix.
- *
- * <b>rectangular matrix only (CvMat#square? = true).</b>
- */
-VALUE
-rb_transpose_bang(VALUE self)
-{
-  cvTranspose(CVARR(self), CVARR(self));
-  return self;
 }
 
 /*
@@ -2337,7 +2537,14 @@ rb_transpose_bang(VALUE self)
 VALUE
 rb_det(VALUE self)
 {
-  return rb_float_new(cvDet(CVARR(self)));
+  double det = 0.0;
+  try {
+    det = cvDet(CVARR(self));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(det);
 }
 
 /*
@@ -2364,8 +2571,15 @@ rb_invert(int argc, VALUE *argv, VALUE self)
   VALUE symbol;
   rb_scan_args(argc, argv, "01", &symbol);
   int method = CVMETHOD("INVERSION_METHOD", symbol, CV_LU);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInvert(CVARR(self), CVARR(dest), method);
+  VALUE dest = Qnil;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvInvert(self_ptr, CVARR(dest), method);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2391,33 +2605,61 @@ rb_solve(int argc, VALUE *argv, VALUE self)
 {
   VALUE mat, symbol;
   rb_scan_args(argc, argv, "11", &mat, &symbol);
-  if (!rb_obj_is_kind_of(mat, rb_klass))
-    rb_raise(rb_eTypeError, "argument 1 (right-hand part of the linear system) should be %s.)", rb_class2name(rb_klass));
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(mat)), self);
-  cvSolve(CVARR(self), CVARR(mat), CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+  VALUE dest = Qnil;
+  CvArr* arr_ptr = CVARR_WITH_CHECK(mat);
+  try {
+    dest = new_mat_kind_object(cvGetSize(arr_ptr), self);
+    cvSolve(CVARR(self), arr_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
 /*
  * call-seq:
- *   svd(u = nil, v = nil</i>)
+ *   svd(<i>l[flag=0]</i>)
  *
- * not implementated.
  * Performs singular value decomposition of real floating-point matrix.
  */
 VALUE
 rb_svd(int argc, VALUE *argv, VALUE self)
 {
-  rb_raise(rb_eNotImpError, "");
-  /*
-    VALUE u = Qnil, v = Qnil;
-    rb_scan_args(argc, argv, "02", &u, &v);
-    CvMat
-    *matU = NIL_P(u) ? NULL : CVARR(u),
-    *matV = NIL_P(v) ? NULL : CVARR(v);
-    cvSVD(CVARR(self), matU, matV);
-    return dest;
-  */
+  VALUE _flag = Qnil;
+  int flag = 0;
+  if (rb_scan_args(argc, argv, "01", &_flag) > 0) {
+    flag = NUM2INT(_flag);
+  }
+
+  CvMat* self_ptr = CVMAT(self);
+  VALUE w = new_mat_kind_object(cvSize(self_ptr->cols, self_ptr->rows), self);
+  
+  int rows = 0;
+  int cols = 0;
+  if (flag & CV_SVD_U_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->rows;
+  }
+  else {
+    rows = self_ptr->rows;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE u = new_mat_kind_object(cvSize(cols, rows), self);
+
+  if (flag & CV_SVD_V_T) {
+    rows = MIN(self_ptr->rows, self_ptr->cols);
+    cols = self_ptr->cols;
+  }
+  else {
+    rows = self_ptr->cols;
+    cols = MIN(self_ptr->rows, self_ptr->cols);
+  }
+  VALUE v = new_mat_kind_object(cvSize(cols, rows), self);
+
+  cvSVD(self_ptr, CVARR(w), CVARR(u), CVARR(v), flag);
+
+  return rb_ary_new3(3, w, u, v);
 }
 
 /*
@@ -2453,11 +2695,18 @@ rb_eigenvv(int argc, VALUE *argv, VALUE self)
   double eps = (NIL_P(epsilon)) ? 0.0 : NUM2DBL(epsilon);
   int lowidx = (NIL_P(lowindex)) ? -1 : NUM2INT(lowindex);
   int highidx = (NIL_P(highindex)) ? -1 : NUM2INT(highindex);
-
-  CvSize size = cvGetSize(CVARR(self));
-  int type = cvGetElemType(CVARR(self));
-  VALUE eigen_vectors = new_object(size, type), eigen_values = new_object(size.height, 1, type);
-  cvEigenVV(CVARR(self), CVARR(eigen_vectors), CVARR(eigen_values), eps, lowidx, highidx);
+  VALUE eigen_vectors = Qnil, eigen_values = Qnil;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    CvSize size = cvGetSize(self_ptr);
+    int type = cvGetElemType(self_ptr);
+    eigen_vectors = new_object(size, type);
+    eigen_values = new_object(size.height, 1, type);
+    cvEigenVV(self_ptr, CVARR(eigen_vectors), CVARR(eigen_values), eps, lowidx, highidx);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, eigen_vectors, eigen_values);
 }
 
@@ -2514,16 +2763,23 @@ rb_dft(int argc, VALUE *argv, VALUE self)
   int num_rows = 0;
   if (argc > 0) {
     int num_flags = argc;
-    if (TYPE(argv[argc -1]) == T_FIXNUM) {
+    if (FIXNUM_P(argv[argc -1])) {
       num_flags = argc - 1;
       num_rows = FIX2INT(argv[argc - 1]);
     }
-    for (int i = 0; i < num_flags; i++) {
+    for (int i = 0; i < num_flags; ++i) {
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvDFT(CVARR(self), CVARR(dest), type, num_rows);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvDFT(self_ptr, CVARR(dest), type, num_rows);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2546,12 +2802,19 @@ rb_dct(int argc, VALUE *argv, VALUE self)
 {
   int type = CV_DXT_FORWARD;
   if (argc > 0) {
-    for (int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; ++i) {
       type |= CVMETHOD("DXT_FLAG", argv[i]);
     }
   }
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvDCT(CVARR(self), CVARR(dest), type);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvDCT(self_ptr, CVARR(dest), type);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -2600,11 +2863,16 @@ rb_line_bang(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, drawing_option;
   rb_scan_args(argc, argv, "21", &p1, &p2, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
-	 DO_COLOR(drawing_option),
-	 DO_THICKNESS(drawing_option),
-	 DO_LINE_TYPE(drawing_option),
-	 DO_SHIFT(drawing_option));
+  try {
+    cvLine(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
+	   DO_COLOR(drawing_option),
+	   DO_THICKNESS(drawing_option),
+	   DO_LINE_TYPE(drawing_option),
+	   DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2650,11 +2918,16 @@ rb_rectangle_bang(int argc, VALUE *argv, VALUE self)
   VALUE p1, p2, drawing_option;
   rb_scan_args(argc, argv, "21", &p1, &p2, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvRectangle(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
-	      DO_COLOR(drawing_option),
-	      DO_THICKNESS(drawing_option),
-	      DO_LINE_TYPE(drawing_option),
-	      DO_SHIFT(drawing_option));
+  try {
+    cvRectangle(CVARR(self), VALUE_TO_CVPOINT(p1), VALUE_TO_CVPOINT(p2),
+		DO_COLOR(drawing_option),
+		DO_THICKNESS(drawing_option),
+		DO_LINE_TYPE(drawing_option),
+		DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2700,11 +2973,16 @@ rb_circle_bang(int argc, VALUE *argv, VALUE self)
   VALUE center, radius, drawing_option;
   rb_scan_args(argc, argv, "21", &center, &radius, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvCircle(CVARR(self), VALUE_TO_CVPOINT(center), NUM2INT(radius),
-	   DO_COLOR(drawing_option),
-	   DO_THICKNESS(drawing_option),
-	   DO_LINE_TYPE(drawing_option),
-	   DO_SHIFT(drawing_option));
+  try {
+    cvCircle(CVARR(self), VALUE_TO_CVPOINT(center), NUM2INT(radius),
+	     DO_COLOR(drawing_option),
+	     DO_THICKNESS(drawing_option),
+	     DO_LINE_TYPE(drawing_option),
+	     DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2750,13 +3028,18 @@ rb_ellipse_bang(int argc, VALUE *argv, VALUE self)
   VALUE center, axis, angle, start_angle, end_angle, drawing_option;
   rb_scan_args(argc, argv, "51", &center, &axis, &angle, &start_angle, &end_angle, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvEllipse(CVARR(self), VALUE_TO_CVPOINT(center),
-	    VALUE_TO_CVSIZE(axis),
-	    NUM2DBL(angle), NUM2DBL(start_angle), NUM2DBL(end_angle),
-	    DO_COLOR(drawing_option),
-	    DO_THICKNESS(drawing_option),
-	    DO_LINE_TYPE(drawing_option),
-	    DO_SHIFT(drawing_option));
+  try {
+    cvEllipse(CVARR(self), VALUE_TO_CVPOINT(center),
+	      VALUE_TO_CVSIZE(axis),
+	      NUM2DBL(angle), NUM2DBL(start_angle), NUM2DBL(end_angle),
+	      DO_COLOR(drawing_option),
+	      DO_THICKNESS(drawing_option),
+	      DO_LINE_TYPE(drawing_option),
+	      DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2803,11 +3086,16 @@ rb_ellipse_box_bang(int argc, VALUE *argv, VALUE self)
   VALUE box, drawing_option;
   rb_scan_args(argc, argv, "11", &box, &drawing_option);
   drawing_option = DRAWING_OPTION(drawing_option);
-  cvEllipseBox(CVARR(self), VALUE_TO_CVBOX2D(box),
-	       DO_COLOR(drawing_option),
-	       DO_THICKNESS(drawing_option),
-	       DO_LINE_TYPE(drawing_option),
-	       DO_SHIFT(drawing_option));
+  try {
+    cvEllipseBox(CVARR(self), VALUE_TO_CVBOX2D(box),
+		 DO_COLOR(drawing_option),
+		 DO_THICKNESS(drawing_option),
+		 DO_LINE_TYPE(drawing_option),
+		 DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2853,29 +3141,32 @@ rb_fill_poly_bang(int argc, VALUE *argv, VALUE self)
   int num_polygons;
   int *num_points;
   CvPoint **p;
+
   rb_scan_args(argc, argv, "11", &polygons, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
   num_points = ALLOCA_N(int, num_polygons);
+
   p = ALLOCA_N(CvPoint*, num_polygons);
-  for (j = 0; j < num_polygons; j++) {
+  for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
+    Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
     p[j] = ALLOCA_N(CvPoint, num_points[j]);
-    for (i = 0; i < num_points[j]; i++) {
+    for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
   }
-
-  cvFillPoly(CVARR(self),
-	     p,
-	     num_points,
-	     num_polygons,
-	     DO_COLOR(drawing_option),
-	     DO_LINE_TYPE(drawing_option),
-	     DO_SHIFT(drawing_option));
-
+  try {
+    cvFillPoly(CVARR(self), p, num_points, num_polygons,
+	       DO_COLOR(drawing_option),
+	       DO_LINE_TYPE(drawing_option),
+	       DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2923,20 +3214,24 @@ rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self)
   VALUE points, drawing_option;
   int i, num_points;
   CvPoint *p;
+
   rb_scan_args(argc, argv, "11", &points, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(points, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_points = RARRAY_LEN(points);
   p = ALLOCA_N(CvPoint, num_points);
-  for (i = 0; i < num_points; i++)
+  for (i = 0; i < num_points; ++i)
     p[i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
 
-  cvFillConvexPoly(CVARR(self),
-		   p,
-		   num_points,
-		   DO_COLOR(drawing_option),
-		   DO_LINE_TYPE(drawing_option),
-		   DO_SHIFT(drawing_option));
+  try {
+    cvFillConvexPoly(CVARR(self), p, num_points,
+		     DO_COLOR(drawing_option),
+		     DO_LINE_TYPE(drawing_option),
+		     DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -2990,30 +3285,35 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
   int num_polygons;
   int *num_points;
   CvPoint **p;
+
   rb_scan_args(argc, argv, "11", &polygons, &drawing_option);
-  // TODO: Check type of argument
+  Check_Type(polygons, T_ARRAY);
   drawing_option = DRAWING_OPTION(drawing_option);
   num_polygons = RARRAY_LEN(polygons);
   num_points = ALLOCA_N(int, num_polygons);
   p = ALLOCA_N(CvPoint*, num_polygons);
-  for (j = 0; j < num_polygons; j++) {
+
+  for (j = 0; j < num_polygons; ++j) {
     points = rb_ary_entry(polygons, j);
+    Check_Type(points, T_ARRAY);
     num_points[j] = RARRAY_LEN(points);
     p[j] = ALLOCA_N(CvPoint, num_points[j]);
-    for (i = 0; i < num_points[j]; i++) {
+    for (i = 0; i < num_points[j]; ++i) {
       p[j][i] = VALUE_TO_CVPOINT(rb_ary_entry(points, i));
     }
   }
 
-  cvPolyLine(CVARR(self),
-	     p,
-	     num_points,
-	     num_polygons,
-	     DO_IS_CLOSED(drawing_option),
-	     DO_COLOR(drawing_option),
-	     DO_THICKNESS(drawing_option),
-	     DO_LINE_TYPE(drawing_option),
-	     DO_SHIFT(drawing_option));
+  try {
+    cvPolyLine(CVARR(self), p, num_points, num_polygons,
+	       DO_IS_CLOSED(drawing_option),
+	       DO_COLOR(drawing_option),
+	       DO_THICKNESS(drawing_option),
+	       DO_LINE_TYPE(drawing_option),
+	       DO_SHIFT(drawing_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 
   return self;
 }
@@ -3027,23 +3327,30 @@ rb_poly_line_bang(int argc, VALUE *argv, VALUE self)
  * <i>font</i> should be CvFont object.
  */
 VALUE
-rb_put_text(int argc, VALUE *argv, VALUE self)
+rb_put_text(int argc, VALUE* argv, VALUE self)
 {
   return rb_put_text_bang(argc, argv, rb_clone(self));
 }
 
 /*
  * call-seq:
- *   put_text!(<i>str, point ,font[,color]</i>) -> self
+ *   put_text!(<i>str, point, font[,color]</i>) -> self
  *
  * Draws text string. Return self.
  */
 VALUE
-rb_put_text_bang(int argc, VALUE *argv, VALUE self)
+rb_put_text_bang(int argc, VALUE* argv, VALUE self)
 {
-  VALUE text, point, font, color;
-  rb_scan_args(argc, argv, "22", &text, &point, &font, &color);
-  cvPutText(CVARR(self), StringValueCStr(text), VALUE_TO_CVPOINT(point), CVFONT(font), *CVSCALAR(color));
+  VALUE _text, _point, _font, _color;
+  rb_scan_args(argc, argv, "31", &_text, &_point, &_font, &_color);
+  CvScalar color = NIL_P(_color) ? CV_RGB(0, 0, 0) : VALUE_TO_CVSCALAR(_color);
+  try {
+    cvPutText(CVARR(self), StringValueCStr(_text), VALUE_TO_CVPOINT(_point),
+	      CVFONT_WITH_CHECK(_font), color);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3071,10 +3378,16 @@ rb_sobel(int argc, VALUE *argv, VALUE self)
     dest = new_mat_kind_object(cvGetSize(self_ptr), self, CV_32F, 1);
     break;
   default:
-    rb_raise(rb_eRuntimeError, "source depth should be CV_8U or CV_32F.");
+    rb_raise(rb_eArgError, "source depth should be CV_8U or CV_32F.");
     break;
   }
-  cvSobel(self_ptr, CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
+
+  try {
+    cvSobel(self_ptr, CVARR(dest), NUM2INT(xorder), NUM2INT(yorder), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3102,7 +3415,13 @@ rb_laplace(int argc, VALUE *argv, VALUE self)
   default:
     rb_raise(rb_eArgError, "source depth should be CV_8U or CV_32F.");
   }
-  cvLaplace(self_ptr, CVARR(dest), NUM2INT(aperture_size));
+
+  try {
+    cvLaplace(self_ptr, CVARR(dest), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3118,8 +3437,15 @@ rb_canny(int argc, VALUE *argv, VALUE self)
   VALUE thresh1, thresh2, aperture_size;
   if (rb_scan_args(argc, argv, "21", &thresh1, &thresh2, &aperture_size) < 3)
     aperture_size = INT2FIX(3);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvCanny(CVARR(self), CVARR(dest), NUM2INT(thresh1), NUM2INT(thresh2), NUM2INT(aperture_size));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  
+  try {
+    cvCanny(self_ptr, CVARR(dest), NUM2INT(thresh1), NUM2INT(thresh2), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3135,11 +3461,18 @@ rb_canny(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pre_corner_detect(int argc, VALUE *argv, VALUE self)
 {
-  VALUE aperture_size, dest;
+  VALUE aperture_size, dest = Qnil;
   if (rb_scan_args(argc, argv, "01", &aperture_size) < 1)
     aperture_size = INT2FIX(3);
-  dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvPreCornerDetect(CVARR(self), CVARR(dest), NUM2INT(aperture_size));
+
+  CvArr *self_ptr = CVARR(self);
+  try {
+    dest = new_object(cvGetSize(self_ptr), CV_MAKETYPE(CV_32F, 1));
+    cvPreCornerDetect(self_ptr, CVARR(dest), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3156,10 +3489,14 @@ rb_corner_eigenvv(int argc, VALUE *argv, VALUE self)
   VALUE block_size, aperture_size, dest;
   if (rb_scan_args(argc, argv, "11", &block_size, &aperture_size) < 2)
     aperture_size = INT2FIX(3);
-  Check_Type(block_size, T_FIXNUM);
-  CvSize size = cvGetSize(CVARR(self));
-  dest = new_object(cvSize(size.width * 6, size.height), CV_MAKETYPE(CV_32F, 1));
-  cvCornerEigenValsAndVecs(CVARR(self), CVARR(dest), NUM2INT(block_size), NUM2INT(aperture_size));
+  CvMat* self_ptr = CVMAT(self);
+  dest = new_object(cvSize(self_ptr->cols * 6, self_ptr->rows), CV_MAKETYPE(CV_32F, 1));
+  try {
+    cvCornerEigenValsAndVecs(self_ptr, CVARR(dest), NUM2INT(block_size), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3175,8 +3512,14 @@ rb_corner_min_eigen_val(int argc, VALUE *argv, VALUE self)
   VALUE block_size, aperture_size, dest;
   if (rb_scan_args(argc, argv, "11", &block_size, &aperture_size) < 2)
     aperture_size = INT2FIX(3);
-  dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCornerMinEigenVal(CVARR(self), CVARR(dest), FIX2INT(block_size), FIX2INT(aperture_size));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_object(cvGetSize(self_ptr), CV_MAKETYPE(CV_32F, 1));
+  try {
+    cvCornerMinEigenVal(self_ptr, CVARR(dest), NUM2INT(block_size), NUM2INT(aperture_size));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3189,11 +3532,16 @@ rb_corner_min_eigen_val(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_corner_harris(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   VALUE block_size, aperture_size, k, dest;
   rb_scan_args(argc, argv, "12", &block_size, &aperture_size, &k);
-  dest = new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCornerHarris(CVARR(self), CVARR(dest), FIX2INT(block_size), IF_INT(aperture_size, 3), IF_DBL(k, 0.04));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_object(cvGetSize(self_ptr), CV_MAKETYPE(CV_32F, 1));
+  try {
+    cvCornerHarris(self_ptr, CVARR(dest), NUM2INT(block_size), IF_INT(aperture_size, 3), IF_DBL(k, 0.04));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3209,16 +3557,16 @@ VALUE
 rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self)
 {
   /*
-  VALUE corners, win, zero_zone, criteria;
-  rb_scan_args(argc, argv, "13", &corners, &win, &zero_zone, &criteria);
-  if (!rb_obj_is_kind_of(corners, mPointSet::rb_module()))
+    VALUE corners, win, zero_zone, criteria;
+    rb_scan_args(argc, argv, "13", &corners, &win, &zero_zone, &criteria);
+    if (!rb_obj_is_kind_of(corners, mPointSet::rb_module()))
     rb_raise(rb_eTypeError, "argument 1 (corners) should be %s.", rb_class2name(mPointSet::rb_module()));
-  int count = CVSEQ(corners)->total;
-  VALUE storage = cCvMemStorage::new_object();
-  CvPoint2D32f *pointset = POINTSET2D32f(corners);
-  //cvFindCornerSubPix(CVARR(self), pointset, count, VALUE_TO_CVSIZE(win), VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
-  //return cCvSeq::new_sequence();
-  */
+    int count = CVSEQ(corners)->total;
+    VALUE storage = cCvMemStorage::new_object();
+    CvPoint2D32f *pointset = POINTSET2D32f(corners);
+    //cvFindCornerSubPix(CVARR(self), pointset, count, VALUE_TO_CVSIZE(win), VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
+    //return cCvSeq::new_sequence();
+    */
   return Qnil;
 }
 
@@ -3246,27 +3594,35 @@ VALUE
 rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
 {
   VALUE quality_level, min_distance, good_features_to_track_option;
-  CvMat *eigen, *tmp;
-  int i;
   rb_scan_args(argc, argv, "21", &quality_level, &min_distance, &good_features_to_track_option);
   good_features_to_track_option = GOOD_FEATURES_TO_TRACK_OPTION(good_features_to_track_option);
-  CvMat *src = CVMAT(self);
-  CvSize size = cvGetSize(src);
-  eigen = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
-  tmp = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(CV_32F, 1));
   int np = GF_MAX(good_features_to_track_option);
-  if(!(np > 0))
+  if (np <= 0)
     rb_raise(rb_eArgError, "option :max should be positive value.");
+
+  CvMat *self_ptr = CVMAT(self);
   CvPoint2D32f *p32 = (CvPoint2D32f*)rb_cvAlloc(sizeof(CvPoint2D32f) * np);
-  if(!p32)
-    rb_raise(rb_eNoMemError, "failed to allocate memory.");
-  cvGoodFeaturesToTrack(src, &eigen, &tmp, p32, &np, NUM2DBL(quality_level), NUM2DBL(min_distance),
-			GF_MASK(good_features_to_track_option),
-			GF_BLOCK_SIZE(good_features_to_track_option),
-			GF_USE_HARRIS(good_features_to_track_option),
-			GF_K(good_features_to_track_option));
+  int type = CV_MAKETYPE(CV_32F, 1);
+  CvMat* eigen = rb_cvCreateMat(self_ptr->rows, self_ptr->cols, type);
+  CvMat* tmp = rb_cvCreateMat(self_ptr->rows, self_ptr->cols, type);
+  try {
+    cvGoodFeaturesToTrack(self_ptr, &eigen, &tmp, p32, &np, NUM2DBL(quality_level), NUM2DBL(min_distance),
+			  GF_MASK(good_features_to_track_option),
+			  GF_BLOCK_SIZE(good_features_to_track_option),
+			  GF_USE_HARRIS(good_features_to_track_option),
+			  GF_K(good_features_to_track_option));
+  }
+  catch (cv::Exception& e) {
+    if (eigen != NULL)
+      cvReleaseMat(&eigen);
+    if (tmp != NULL)
+      cvReleaseMat(&tmp);
+    if (p32 != NULL)
+      cvFree(&p32);
+    raise_cverror(e);
+  }
   VALUE corners = rb_ary_new2(np);
-  for (i = 0; i < np; i++)
+  for (int i = 0; i < np; ++i)
     rb_ary_store(corners, i, cCvPoint2D32f::new_object(p32[i]));
   cvFree(&p32);
   cvReleaseMat(&eigen);
@@ -3284,30 +3640,30 @@ VALUE
 rb_sample_line(int argc, VALUE *argv, VALUE self)
 {
   /*
-  VALUE p1, p2, connectivity;
-  if (rb_scan_args(argc, argv, "21", &p1, &p2, &connectivity) < 3)
+    VALUE p1, p2, connectivity;
+    if (rb_scan_args(argc, argv, "21", &p1, &p2, &connectivity) < 3)
     connectivity = INT2FIX(8);
-  CvPoint point1 = VALUE_TO_CVPOINT(p1), point2 = VALUE_TO_CVPOINT(p2);
-  int size;
-  switch(FIX2INT(connectivity)) {
-  case 4:
+    CvPoint point1 = VALUE_TO_CVPOINT(p1), point2 = VALUE_TO_CVPOINT(p2);
+    int size;
+    switch(FIX2INT(connectivity)) {
+    case 4:
     size = abs(point2.x - point1.x) + abs(point2.y - point1.y) + 1;
     break;
-  case 8:
+    case 8:
     size = maxint(abs(point2.x - point1.x) + 1, abs(point2.y - point1.y) + 1);
     break;
-  default:
+    default:
     rb_raise(rb_eArgError, "argument 3(connectivity) should be 4 or 8. 8 is default.");
-  }
-  VALUE buf = cCvMat::new_object(1, size, cvGetElemType(CVARR(self)));
-  cvSampleLine(CVARR(self), point1, point2, CVMAT(buf)->data.ptr, FIX2INT(connectivity));
-  if (rb_block_given_p()) {
-    for(int i = 0; i < size; i++) {
-      //Data_Wrap_Struct(cCvScalar::rb_class(), 0, 0, CVMAT(buf)->data.ptr[]);
-      //rb_yield(cCvScalar::new_object);
     }
-  }
-  return buf;
+    VALUE buf = cCvMat::new_object(1, size, cvGetElemType(CVARR(self)));
+    cvSampleLine(CVARR(self), point1, point2, CVMAT(buf)->data.ptr, FIX2INT(connectivity));
+    if (rb_block_given_p()) {
+    for(int i = 0; i < size; i++) {
+    //Data_Wrap_Struct(cCvScalar::rb_class(), 0, 0, CVMAT(buf)->data.ptr[]);
+    //rb_yield(cCvScalar::new_object);
+    }
+    }
+    return buf;
   */
   return Qnil;
 }
@@ -3328,14 +3684,20 @@ VALUE
 rb_rect_sub_pix(int argc, VALUE *argv, VALUE self)
 {
   VALUE center, size;
+  VALUE dest = Qnil;
   CvSize _size;
-  if (rb_scan_args(argc, argv, "11", &center, &size) < 2)
-    _size = cvGetSize(CVARR(self));
-  else
-    _size = VALUE_TO_CVSIZE(size);
-
-  VALUE dest = new_object(_size, cvGetElemType(CVARR(self)));
-  cvGetRectSubPix(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT2D32F(center));
+  CvArr* self_ptr = CVARR(self);
+  try {
+    if (rb_scan_args(argc, argv, "11", &center, &size) < 2)
+      _size = cvGetSize(self_ptr);
+    else
+      _size = VALUE_TO_CVSIZE(size);
+    dest = new_mat_kind_object(_size, self);
+    cvGetRectSubPix(self_ptr, CVARR(dest), VALUE_TO_CVPOINT2D32F(center));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3350,17 +3712,20 @@ VALUE
 rb_quadrangle_sub_pix(int argc, VALUE *argv, VALUE self)
 {
   VALUE map_matrix, size;
+  VALUE dest = Qnil;
   CvSize _size;
-  if (rb_scan_args(argc, argv, "11", &map_matrix, &size) < 2)
-    _size = cvGetSize(CVARR(self));
-  else
-    _size = VALUE_TO_CVSIZE(size);
-
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (2x3).", rb_class2name(cCvMat::rb_class()));
-
-  VALUE dest = new_object(_size, cvGetElemType(CVARR(self)));
-  cvGetQuadrangleSubPix(CVARR(self), CVARR(dest), CVMAT(map_matrix));
+  CvArr* self_ptr = CVARR(self);
+  try {
+    if (rb_scan_args(argc, argv, "11", &map_matrix, &size) < 2)
+      _size = cvGetSize(self_ptr);
+    else
+      _size = VALUE_TO_CVSIZE(size);
+    dest = new_mat_kind_object(_size, self);
+    cvGetQuadrangleSubPix(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(map_matrix));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3387,7 +3752,12 @@ rb_resize(int argc, VALUE *argv, VALUE self)
   VALUE size, interpolation;
   rb_scan_args(argc, argv, "11", &size, &interpolation);
   VALUE dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvResize(CVARR(self), CVARR(dest), CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR));
+  try {
+    cvResize(CVARR(self), CVARR(dest), CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3401,13 +3771,19 @@ VALUE
 rb_warp_affine(int argc, VALUE *argv, VALUE self)
 {
   VALUE map_matrix, interpolation, option, fill_value;
+  VALUE dest = Qnil;
   if (rb_scan_args(argc, argv, "13", &map_matrix, &interpolation, &option, &fill_value) < 4)
     fill_value = INT2FIX(0);
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (2x3).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvWarpAffine(CVARR(self), CVARR(dest), CVMAT(map_matrix),
-               CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fill_value));
+  CvArr* self_ptr = CVARR(self);
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvWarpAffine(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(map_matrix),
+		 CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
+		 | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fill_value));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3437,16 +3813,26 @@ rb_find_homograpy(int argc, VALUE *argv, VALUE self)
   double _ransac_reproj_threshold = NIL_P(ransac_reproj_threshold) ? 0.0 : NUM2DBL(ransac_reproj_threshold);
 
   if ((_method != 0) && (!NIL_P(get_status)) && IF_BOOL(get_status, 1, 0, 0)) {
-    CvMat *src = CVMAT(src_points);
+    CvMat *src = CVMAT_WITH_CHECK(src_points);
     int num_points = MAX(src->rows, src->cols);
     VALUE status = new_object(cvSize(num_points, 1), CV_8UC1);
-    cvFindHomography(src, CVMAT(dst_points), CVMAT(homography),
-		     _method, _ransac_reproj_threshold, CVMAT(status));
+    try {
+      cvFindHomography(src, CVMAT_WITH_CHECK(dst_points), CVMAT(homography),
+		       _method, _ransac_reproj_threshold, CVMAT(status));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return rb_assoc_new(homography, status);
   }
   else {
-    cvFindHomography(CVMAT(src_points), CVMAT(dst_points), CVMAT(homography),
-		     _method, _ransac_reproj_threshold, NULL);
+    try {
+      cvFindHomography(CVMAT(src_points), CVMAT(dst_points), CVMAT(homography),
+		       _method, _ransac_reproj_threshold, NULL);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return homography;
   }
 }
@@ -3469,8 +3855,13 @@ rb_find_homograpy(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale)
 {
-  VALUE map_matrix = new_object(cvSize(3,2), CV_MAKETYPE(CV_32F, 1));
-  cv2DRotationMatrix(VALUE_TO_CVPOINT2D32F(center), NUM2DBL(angle), NUM2DBL(scale), CVMAT(map_matrix));
+  VALUE map_matrix = new_object(cvSize(3, 2), CV_MAKETYPE(CV_32F, 1));
+  try {
+    cv2DRotationMatrix(VALUE_TO_CVPOINT2D32F(center), NUM2DBL(angle), NUM2DBL(scale), CVMAT(map_matrix));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return map_matrix;
 }
 
@@ -3486,12 +3877,18 @@ rb_warp_perspective(int argc, VALUE *argv, VALUE self)
   VALUE map_matrix, interpolation, option, fillval;
   if (rb_scan_args(argc, argv, "13", &map_matrix, &interpolation, &option, &fillval) < 4)
     fillval = INT2FIX(0);
-  if (!rb_obj_is_kind_of(map_matrix, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map matrix) should be %s (3x3).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvWarpPerspective(CVARR(self), CVARR(dest), CVMAT(map_matrix),
-                    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
-		    | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvWarpPerspective(self_ptr, CVARR(dest), CVMAT_WITH_CHECK(map_matrix),
+		      CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
+		      | CVMETHOD("WARP_FLAG",option, CV_WARP_FILL_OUTLIERS),
+		      VALUE_TO_CVSCALAR(fillval));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3511,35 +3908,41 @@ rb_remap(int argc, VALUE *argv, VALUE self)
   VALUE mapx, mapy, interpolation, option, fillval;
   if (rb_scan_args(argc, argv, "23", &mapx, &mapy, &interpolation, &option, &fillval) < 5)
     fillval = INT2FIX(0);
-  if (!rb_obj_is_kind_of(mapx, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (map of x-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
-  if (!rb_obj_is_kind_of(mapy, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 2 (map of y-coordinates) should be %s(CV_32F and single-channel).", rb_class2name(cCvMat::rb_class()));
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvRemap(CVARR(self), CVARR(dest), CVARR(mapx), CVARR(mapy),
-          CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS), VALUE_TO_CVSCALAR(fillval));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvRemap(self_ptr, CVARR(dest), CVARR_WITH_CHECK(mapx), CVARR_WITH_CHECK(mapy),
+	    CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR)
+	    | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIERS),
+	    VALUE_TO_CVSCALAR(fillval));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
 /*
  * call-seq:
- *   log_polar(<i>center, magnitude, </i>)
+ *   log_polar(<i>size, center, magnitude[ ,flags=CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS]</i>)
  *
  * Remaps image to log-polar space.
  */
 VALUE
 rb_log_polar(int argc, VALUE *argv, VALUE self)
 {
-  /*
-  VALUE size, center, m, flags, fillval, dest;
-  rb_scan_args(argc, argv, "3*", &size, &center, &m, &flags);
-  dest = cCvMat::new_object();
-  cvLogPolar(CVARR(self), CVARR(dest),
-	     VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m),
-	     CVMETHOD("INTERPOLATION_METHOD", interpolation, CV_INTER_LINEAR) | CVMETHOD("WARP_FLAG", option, CV_WARP_FILL_OUTLIEARS), VALUE_TO_CVSCALAR(fillval));
+  VALUE dst_size, center, m, flags;
+  rb_scan_args(argc, argv, "31", &dst_size, &center, &m, &flags);
+  int _flags = NIL_P(flags) ? (CV_INTER_LINEAR | CV_WARP_FILL_OUTLIERS) : NUM2INT(flags);
+  VALUE dest = new_mat_kind_object(VALUE_TO_CVSIZE(dst_size), self);
+  try {
+    cvLogPolar(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT2D32F(center), NUM2DBL(m), _flags);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
-  */
-  return Qnil;
 }
 
 /*
@@ -3569,7 +3972,13 @@ rb_erode_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  cvErode(CVARR(self), CVARR(self), IPLCONVKERNEL(element), IF_INT(iteration, 1));
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
+  try {
+    cvErode(CVARR(self), CVARR(self), kernel, IF_INT(iteration, 1));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3600,7 +4009,13 @@ rb_dilate_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE element, iteration;
   rb_scan_args(argc, argv, "02", &element, &iteration);
-  cvDilate(CVARR(self), CVARR(self), IPLCONVKERNEL(element), IF_INT(iteration, 1));
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
+  try {
+    cvDilate(CVARR(self), CVARR(self), kernel, IF_INT(iteration, 1));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -3610,13 +4025,19 @@ rb_morphology_internal(VALUE element, VALUE iteration, int operation, VALUE self
   CvArr* self_ptr = CVARR(self);
   CvSize size = cvGetSize(self_ptr);
   VALUE dest = new_mat_kind_object(size, self);
-  if (operation == CV_MOP_GRADIENT) {
-    CvMat* temp = rb_cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
-    cvMorphologyEx(self_ptr, CVARR(dest), temp, IPLCONVKERNEL(element), CV_MOP_GRADIENT, IF_INT(iteration, 1));
-    cvReleaseMat(&temp);
+  IplConvKernel* kernel = NIL_P(element) ? NULL : IPLCONVKERNEL_WITH_CHECK(element);
+  try {
+    if (operation == CV_MOP_GRADIENT) {
+      CvMat* temp = rb_cvCreateMat(size.height, size.width, cvGetElemType(self_ptr));
+      cvMorphologyEx(self_ptr, CVARR(dest), temp, kernel, CV_MOP_GRADIENT, IF_INT(iteration, 1));
+      cvReleaseMat(&temp);
+    }
+    else {
+      cvMorphologyEx(self_ptr, CVARR(dest), 0, kernel, operation, IF_INT(iteration, 1));
+    }
   }
-  else {
-    cvMorphologyEx(self_ptr, CVARR(dest), 0, IPLCONVKERNEL(element), operation, IF_INT(iteration, 1));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return dest;
 }
@@ -3644,112 +4065,6 @@ rb_morphology(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   morpholohy_open(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Opening".
- *   dilate(erode(src,element),element)
- */
-VALUE
-rb_morphology_open(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_OPEN, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_close(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Closing".
- *    erode(dilate(src,element),element)
- */
-VALUE
-rb_morphology_close(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_CLOSE, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_gradient(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "Morphological gradient".
- *    dilate(src,element)-erode(src,element)
- */
-VALUE
-rb_morphology_gradient(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_GRADIENT, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_tophat(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "tophat".
- *    src-open(src,element)
- */
-VALUE
-rb_morphology_tophat(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_TOPHAT, self);
-}
-
-/*
- * call-seq:
- *   morpholohy_blackhat(<i>[element = nil][,iteration = 1]</i>) -> cvmat
- *
- * Performs advanced morphological transformations "blackhat".
- *    close(src,element)-src
- */
-VALUE
-rb_morphology_blackhat(int argc, VALUE *argv, VALUE self)
-{
-  VALUE element, iteration, dest;
-  rb_scan_args(argc, argv, "02", &element, &iteration);
-  return rb_morphology_internal(element, iteration, CV_MOP_BLACKHAT, self);
-}
-
-VALUE
-rb_smooth(int argc, VALUE *argv, VALUE self)
-{
-  VALUE smoothtype, p1, p2, p3, p4;
-  rb_scan_args(argc, argv, "14", &smoothtype, &p1, &p2, &p3, &p4);
-  int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
-  
-  VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
-  switch (_smoothtype) {
-    case CV_BLUR_NO_SCALE:
-      smooth_func = rb_smooth_blur_no_scale;
-      break;
-    case CV_BLUR:
-      smooth_func = rb_smooth_blur;
-      break;
-    case CV_GAUSSIAN:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    case CV_MEDIAN:
-      smooth_func = rb_smooth_median;
-      break;
-    case CV_BILATERAL:
-      smooth_func = rb_smooth_bilateral;
-      break;
-    default:
-      smooth_func = rb_smooth_gaussian;
-      break;
-    }
-  return (*smooth_func)(argc - 1, argv + 1, self);
-}
-
-/*
- * call-seq:
  *   smooth_blur_no_scale(<i>[p1 = 3, p2 = 3]</i>) -> cvmat
  *
  * Smooths the image by simple blur with no scaling.
@@ -3760,7 +4075,6 @@ rb_smooth(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_C1_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
   CvArr* self_ptr = CVARR(self);
@@ -3790,11 +4104,11 @@ rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_smooth_blur(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvSmooth(CVARR(self), CVARR(dest), CV_BLUR, IF_INT(p1, 3), IF_INT(p2, 3));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  cvSmooth(self_ptr, CVARR(dest), CV_BLUR, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
 }
 
@@ -3816,11 +4130,11 @@ rb_smooth_blur(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_smooth_gaussian(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, p3, p4, dest;
   rb_scan_args(argc, argv, "04", &p1, &p2, &p3, &p4);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvSmooth(CVARR(self), CVARR(dest), CV_GAUSSIAN, IF_INT(p1, 3), IF_INT(p2, 3), IF_DBL(p3, 0.0), IF_DBL(p4, 0.0));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  cvSmooth(self_ptr, CVARR(dest), CV_GAUSSIAN, IF_INT(p1, 3), IF_INT(p2, 3), IF_DBL(p3, 0.0), IF_DBL(p4, 0.0));
   return dest;
 }
 
@@ -3834,12 +4148,11 @@ rb_smooth_gaussian(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_smooth_median(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
   VALUE p1, dest;
   rb_scan_args(argc, argv, "01", &p1);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvSmooth(CVARR(self), CVARR(dest), CV_MEDIAN, IF_INT(p1, 3));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  cvSmooth(self_ptr, CVARR(dest), CV_MEDIAN, IF_INT(p1, 3));
   return dest;
 }
 
@@ -3853,13 +4166,55 @@ rb_smooth_median(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
   VALUE p1, p2, dest;
   rb_scan_args(argc, argv, "02", &p1, &p2);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvSmooth(CVARR(self), CVARR(dest), CV_BILATERAL, IF_INT(p1, 3), IF_INT(p2, 3));
+  CvArr* self_ptr = CVARR(self);
+  dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+  cvSmooth(self_ptr, CVARR(dest), CV_BILATERAL, IF_INT(p1, 3), IF_INT(p2, 3));
   return dest;
+}
+
+VALUE
+rb_smooth(int argc, VALUE *argv, VALUE self)
+{
+  VALUE smoothtype, p1, p2, p3, p4;
+  rb_scan_args(argc, argv, "14", &smoothtype, &p1, &p2, &p3, &p4);
+  int _smoothtype = CVMETHOD("SMOOTHING_TYPE", smoothtype, -1);
+  
+  VALUE (*smooth_func)(int c, VALUE* v, VALUE s);
+  argc--;
+  switch (_smoothtype) {
+  case CV_BLUR_NO_SCALE:
+    smooth_func = rb_smooth_blur_no_scale;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  case CV_BLUR:
+    smooth_func = rb_smooth_blur;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  case CV_GAUSSIAN:
+    smooth_func = rb_smooth_gaussian;
+    break;
+  case CV_MEDIAN:
+    smooth_func = rb_smooth_median;
+    argc = (argc > 1) ? 1 : argc;
+    break;
+  case CV_BILATERAL:
+    smooth_func = rb_smooth_bilateral;
+    argc = (argc > 2) ? 2 : argc;
+    break;
+  default:
+    smooth_func = rb_smooth_gaussian;
+    break;
+  }
+  VALUE result = Qnil;
+  try {
+    result = (*smooth_func)(argc, argv + 1, self);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return result;
 }
 
 /*
@@ -3874,48 +4229,63 @@ rb_smooth_bilateral(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_filter2d(int argc, VALUE *argv, VALUE self)
 {
-  VALUE kernel, anchor, dest;
-  rb_scan_args(argc, argv, "11", &kernel, &anchor);
-  if (!rb_obj_is_kind_of(kernel, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (kernel) should be %s.", rb_class2name(cCvMat::rb_class()));
-  int type = cvGetElemType(CVARR(kernel));
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvFilter2D(CVARR(self), CVARR(dest), CVMAT(kernel), NIL_P(anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(anchor));
-  return dest;
+  VALUE _kernel, _anchor;
+  rb_scan_args(argc, argv, "11", &_kernel, &_anchor);
+  CvMat* kernel = CVMAT_WITH_CHECK(_kernel);
+  CvArr* self_ptr = CVARR(self);
+  VALUE _dest = Qnil;
+  try {
+    int type = cvGetElemType(kernel);
+    _dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvFilter2D(self_ptr, CVARR(_dest), kernel, NIL_P(_anchor) ? cvPoint(-1,-1) : VALUE_TO_CVPOINT(_anchor));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return _dest;
 }
 
 /*
  * call-seq:
- *   copy_make_border_constant(<i>size, offset[,value = CvScalar.new(0)]</i>)
+ *   copy_make_border(<i>border_type, size, offset[,value = CvScalar.new(0)]</i>)
  *
  * Copies image and makes border around it.
- * Border is filled with the fixed value, passed as last parameter of the function.
+ * <i>border_type</i>:
+ * - IPL_BORDER_CONSTANT, :constant
+ *     border is filled with the fixed value, passed as last parameter of the function.
+ * - IPL_BORDER_REPLICATE, :replicate
+ *     the pixels from the top and bottom rows, the left-most and right-most columns are replicated to fill the border
+ * <i>size</i>: The destination image size
+ * <i>offset</i>: Coordinates of the top-left corner (or bottom-left in the case of images with bottom-left origin) of the destination image rectangle.
+ * <i>value</i>: Value of the border pixels if bordertype is IPL_BORDER_CONSTANT or :constant.
  */
 VALUE
-rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self)
+rb_copy_make_border(int argc, VALUE *argv, VALUE self)
 {
-  VALUE size, offset, value, dest;
-  rb_scan_args(argc, argv, "21", &size, &offset, &value);
+  VALUE border_type, size, offset, value, dest;
+  rb_scan_args(argc, argv, "31", &border_type, &size, &offset, &value);
   dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_CONSTANT, NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
-  return dest;
-}
 
-/*
- * call-seq:
- *   copy_make_border_replicate(<i>size, offset</i>)
- *
- * Copies image and makes border around it.
- * The pixels from the top and bottom rows,
- * the left-most and right-most columns are replicated to fill the border.
- */
-VALUE
-rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self)
-{
-  VALUE size, offset, dest;
-  rb_scan_args(argc, argv, "20", &size, &offset);
-  dest = new_mat_kind_object(VALUE_TO_CVSIZE(size), self);
-  cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), IPL_BORDER_REPLICATE);
+  int type = 0;
+  if (SYMBOL_P(border_type)) {
+    ID type_id = rb_to_id(border_type);
+    if (type_id == rb_intern("constant"))
+      type = IPL_BORDER_CONSTANT;
+    else if (type_id == rb_intern("replicate"))
+      type = IPL_BORDER_REPLICATE;
+    else
+      rb_raise(rb_eArgError, "Invalid border_type (should be :constant or :replicate)");
+  }
+  else
+    type = NUM2INT(border_type);
+
+  try {
+    cvCopyMakeBorder(CVARR(self), CVARR(dest), VALUE_TO_CVPOINT(offset), type,
+		     NIL_P(value) ? cvScalar(0) : VALUE_TO_CVSCALAR(value));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -3936,31 +4306,54 @@ rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_integral(int argc, VALUE *argv, VALUE self)
 {
-  VALUE sum, sqsum, tilted_sum, dest;
-  rb_scan_args(argc, argv, "02", &sqsum, &tilted_sum);
-  CvSize size = cvSize(cvGetSize(CVARR(self)).width + 1, cvGetSize(CVARR(self)).height + 1);
-  int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
-  sum = cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn));
-  sqsum = (sqsum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
-  tilted_sum = (tilted_sum == Qtrue ?  cCvMat::new_object(size, CV_MAKETYPE(CV_64F, cn)) : Qnil);
-  cvIntegral(CVARR(self), CVARR(sum), NIL_P(sqsum) ? NULL : CVARR(sqsum),
-	     NIL_P(tilted_sum) ? NULL : CVARR(tilted_sum));
-  dest = rb_ary_new3(1, sum);
-  if(sqsum)
-    rb_ary_push(dest, sqsum);
-  if(tilted_sum)
-    rb_ary_push(dest, tilted_sum);
-  return dest;
+  VALUE need_sqsum = Qfalse, need_tiled_sum = Qfalse;
+  rb_scan_args(argc, argv, "02", &need_sqsum, &need_tiled_sum);
+
+  VALUE sum = Qnil;
+  VALUE sqsum = Qnil;
+  VALUE tiled_sum = Qnil;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    CvSize self_size = cvGetSize(self_ptr);
+    CvSize size = cvSize(self_size.width + 1, self_size.height + 1);
+    int type_cv64fcn = CV_MAKETYPE(CV_64F, CV_MAT_CN(cvGetElemType(self_ptr)));
+    sum = cCvMat::new_object(size, type_cv64fcn);
+    sqsum = (need_sqsum == Qtrue ? cCvMat::new_object(size, type_cv64fcn) : Qnil);
+    tiled_sum = (need_tiled_sum == Qtrue ? cCvMat::new_object(size, type_cv64fcn) : Qnil);
+    cvIntegral(self_ptr, CVARR(sum), (need_sqsum == Qtrue) ? CVARR(sqsum) : NULL,
+	       (need_tiled_sum == Qtrue) ? CVARR(tiled_sum) : NULL);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  
+  if ((need_sqsum != Qtrue) && (need_tiled_sum != Qtrue))
+    return sum;
+  else {
+    VALUE dest = rb_ary_new3(1, sum);
+    if (need_sqsum == Qtrue)
+      rb_ary_push(dest, sqsum);
+    if (need_tiled_sum == Qtrue)
+      rb_ary_push(dest, tiled_sum);
+    return dest;
+  }
 }
 
-VALUE
+inline VALUE
 rb_threshold_internal(int threshold_type, VALUE threshold, VALUE max_value, VALUE use_otsu, VALUE self)
 {
   CvArr* self_ptr = CVARR(self);
-  VALUE dest = new_mat_kind_object(cvGetSize(self_ptr), self);
   int otsu = (use_otsu == Qtrue) && ((threshold_type & CV_THRESH_OTSU) == 0);
   int type = threshold_type | (otsu ? CV_THRESH_OTSU : 0);
-  double otsu_threshold = cvThreshold(self_ptr, CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), type);
+  VALUE dest = Qnil;
+  double otsu_threshold = 0;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    otsu_threshold = cvThreshold(self_ptr, CVARR(dest), NUM2DBL(threshold), NUM2DBL(max_value), type);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 
   if ((use_otsu == Qtrue) || (threshold_type & CV_THRESH_OTSU))
     return rb_assoc_new(dest, DBL2NUM(otsu_threshold));
@@ -3990,91 +4383,6 @@ rb_threshold(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   threshold_binary(<i>threshold, max_value[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = max_value, if src(x,y)>threshold
- *              0, otherwise
- */
-VALUE
-rb_threshold_binary(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, max_value, use_otsu;
-  rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_BINARY, threshold, max_value, use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_binary_inverse(<i>threshold, max_value[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = 0, if src(x,y)>threshold
- *              max_value, otherwise
- */
-VALUE
-rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, max_value, use_otsu;
-  rb_scan_args(argc, argv, "21", &threshold, &max_value, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_BINARY_INV, threshold, max_value, use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_trunc(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = threshold, if src(x,y)>threshold
- *              src(x,y), otherwise
- */
-VALUE
-rb_threshold_trunc(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TRUNC, threshold, INT2NUM(0), use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_to_zero(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = src(x,y), if src(x,y)>threshold
- *              0, otherwise
- */
-VALUE
-rb_threshold_to_zero(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TOZERO, threshold, INT2NUM(0), use_otsu, self);
-}
-
-/*
- * call-seq:
- *   threshold_to_zero_inverse(<i>threshold[,use_otsu = false]</i>)
- *
- * Applies fixed-level threshold to array elements.
- *
- *   dst(x,y) = 0, if src(x,y)>threshold
- *              src(x,y), otherwise
- */
-VALUE
-rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self)
-{
-  VALUE threshold, use_otsu;
-  rb_scan_args(argc, argv, "11", &threshold, &use_otsu);
-  return rb_threshold_internal(CV_THRESH_TOZERO_INV, threshold, INT2NUM(0), use_otsu, self);
-}
-
-/*
- * call-seq:
  *   pyr_down(<i>[filter = :gaussian_5x5]</i>) -> cvmat
  *
  * Return downsamples image.
@@ -4087,22 +4395,28 @@ rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pyr_down(int argc, VALUE *argv, VALUE self)
 {
-  VALUE filter_type, dest;
-  rb_scan_args(argc, argv, "01", &filter_type);
   int filter = CV_GAUSSIAN_5x5;
   if (argc > 0) {
+    VALUE filter_type = argv[0];
     switch (TYPE(filter_type)) {
     case T_SYMBOL:
       // currently suport CV_GAUSSIAN_5x5 only.
       break;
     default:
-      rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
+      raise_typeerror(filter_type, rb_cSymbol);
     }
   }
-  CvSize original_size = cvGetSize(CVARR(self));
-  CvSize size = { original_size.width >> 1, original_size.height >> 1 };
-  dest = new_mat_kind_object(size, self);
-  cvPyrDown(CVARR(self), CVARR(dest), filter);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    CvSize original_size = cvGetSize(self_ptr);
+    CvSize size = { original_size.width >> 1, original_size.height >> 1 };
+    dest = new_mat_kind_object(size, self);
+    cvPyrDown(self_ptr, CVARR(dest), filter);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -4121,7 +4435,7 @@ rb_pyr_down(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pyr_up(int argc, VALUE *argv, VALUE self)
 {
-  VALUE filter_type, dest;
+  VALUE filter_type;
   rb_scan_args(argc, argv, "01", &filter_type);
   int filter = CV_GAUSSIAN_5x5;
   if (argc > 0) {
@@ -4130,13 +4444,20 @@ rb_pyr_up(int argc, VALUE *argv, VALUE self)
       // currently suport CV_GAUSSIAN_5x5 only.
       break;
     default:
-      rb_raise(rb_eArgError, "argument 1 (filter_type) should be Symbol.");
+      raise_typeerror(filter_type, rb_cSymbol);
     }
   }
-  CvSize original_size = cvGetSize(CVARR(self));
-  CvSize size = { original_size.width << 1, original_size.height << 1 };
-  dest = new_mat_kind_object(size, self);
-  cvPyrUp(CVARR(self), CVARR(dest), filter);
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    CvSize original_size = cvGetSize(self_ptr);
+    CvSize size = { original_size.width << 1, original_size.height << 1 };
+    dest = new_mat_kind_object(size, self);
+    cvPyrUp(self_ptr, CVARR(dest), filter);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -4195,7 +4516,7 @@ rb_flood_fill(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
 {
-  VALUE seed_point, new_val, lo_diff, up_diff, flood_fill_option, mask, comp;
+  VALUE seed_point, new_val, lo_diff, up_diff, flood_fill_option;
   rb_scan_args(argc, argv, "23", &seed_point, &new_val, &lo_diff, &up_diff, &flood_fill_option);
   flood_fill_option = FLOOD_FILL_OPTION(flood_fill_option);
   int flags = FF_CONNECTIVITY(flood_fill_option);
@@ -4205,18 +4526,27 @@ rb_flood_fill_bang(int argc, VALUE *argv, VALUE self)
   if (FF_MASK_ONLY(flood_fill_option)) {
     flags |= CV_FLOODFILL_MASK_ONLY;
   }
-  CvSize size = cvGetSize(CVARR(self));
-  mask = cIplImage::new_object(size.width + 2, size.height + 2, CV_MAKETYPE(CV_8U, 1));
-  comp = cCvConnectedComp::new_object();
-  cvFloodFill(CVARR(self),
-	      VALUE_TO_CVPOINT(seed_point),
-	      VALUE_TO_CVSCALAR(new_val),
-	      NIL_P(lo_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(lo_diff),
-	      NIL_P(up_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(up_diff),
-	      CVCONNECTEDCOMP(comp),
-	      flags,
-	      CVARR(mask));
-  cvSetImageROI(IPLIMAGE(mask), cvRect(1, 1, size.width, size.height));
+  CvArr* self_ptr = CVARR(self);
+  VALUE comp = cCvConnectedComp::new_object();
+  VALUE mask = Qnil;
+  try {
+    CvSize size = cvGetSize(self_ptr);
+    // TODO: Change argument format to set mask
+    mask = new_object(size.width + 2, size.height + 2, CV_MAKETYPE(CV_8U, 1));
+    CvMat* mask_ptr = CVMAT(mask);
+    cvSetZero(mask_ptr);
+    cvFloodFill(self_ptr,
+		VALUE_TO_CVPOINT(seed_point),
+		VALUE_TO_CVSCALAR(new_val),
+		NIL_P(lo_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(lo_diff),
+		NIL_P(up_diff) ? cvScalar(0) : VALUE_TO_CVSCALAR(up_diff),
+		CVCONNECTEDCOMP(comp),
+		flags,
+		mask_ptr);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(3, self, comp, mask);
 }
 
@@ -4276,7 +4606,6 @@ rb_find_contours(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   VALUE find_contours_option, klass, element_klass, storage;
   rb_scan_args(argc, argv, "01", &find_contours_option);
   CvSeq *contour = NULL;
@@ -4295,11 +4624,19 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
     header_size = sizeof(CvContour);
   }
   storage = cCvMemStorage::new_object();
-  if(cvFindContours(CVARR(self), CVMEMSTORAGE(storage),
-  		    &contour, header_size, mode, method, FC_OFFSET(find_contours_option)) == 0) {
-    return Qnil;
+
+  int count = 0;
+  try {
+    count = cvFindContours(CVARR(self), CVMEMSTORAGE(storage), &contour, header_size,
+			   mode, method, FC_OFFSET(find_contours_option));
   }
-  return cCvSeq::new_sequence(klass, contour, element_klass, storage);
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  if (count == 0)
+    return Qnil;
+  else
+    return cCvSeq::new_sequence(klass, contour, element_klass, storage);
 }
 
 /*
@@ -4319,34 +4656,21 @@ rb_find_contours_bang(int argc, VALUE *argv, VALUE self)
  * <b>support single-channel or 3-channel 8bit unsigned image only</b>
  */
 VALUE
-rb_pyr_segmentation(int argc, VALUE *argv, VALUE self)
+rb_pyr_segmentation(VALUE self, VALUE level, VALUE threshold1, VALUE threshold2)
 {
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
-  VALUE level, threshold1, threshold2, storage, dest;
-  rb_scan_args(argc, argv, "30", &level, &threshold1, &threshold2);
-  IplImage *src = IPLIMAGE(self);
-  int l = FIX2INT(level);
-  double t1 = NUM2DBL(threshold1), t2 = NUM2DBL(threshold2);
-  CvRect roi = cvGetImageROI(src);
-  if (l <= 0)
-    rb_raise(rb_eArgError, "argument 1 (level) should be > 0.");
-  if(((roi.width | roi.height) & ((1 << l) - 1)) != 0)
-    rb_raise(rb_eArgError, "bad image size on level %d.", FIX2INT(level));
-  if (t1 < 0)
-    rb_raise(rb_eArgError, "argument 2 (threshold for establishing the link) should be >= 0.");
-  if (t2 < 0)
-    rb_raise(rb_eArgError, "argument 3 (threshold for the segments clustering) should be >= 0.");
-  dest = cIplImage::new_object(cvGetSize(src), cvGetElemType(src));
-  CvSeq *comp = 0;
-  storage = cCvMemStorage::new_object();
-
-  cvPyrSegmentation(src,
-		    IPLIMAGE(dest),
-		    CVMEMSTORAGE(storage),
-		    &comp,
-		    l, t1, t2);
-  if(!comp)
+  IplImage* self_ptr = IPLIMAGE(self);
+  CvSeq *comp = NULL;
+  VALUE storage = cCvMemStorage::new_object();
+  VALUE dest = Qnil;
+  try {
+    dest = cIplImage::new_object(cvGetSize(self_ptr), cvGetElemType(self_ptr));
+    cvPyrSegmentation(self_ptr, IPLIMAGE(dest), CVMEMSTORAGE(storage), &comp,
+		      NUM2INT(level), NUM2DBL(threshold1), NUM2DBL(threshold2));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  if (!comp)
     comp = cvCreateSeq(CV_SEQ_CONNECTED_COMP, sizeof(CvSeq), sizeof(CvConnectedComp), CVMEMSTORAGE(storage));
   return rb_ary_new3(2, dest, cCvSeq::new_sequence(cCvSeq::rb_class(), comp, cCvConnectedComp::rb_class(), storage));
 }
@@ -4387,14 +4711,22 @@ rb_pyr_segmentation(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self)
 {
-  VALUE spatial_window_radius, color_window_radius, max_level, termcrit, dest;
+  VALUE spatial_window_radius, color_window_radius, max_level, termcrit;
   rb_scan_args(argc, argv, "22", &spatial_window_radius, &color_window_radius, &max_level, &termcrit);
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvPyrMeanShiftFiltering(CVARR(self), CVARR(dest),
-			  NUM2DBL(spatial_window_radius),
-			  NUM2DBL(color_window_radius),
-			  IF_INT(max_level, 1),
-			  NIL_P(termcrit) ? cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 5, 1) : VALUE_TO_CVTERMCRITERIA(termcrit));
+  CvArr* self_ptr = CVARR(self);
+  VALUE dest = Qnil;
+  try {
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvPyrMeanShiftFiltering(self_ptr, CVARR(dest),
+			    NUM2DBL(spatial_window_radius),
+			    NUM2DBL(color_window_radius),
+			    IF_INT(max_level, 1),
+			    NIL_P(termcrit) ? cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 5, 1)
+			    : VALUE_TO_CVTERMCRITERIA(termcrit));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -4407,7 +4739,12 @@ rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_watershed(VALUE self, VALUE markers)
 {
-  cvWatershed(CVARR(self), CVARR(markers));
+  try {
+    cvWatershed(CVARR(self), CVARR_WITH_CHECK(markers));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return markers;
 }
 
@@ -4420,14 +4757,19 @@ rb_watershed(VALUE self, VALUE markers)
 VALUE
 rb_moments(int argc, VALUE *argv, VALUE self)
 {
-  VALUE is_binary, moments;
+  VALUE is_binary;
   rb_scan_args(argc, argv, "01", &is_binary);
   IplImage image = *IPLIMAGE(self);
-  int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
-  moments = rb_ary_new();
-  for(int i = 1; i <= cn; i++) {
-    cvSetImageCOI(&image, i);
-    rb_ary_push(moments, cCvMoments::new_object(&image, TRUE_OR_FALSE(is_binary, 0)));
+  VALUE moments = rb_ary_new();
+  try {
+    int cn = CV_MAT_CN(cvGetElemType(CVARR(self)));
+    for (int i = 1; i <= cn; ++i) {
+      cvSetImageCOI(&image, i);
+      rb_ary_push(moments, cCvMoments::new_object(&image, TRUE_OR_FALSE(is_binary, 0)));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return moments;
 }
@@ -4459,15 +4801,22 @@ rb_moments(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_hough_lines(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   const int INVALID_TYPE = -1;
   VALUE method, rho, theta, threshold, p1, p2;
   rb_scan_args(argc, argv, "42", &method, &rho, &theta, &threshold, &p1, &p2);
   int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
+  if (method_flag == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
   VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     method_flag, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
-			     IF_DBL(p1, 0), IF_DBL(p2, 0));
+  CvSeq *seq = NULL;
+  try {
+    seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
+			method_flag, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
+			IF_DBL(p1, 0), IF_DBL(p2, 0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   switch (method_flag) {
   case CV_HOUGH_STANDARD:
   case CV_HOUGH_MULTI_SCALE:
@@ -4477,75 +4826,10 @@ rb_hough_lines(int argc, VALUE *argv, VALUE self)
     return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvTwoPoints::rb_class(), storage);
     break;
   default:
-    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
     break;
   }
 
   return Qnil;
-}
-
-
-/*
- * call-seq:
- *   hough_lines_standard(<i>rho, theta, threshold</i>) -> cvseq(include CvLine)
- *
- * Finds lines in binary image using standard(classical) Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- */
-VALUE
-rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_STANDARD, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
-}
-
-/*
- * call-seq:
- *   hough_lines_probabilistic(<i>rho, theta, threshold, min_length, max_gap</i>) -> cvseq(include CvTwoPoints)
- *
- * Finds lines in binary image using probabilistic Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * min_length - The minimum line length.
- * * max_gap - The maximum gap between line segments lieing on the same line to treat them as the single line segment (i.e. to join them).
- */
-VALUE
-rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_PROBABILISTIC, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
-			     NUM2DBL(p1), NUM2DBL(p2));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvTwoPoints::rb_class(), storage);
-}
-
-/*
- * call-seq:
- *   hough_lines_multi_scale(<i>rho, theta, threshold, div_rho, div_theta</i>) -> cvseq(include CvLine)
- *
- * Finds lines in binary image using multi-scale variant of classical Hough transform.
- * * rho - Distance resolution in pixel-related units.
- * * theta - Angle resolution measured in radians.
- * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * div_rho = divisor for distance resolution rho.
- * * div_theta = divisor for angle resolution theta.
- */
-VALUE
-rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughLines2(CVARR(copy(self)), CVMEMSTORAGE(storage),
-			     CV_HOUGH_MULTI_SCALE, NUM2DBL(rho), NUM2DBL(theta), NUM2INT(threshold),
-			     NUM2DBL(p1), NUM2DBL(p2));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvLine::rb_class(), storage);
 }
 
 /*
@@ -4557,37 +4841,24 @@ rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, 
 VALUE
 rb_hough_circles(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   const int INVALID_TYPE = -1;
   VALUE method, dp, min_dist, param1, param2, min_radius, max_radius, storage;
   rb_scan_args(argc, argv, "52", &method, &dp, &min_dist, &param1, &param2, 
 	       &min_radius, &max_radius);
   storage = cCvMemStorage::new_object();
   int method_flag = CVMETHOD("HOUGH_TRANSFORM_METHOD", method, INVALID_TYPE);
-  CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
-			      method_flag, NUM2DBL(dp), NUM2DBL(min_dist),
-			      NUM2DBL(param1), NUM2DBL(param2),
-			      IF_INT(min_radius, 0), IF_INT(max_radius, 0));
-  return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvCircle32f::rb_class(), storage);
-}
-
-/*
- * call-seq:
- *   hough_circles_gradient(<i>dp, min_dist, threshold_canny, threshold_accumulate, min_radius = 0, max_radius = max(width,height)</i>) -> cvseq(include CvCircle32f)
- *
- * Finds circles in grayscale image using Hough transform.
- */
-VALUE
-rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self)
-{
-  SUPPORT_8UC1_ONLY(self);
-  VALUE dp, min_dist, threshold_canny, threshold_accumulate, min_radius, max_radius, storage;
-  rb_scan_args(argc, argv, "42", &dp, &min_dist, &threshold_canny, &threshold_accumulate, &min_radius, &max_radius);
-  storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
-			      CV_HOUGH_GRADIENT, NUM2DBL(dp), NUM2DBL(min_dist),
-			      NUM2DBL(threshold_canny), NUM2DBL(threshold_accumulate),
-			      IF_INT(min_radius, 0), IF_INT(max_radius, 0));
+  if (method_flag == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method: %d", method_flag);
+  CvSeq *seq = NULL;
+  try {
+    seq = cvHoughCircles(CVARR(self), CVMEMSTORAGE(storage),
+			 method_flag, NUM2DBL(dp), NUM2DBL(min_dist),
+			 NUM2DBL(param1), NUM2DBL(param2),
+			 IF_INT(min_radius, 0), IF_INT(max_radius, 0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvCircle32f::rb_class(), storage);
 }
 
@@ -4601,56 +4872,19 @@ rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius)
 {
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
   const int INVALID_TYPE = -1;
-  VALUE dest;
+  VALUE dest = Qnil;
   int method = CVMETHOD("INPAINT_METHOD", inpaint_method, INVALID_TYPE);
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), method);
-  return dest;
-}
-
-
-/*
- * call-seq:
- *   inpaint_ns(<i>mask, radius</i>) -> cvmat
- *
- * Inpaints the selected region in the image by Navier-Stokes based method.
- * The radius of circlular neighborhood of each point inpainted that is considered by the algorithm.
- */
-VALUE
-rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius)
-{
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
-  VALUE dest;
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_NS);
-  return dest;
-}
-
-/*
- * call-seq:
- *   inpaint_telea(<i>mask, radius</i>) -> cvmat
- *
- * Inpaints the selected region in the image by The method by Alexandru Telea's method.
- * The radius of circlular neighborhood of each point inpainted that is considered by the algorithm.
- */
-VALUE
-rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius)
-{
-  SUPPORT_8U_ONLY(self);
-  SUPPORT_C1C3_ONLY(self);
-  VALUE dest;
-  if (!(rb_obj_is_kind_of(mask, cCvMat::rb_class())) || cvGetElemType(CVARR(mask)) != CV_8UC1)
-    rb_raise(rb_eTypeError, "argument 1 (mask) should be mask image.");
-  dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvInpaint(CVARR(self), CVARR(mask), CVARR(dest), NUM2DBL(radius), CV_INPAINT_TELEA);
+  if (method == INVALID_TYPE)
+    rb_raise(rb_eArgError, "Invalid method");
+  try {
+    CvArr* self_ptr = CVARR(self);
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvInpaint(self_ptr, MASK(mask), CVARR(dest), NUM2DBL(radius), method);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -4673,9 +4907,15 @@ rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius)
 VALUE
 rb_equalize_hist(VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
-  VALUE dest = new_mat_kind_object(cvGetSize(CVARR(self)), self);
-  cvEqualizeHist(CVARR(self), CVARR(dest));
+  VALUE dest = Qnil;
+  try {
+    CvArr* self_ptr = CVARR(self);
+    dest = new_mat_kind_object(cvGetSize(self_ptr), self);
+    cvEqualizeHist(self_ptr, CVARR(dest));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return dest;
 }
 
@@ -4711,23 +4951,27 @@ rb_equalize_hist(VALUE self)
 VALUE
 rb_match_template(int argc, VALUE *argv, VALUE self)
 {
-  VALUE templ, method, result;
+  VALUE templ, method;
   int method_flag;
   if (rb_scan_args(argc, argv, "11", &templ, &method) == 1)
     method_flag = CV_TM_SQDIFF;
   else
     method_flag = CVMETHOD("MATCH_TEMPLATE_METHOD", method);
 
-  if (!(rb_obj_is_kind_of(templ, cCvMat::rb_class())))
-    rb_raise(rb_eTypeError, "argument 1 (template) should be %s.", rb_class2name(cCvMat::rb_class()));
-  if (cvGetElemType(CVARR(self)) != cvGetElemType(CVARR(templ)))
-    rb_raise(rb_eTypeError, "template should be same type of self.");
-  CvSize src_size = cvGetSize(CVARR(self));
-  CvSize template_size = cvGetSize(CVARR(templ));
-  result = cCvMat::new_object(src_size.height - template_size.height + 1,
-			      src_size.width - template_size.width + 1,
-			      CV_32FC1);
-  cvMatchTemplate(CVARR(self), CVARR(templ), CVARR(result), method_flag);
+  CvArr* self_ptr = CVARR(self);
+  CvArr* templ_ptr = CVARR_WITH_CHECK(templ);
+  VALUE result = Qnil;
+  try {
+    CvSize src_size = cvGetSize(self_ptr);
+    CvSize template_size = cvGetSize(templ_ptr);
+    result = cCvMat::new_object(src_size.height - template_size.height + 1,
+				src_size.width - template_size.width + 1,
+				CV_32FC1);
+    cvMatchTemplate(self_ptr, templ_ptr, CVARR(result), method_flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return result;
 }
 
@@ -4754,65 +4998,15 @@ rb_match_shapes(int argc, VALUE *argv, VALUE self)
   if (!(rb_obj_is_kind_of(object, cCvMat::rb_class()) || rb_obj_is_kind_of(object, cCvContour::rb_class())))
     rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s",
 	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method_flag));
+  double result = 0;
+  try {
+    result = cvMatchShapes(CVARR(self), CVARR(object), method_flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
 }
-
-inline VALUE
-rb_match_shapes_internal(int argc, VALUE *argv, VALUE self, int method)
-{
-  VALUE object;
-  rb_scan_args(argc, argv, "10", &object);
-  if (!(rb_obj_is_kind_of(object, cCvMat::rb_class()) || rb_obj_is_kind_of(object, cCvContour::rb_class())))
-    rb_raise(rb_eTypeError, "argument 1 (shape) should be %s or %s",
-	     rb_class2name(cCvMat::rb_class()), rb_class2name(cCvContour::rb_class()));
-  return rb_float_new(cvMatchShapes(CVARR(self), CVARR(object), method));
-}
-
-/*
- * call-seq:
- *   match_shapes_i1(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I1(A,B)=sumi=1..7abs(1/mAi - 1/mBi)
- */
-VALUE
-rb_match_shapes_i1(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I1);
-}
-
-/*
- * call-seq:
- *   match_shapes_i2(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I2(A,B)=sumi=1..7abs(mAi - mBi)
- */
-VALUE
-rb_match_shapes_i2(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I2);
-}
-
-/*
- * call-seq:
- *   match_shapes_i3(<i>object</i>) -> float
- *
- * Compares two shapes(self and object). <i>object</i> should be CvMat or CvContour.
- *
- * A - object1, B - object2:
- *   I3(A,B)=sumi=1..7abs(mAi - mBi)/abs(mAi)
- */
-VALUE
-rb_match_shapes_i3(int argc, VALUE *argv, VALUE self)
-{
-  return rb_match_shapes_internal(argc, argv, self, CV_CONTOURS_MATCH_I3);
-}
-
 
 /*
  * call-seq:
@@ -4826,7 +5020,12 @@ VALUE
 rb_mean_shift(VALUE self, VALUE window, VALUE criteria)
 {
   VALUE comp = cCvConnectedComp::new_object();
-  cvMeanShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria), CVCONNECTEDCOMP(comp));
+  try {
+    cvMeanShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria), CVCONNECTEDCOMP(comp));    
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return comp;
 }
 
@@ -4841,10 +5040,15 @@ rb_mean_shift(VALUE self, VALUE window, VALUE criteria)
 VALUE
 rb_cam_shift(VALUE self, VALUE window, VALUE criteria)
 {
-  VALUE comp, box;
-  comp = cCvConnectedComp::new_object();
-  box = cCvBox2D::new_object();
-  cvCamShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria), CVCONNECTEDCOMP(comp), CVBOX2D(box));
+  VALUE comp = cCvConnectedComp::new_object();
+  VALUE box = cCvBox2D::new_object();
+  try {
+    cvCamShift(CVARR(self), VALUE_TO_CVRECT(window), VALUE_TO_CVTERMCRITERIA(criteria),
+	       CVCONNECTEDCOMP(comp), CVBOX2D(box));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, comp, box);
 }
 
@@ -4915,9 +5119,15 @@ rb_snake_image(int argc, VALUE *argv, VALUE self)
   }
   CvSize win = VALUE_TO_CVSIZE(window);
   CvTermCriteria tc = VALUE_TO_CVTERMCRITERIA(criteria);
-  cvSnakeImage(cvGetImage(CVARR(self), &stub), pointset, length,
-	       a, b, c, coeff, win, tc, IF_BOOL(calc_gradient, 1, 0, 1));
-
+  try {
+    cvSnakeImage(cvGetImage(CVARR(self), &stub), pointset, length,
+		 a, b, c, coeff, win, tc, IF_BOOL(calc_gradient, 1, 0, 1));
+  }
+  catch (cv::Exception& e) {
+    if (pointset != NULL)
+      cvFree(&pointset);
+    raise_cverror(e);
+  }
   VALUE result = rb_ary_new2(length);
   for (i = 0; i < length; ++i)
     rb_ary_push(result, cCvPoint::new_object(pointset[i]));
@@ -4953,24 +5163,32 @@ rb_snake_image(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_optical_flow_hs(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   VALUE prev, velx, vely, options;
   int use_previous = 0;
   rb_scan_args(argc, argv, "13", &prev, &velx, &vely, &options);
   options = OPTICAL_FLOW_HS_OPTION(options);
-  if (!rb_obj_is_kind_of(prev, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (previous image) should be %s", rb_class2name(cCvMat::rb_class()));
-  if (NIL_P(velx) && NIL_P(vely)) {
-    velx = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-    vely = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  } else {
-    if (rb_obj_is_kind_of(velx, cCvMat::rb_class()) && rb_obj_is_kind_of(vely, cCvMat::rb_class()))
+  CvMat *velx_ptr, *vely_ptr;
+  CvArr* self_ptr = CVARR(self);
+  try {
+    if (NIL_P(velx) && NIL_P(vely)) {
+      CvSize size = cvGetSize(self_ptr);
+      int type = CV_MAKETYPE(CV_32F, 1);
+      velx = cCvMat::new_object(size, type);
+      vely = cCvMat::new_object(size, type);
+      velx_ptr = CVMAT(velx);
+      vely_ptr = CVMAT(vely);
+    }
+    else {
       use_previous = 1;
-    else
-      rb_raise(rb_eArgError, "Necessary to give both argument 2(previous velocity field x) and argument 3(previous velocity field y)");
+      velx_ptr = CVMAT_WITH_CHECK(velx);
+      vely_ptr = CVMAT_WITH_CHECK(vely);
+    }
+    cvCalcOpticalFlowHS(CVMAT_WITH_CHECK(prev), self_ptr, use_previous, velx_ptr, vely_ptr,
+			HS_LAMBDA(options), HS_CRITERIA(options));
   }
-  cvCalcOpticalFlowHS(CVARR(prev), CVARR(self), use_previous, CVARR(velx), CVARR(vely),
-		      HS_LAMBDA(options), HS_CRITERIA(options));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, velx, vely);
 }
 
@@ -4986,13 +5204,20 @@ rb_optical_flow_hs(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_optical_flow_lk(VALUE self, VALUE prev, VALUE win_size)
 {
-  SUPPORT_8UC1_ONLY(self);
-  VALUE velx, vely;
-  if (!rb_obj_is_kind_of(prev, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1 (previous image) should be %s", rb_class2name(cCvMat::rb_class()));
-  velx = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  vely = cCvMat::new_object(cvGetSize(CVARR(self)), CV_MAKETYPE(CV_32F, 1));
-  cvCalcOpticalFlowLK(CVARR(prev), CVARR(self), VALUE_TO_CVSIZE(win_size), CVARR(velx), CVARR(vely));
+  VALUE velx = Qnil;
+  VALUE vely = Qnil;
+  try {
+    CvArr* self_ptr = CVARR(self);
+    CvSize size = cvGetSize(self_ptr);
+    int type = CV_MAKETYPE(CV_32F, 1);
+    velx = cCvMat::new_object(size, type);
+    vely = cCvMat::new_object(size, type);
+    cvCalcOpticalFlowLK(CVMAT_WITH_CHECK(prev), self_ptr, VALUE_TO_CVSIZE(win_size),
+			CVARR(velx), CVARR(vely));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, velx, vely);
 }
 
@@ -5023,145 +5248,40 @@ rb_optical_flow_lk(VALUE self, VALUE prev, VALUE win_size)
 VALUE
 rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
 {
-  SUPPORT_8UC1_ONLY(self);
   VALUE prev, velx, vely, options;
-  int use_previous = 0;
   rb_scan_args(argc, argv, "13", &prev, &velx, &vely, &options);
   options = OPTICAL_FLOW_BM_OPTION(options);
-  CvSize
-    image_size = cvGetSize(CVARR(self)),
-    block_size = BM_BLOCK_SIZE(options),
-    shift_size = BM_SHIFT_SIZE(options),
-    max_range  = BM_MAX_RANGE(options),
-    velocity_size = cvSize((image_size.width - block_size.width) / shift_size.width,
-			   (image_size.height - block_size.height) / shift_size.height);
-  if (NIL_P(velx) && NIL_P(vely)) {
-    velx = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
-    vely = cCvMat::new_object(velocity_size, CV_MAKETYPE(CV_32F, 1));
-  }
-  else {
-    if (rb_obj_is_kind_of(velx, cCvMat::rb_class()) && rb_obj_is_kind_of(vely, cCvMat::rb_class()))
+  CvArr* self_ptr = CVARR(self);
+  CvSize block_size = BM_BLOCK_SIZE(options);
+  CvSize shift_size = BM_SHIFT_SIZE(options);
+  CvSize max_range  = BM_MAX_RANGE(options);
+
+  int use_previous = 0;
+  try {
+    CvSize image_size = cvGetSize(self_ptr);
+    CvSize velocity_size = cvSize((image_size.width - block_size.width) / shift_size.width,
+				  (image_size.height - block_size.height) / shift_size.height);
+    CvMat *velx_ptr, *vely_ptr;
+    if (NIL_P(velx) && NIL_P(vely)) {
+      int type = CV_MAKETYPE(CV_32F, 1);
+      velx = cCvMat::new_object(velocity_size, type);
+      vely = cCvMat::new_object(velocity_size, type);
+      velx_ptr = CVMAT(velx);
+      vely_ptr = CVMAT(vely);
+    }
+    else {
       use_previous = 1;
-    else
-      rb_raise(rb_eArgError, "Necessary to give both argument 2(previous velocity field x) and argument 3(previous velocity field y)");
+      velx_ptr = CVMAT_WITH_CHECK(velx);
+      vely_ptr = CVMAT_WITH_CHECK(vely);
+    }
+    cvCalcOpticalFlowBM(CVMAT_WITH_CHECK(prev), self_ptr,
+			block_size, shift_size, max_range, use_previous,
+			velx_ptr, vely_ptr);
   }
-  cvCalcOpticalFlowBM(CVARR(prev), CVARR(self),
-		      block_size, shift_size, max_range, use_previous,
-		      CVARR(velx), CVARR(vely));
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return rb_ary_new3(2, velx, vely);
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_7point(<i>points1, points2</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for 7-point algorism. Return fundamental matrix(9x3).
- * <i>points1</i> and <i>points2</i> should be 2x7 or 3x7 single-channel, or 1x7 multi-channel matrix.
- *
- * note: 9x3 fundamental matrix means 3x3 three fundamental matrices.
- */
-VALUE
-rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2)
-{
-  VALUE fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  int num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix),
-				 CV_FM_7POINT, 0, 0, NULL);
-  return (num == 0) ? Qnil : fundamental_matrix;
-}
-
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_8point(<i>points1, points2</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for 8-point algorism.
- * <i>points1</i> and <i>points2</i> should be 2x8 or 3x8 single-channel, or 1x8 multi-channel matrix.
- *
- */
-VALUE
-rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2)
-{
-  VALUE fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  int num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix),
-				 CV_FM_8POINT, 0, 0, NULL);
-  return (num == 0) ? Qnil : fundamental_matrix;
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_ransac(<i>points1, points2[,options = {}]</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for RANSAC algorism.
- * <i>points1</i> and <i>points2</i> should be 2xN, Nx2, 3xN or Nx3 1-channel, or 1xN or Nx1 multi-channel matrix (N >= 8).
- * <i>option</i> should be Hash include these keys.
- *   :with_status (true or false)
- *      If set true, return fundamental_matrix and status. [fundamental_matrix, status]
- *      Otherwise return fundamental matrix only(default).
- *   :maximum_distance
- *      The maximum distance from point to epipolar line in pixels, beyond which the point is considered an outlier
- *      and is not used for computing the final fundamental matrix. Usually it is set to 0.5 or 1.0.
- *   :desirable_level
- *      It denotes the desirable level of confidence that the matrix is correct.
- *
- * note: <i>option</i>'s default value is CvMat::FIND_FUNDAMENTAL_MAT_OPTION.
- */
-VALUE
-rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass)
-{
-  VALUE points1, points2, option, fundamental_matrix, status;
-  int num = 0;
-  rb_scan_args(argc, argv, "21", &points1, &points2, &option);
-  option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  if(FFM_WITH_STATUS(option)){
-    CvMat *points1_ptr = CVMAT(points1);
-    int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
-    status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
-    return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }else{
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_RANSAC,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
-    return num == 0 ? Qnil : fundamental_matrix;
-  }
-}
-
-/*
- * call-seq:
- *   CvMat.find_fundamental_mat_lmeds(<i>points1, points2[,options = {}]</i>) -> fundamental_matrix(cvmat) or nil
- *
- * Calculates fundamental matrix from corresponding points, use for LMedS algorism.
- * <i>points1</i> and <i>points2</i> should be 2xN, Nx2, 3xN or Nx3 1-channel, or 1xN or Nx1 multi-channel matrix (N >= 8).
- * <i>option</i> should be Hash include these keys.
- *   :with_status (true or false)
- *      If set true, return fundamental_matrix and status. [fundamental_matrix, status]
- *      Otherwise return fundamental matrix only(default).
- *   :desirable_level
- *      It denotes the desirable level of confidence that the matrix is correct.
- *
- * note: <i>option</i>'s default value is CvMat::FIND_FUNDAMENTAL_MAT_OPTION.
- */
-VALUE
-rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass)
-{
-  VALUE points1, points2, option, fundamental_matrix, status;
-  int num = 0;
-  rb_scan_args(argc, argv, "21", &points1, &points2, &option);
-  option = FIND_FUNDAMENTAL_MAT_OPTION(option);
-  fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
-  if(FFM_WITH_STATUS(option)){
-    CvMat *points1_ptr = CVMAT(points1);
-    int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
-    status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
-			       0, FFM_DESIRABLE_LEVEL(option), CVMAT(status));
-    return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
-  }else{
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), CV_FM_LMEDS,
-			       0, FFM_DESIRABLE_LEVEL(option), NULL);
-    return num == 0 ? Qnil : fundamental_matrix;
-  }
 }
 
 /*
@@ -5196,21 +5316,32 @@ rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass)
   rb_scan_args(argc, argv, "31", &points1, &points2, &method, &option);
   option = FIND_FUNDAMENTAL_MAT_OPTION(option);
   int fm_method = FIX2INT(method);
+  CvMat *points1_ptr = CVMAT_WITH_CHECK(points1);
   if (fm_method == CV_FM_7POINT)
-    fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
+    fundamental_matrix = cCvMat::new_object(9, 3, CV_MAT_DEPTH(points1_ptr->type));
   else
-    fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(CVMAT(points1)->type));
+    fundamental_matrix = cCvMat::new_object(3, 3, CV_MAT_DEPTH(points1_ptr->type));
+
   if (FFM_WITH_STATUS(option)) {
-    CvMat *points1_ptr = CVMAT(points1);
     int status_len = (points1_ptr->rows > points1_ptr->cols) ? points1_ptr->rows : points1_ptr->cols;
     status = cCvMat::new_object(1, status_len, CV_8UC1);
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), fm_method,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
+    try {
+      num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), fm_method,
+				 FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), CVMAT(status));
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return num == 0 ? Qnil : rb_ary_new3(2, fundamental_matrix, status);
   }
   else {
-    num = cvFindFundamentalMat(CVMAT(points1), CVMAT(points2), CVMAT(fundamental_matrix), fm_method,
-			       FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
+    try {
+      num = cvFindFundamentalMat(points1_ptr, CVMAT_WITH_CHECK(points2), CVMAT(fundamental_matrix), fm_method,
+				 FFM_MAXIMUM_DISTANCE(option), FFM_DESIRABLE_LEVEL(option), NULL);
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
     return num == 0 ? Qnil : fundamental_matrix;
   }
 }
@@ -5236,21 +5367,72 @@ VALUE
 rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix)
 {
   VALUE correspondent_lines;
-  CvMat* points_ptr = CVMAT(points);
+  CvMat* points_ptr = CVMAT_WITH_CHECK(points);
   int n;
-  if(points_ptr->cols <= 3 && points_ptr->rows >= 7)
+  if (points_ptr->cols <= 3 && points_ptr->rows >= 7)
     n = points_ptr->rows;
-  else if(points_ptr->rows <= 3 && points_ptr->cols >= 7)
+  else if (points_ptr->rows <= 3 && points_ptr->cols >= 7)
     n = points_ptr->cols;
   else
     rb_raise(rb_eArgError, "input points should 2xN, Nx2 or 3xN, Nx3 matrix(N >= 7).");
   
   correspondent_lines = cCvMat::new_object(n, 3, CV_MAT_DEPTH(points_ptr->type));
-  cvComputeCorrespondEpilines(points_ptr, FIX2INT(which_image), CVMAT(fundamental_matrix),
-			      CVMAT(correspondent_lines));
+  try {
+    cvComputeCorrespondEpilines(points_ptr, NUM2INT(which_image), CVMAT_WITH_CHECK(fundamental_matrix),
+				CVMAT(correspondent_lines));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return correspondent_lines;
 }
 
+/*
+ * call-seq:
+ *   extract_surf(params[,mask]) -> [cvseq(cvsurfpoint), array(float)]
+ * Extracts Speeded Up Robust Features from an image
+ *
+ * <i>params</i> (CvSURFParams) - Various algorithm parameters put to the structure CvSURFParams.
+ * <i>mask</i> (CvMat) - The optional input 8-bit mask. The features are only found in the areas that contain more than 50% of non-zero mask pixels.
+ */
+VALUE
+rb_extract_surf(int argc, VALUE *argv, VALUE self)
+{
+  VALUE _params, _mask;
+  rb_scan_args(argc, argv, "11", &_params, &_mask);
+
+  // Prepare arguments
+  CvSURFParams params = *CVSURFPARAMS_WITH_CHECK(_params);
+  CvMat* mask = MASK(_mask);
+  VALUE storage = cCvMemStorage::new_object();
+  CvSeq* keypoints = NULL;
+  CvSeq* descriptors = NULL;
+
+  // Compute SURF keypoints and descriptors
+  try {
+    cvExtractSURF(CVARR(self), mask, &keypoints, &descriptors, CVMEMSTORAGE(storage),
+		  params, 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  VALUE _keypoints = cCvSeq::new_sequence(cCvSeq::rb_class(), keypoints, cCvSURFPoint::rb_class(), storage);
+  
+  // Create descriptor array
+  const int DIM_SIZE = (params.extended) ? 128 : 64;
+  const int NUM_KEYPOINTS = keypoints->total;
+  VALUE _descriptors = rb_ary_new2(NUM_KEYPOINTS);
+  for (int m = 0; m < NUM_KEYPOINTS; ++m) {
+    VALUE elem = rb_ary_new2(DIM_SIZE);
+    float *descriptor = (float*)cvGetSeqElem(descriptors, m);
+    for (int n = 0; n < DIM_SIZE; ++n) {
+      rb_ary_store(elem, n, rb_float_new(descriptor[n]));
+    }
+    rb_ary_store(_descriptors, m, elem);
+  }
+  
+  return rb_assoc_new(_keypoints, _descriptors);
+}
 
 VALUE
 new_object(int rows, int cols, int type)

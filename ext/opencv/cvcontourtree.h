@@ -11,7 +11,7 @@
 #define RUBY_OPENCV_CVCONTOURTREE_H
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVCONTOURTREE namespace cCvContourTree{
+#define __NAMESPACE_BEGIN_CVCONTOURTREE namespace cCvContourTree {
 #define __NAMESPACE_END_CVCONTOURTREE }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -23,7 +23,7 @@ void define_ruby_class();
 
 VALUE rb_p1(VALUE self);
 VALUE rb_p2(VALUE self);
-VALUE rb_contour(int argc, VALUE *argv, VALUE self);
+VALUE rb_contour(VALUE self, VALUE criteria);
 
 VALUE new_object();
 

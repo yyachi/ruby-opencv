@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVSEQ_CURVE_H
 #define RUBY_OPENCV_CVSEQ_CURVE_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CURVE namespace mCurve{
+#define __NAMESPACE_BEGIN_CURVE namespace mCurve {
 #define __NAMESPACE_END_CURVE }
 
 __NAMESPACE_BEGIN_OPENCV

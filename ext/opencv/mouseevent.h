@@ -7,13 +7,13 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#define __NAMESPACE_BEGIN_MOUSEEVENT namespace cMouseEvent{
+#define __NAMESPACE_BEGIN_MOUSEEVENT namespace cMouseEvent {
 #define __NAMESPACE_END_MOUSEEVENT }
 
 #ifndef RUBY_OPENCV_GUI_MOUSEEVENT_H
 #define RUBY_OPENCV_GUI_MOUSEEVENT_H
 
-#include"opencv.h"
+#include "opencv.h"
 
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI

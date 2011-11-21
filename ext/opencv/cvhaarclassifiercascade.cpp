@@ -77,8 +77,14 @@ cvhaarclassifiercascade_free(void* ptr)
 VALUE
 rb_load(VALUE klass, VALUE path)
 {
-  CvHaarClassifierCascade *cascade = (CvHaarClassifierCascade*)cvLoad(StringValueCStr(path), 0, 0, 0);
-  if(!CV_IS_HAAR_CLASSIFIER(cascade))
+  CvHaarClassifierCascade *cascade = NULL;
+  try {
+    cascade = (CvHaarClassifierCascade*)cvLoad(StringValueCStr(path), 0, 0, 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  if (!CV_IS_HAAR_CLASSIFIER(cascade))
     rb_raise(rb_eArgError, "invalid format haar classifier cascade file.");
   return Data_Wrap_Struct(klass, 0, cvhaarclassifiercascade_free, cascade);
 }
@@ -111,8 +117,6 @@ rb_load(VALUE klass, VALUE path)
  *   :min_size
  *      Minimum window size. By default, it is set to size of samples the classifier has been
  *      trained on (~20x20 for face detection).
- *   :max_size
- *      aximum window size to use. By default, it is set to the size of the image.
  */
 VALUE
 rb_detect_objects(int argc, VALUE *argv, VALUE self)
@@ -120,18 +124,15 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
   VALUE image, options;
   rb_scan_args(argc, argv, "11", &image, &options);
 
-  if (!rb_obj_is_kind_of(image, cCvMat::rb_class()))
-    rb_raise(rb_eTypeError, "argument 1(target-image) should be %s.", rb_class2name(cCvMat::rb_class()));
-
   double scale_factor;
   int flags, min_neighbors;
-  CvSize min_size, max_size;
+  CvSize min_size;
   VALUE storage_val;
   if (NIL_P(options)) {
     scale_factor = 1.1;
     flags = 0;
     min_neighbors = 3;
-    min_size = max_size = cvSize(0, 0);
+    min_size = cvSize(0, 0);
     storage_val = cCvMemStorage::new_object();
   }
   else {
@@ -140,17 +141,21 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
     min_neighbors = IF_INT(LOOKUP_CVMETHOD(options, "min_neighbors"), 3);
     VALUE min_size_val = LOOKUP_CVMETHOD(options, "min_size");
     min_size = NIL_P(min_size_val) ? cvSize(0, 0) : VALUE_TO_CVSIZE(min_size_val);
-    VALUE max_size_val = LOOKUP_CVMETHOD(options, "max_size");
-    max_size = NIL_P(max_size_val) ? cvSize(0, 0) : VALUE_TO_CVSIZE(max_size_val);
     storage_val = CHECK_CVMEMSTORAGE(LOOKUP_CVMETHOD(options, "storage"));
   }
 
-  CvSeq *seq = cvHaarDetectObjects(CVMAT(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
-                                   scale_factor, min_neighbors, flags, min_size);
-  VALUE result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
-  if (rb_block_given_p()) {
-    for(int i = 0; i < seq->total; ++i)
-      rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage_val));
+  VALUE result = Qnil;
+  try {
+    CvSeq *seq = cvHaarDetectObjects(CVMAT_WITH_CHECK(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
+				     scale_factor, min_neighbors, flags, min_size);
+    result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
+    if (rb_block_given_p()) {
+      for(int i = 0; i < seq->total; ++i)
+	rb_yield(REFER_OBJECT(cCvAvgComp::rb_class(), cvGetSeqElem(seq, i), storage_val));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return result;
 }

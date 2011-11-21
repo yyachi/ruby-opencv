@@ -7,7 +7,7 @@
    Copyright (C) 2005 Masakazu Yonekura
 
 ************************************************************/
-#include"cvsize.h"
+#include "cvsize.h"
 /*
  * Document-class: OpenCV::CvSize
  *
@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum.
  * 
  * C structure is here, very simple.
- *   typdef struct CvSize{
+ *   typdef struct CvSize {
  *     int width;
  *     int height;
  *   }
@@ -34,7 +34,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
@@ -104,28 +104,25 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE obj, x, y;
+  CvSize *self_ptr = CVSIZE(self);
   switch (argc) {
   case 0:
     break;
-  case 1:
-    obj = argv[0];
-    if(rb_compatible_q(rb_klass, obj)) {
-      CVSIZE(self)->width = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("width"), 0), rb_intern("to_i"), 0));
-      CVSIZE(self)->height = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("height"), 0), rb_intern("to_i"), 0));
-    }else{
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvSize size = VALUE_TO_CVSIZE(argv[0]);
+    self_ptr->width = size.width;
+    self_ptr->height = size.height;
     break;
+  }
   case 2:
-    x = argv[0], y = argv[1];
-    CVSIZE(self)->width = NUM2INT(x);
-    CVSIZE(self)->height = NUM2INT(y);
+    self_ptr->width = NUM2INT(argv[0]);
+    self_ptr->height = NUM2INT(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);
+    break;
   }
-  return Qnil;      
+  return self;
 }
 
 /*

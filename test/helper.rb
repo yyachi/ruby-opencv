@@ -9,38 +9,13 @@ class OpenCVTestCase < Test::Unit::TestCase
   SAMPLE_DIR = File.expand_path(File.dirname(__FILE__)) + '/samples/'
   FILENAME_CAT = SAMPLE_DIR + 'cat.jpg'
   FILENAME_LENA256x256 = SAMPLE_DIR + 'lena-256x256.jpg'
+  FILENAME_LENA32x32 = SAMPLE_DIR + 'lena-32x32.jpg'
+  FILENAME_LENA_EYES = File.expand_path(File.dirname(__FILE__)) + '/samples/lena-eyes.jpg'
+  FILENAME_FRUITS = SAMPLE_DIR + 'fruits.jpg'
   HAARCASCADE_FRONTALFACE_ALT = SAMPLE_DIR + 'haarcascade_frontalface_alt.xml.gz'
   AVI_SAMPLE = SAMPLE_DIR + 'movie_sample.avi'
   
-  CvMat.class_eval do
-    # Range check for debug
-    alias original_aref []
-    alias original_aset []=;
-    
-    def [](*idx)
-      if idx.size == 1
-        n = idx[0]
-        throw ArgumentError.new("index #{n} is out of range") if n >= rows * cols
-      else
-        j, i = *idx
-        throw ArgumentError.new("index for row #{j} is out of range") if j >= rows
-        throw ArgumentError.new("index for column #{i} is out of range") if i >= cols
-      end
-      original_aref(*idx)
-    end
-
-    def []=(*args)
-      if args.size == 2
-        n = args[0] # index
-        throw ArgumentError.new("index #{n} is out of range") if n >= rows * cols
-      else
-        j, i = *args
-        throw ArgumentError.new("index for row #{j} is out of range") if j >= rows
-        throw ArgumentError.new("index for column #{i} is out of range") if i >= cols
-      end
-      original_aset(*args)
-    end
-  end
+  DUMMY_OBJ = Digest::MD5.new # dummy object for argument type check test
 
   def snap(*images)
     n = -1
@@ -146,7 +121,6 @@ class OpenCVTestCase < Test::Unit::TestCase
     mat.height.times { |j|
       a = []
       mat.width.times { |i|
-        # tmp = mat[j, i].to_ary.map {|m| m.to_i }.join(',')
         tmp = mat[j, i].to_ary.map {|m| m.to_f.round(2) }.join(',')
         a << "[#{tmp}]"
       }

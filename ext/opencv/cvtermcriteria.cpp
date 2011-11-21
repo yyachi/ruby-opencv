@@ -7,7 +7,7 @@
    Copyright (C) 2005-2006 Masakazu Yonekura
 
 ************************************************************/
-#include"cvtermcriteria.h"
+#include "cvtermcriteria.h"
 /*
  * Document-class: OpenCV::CvTermCriteria
  *
@@ -80,7 +80,12 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     type |= CV_TERMCRIT_ITER;
   if (!NIL_P(eps))
     type |= CV_TERMCRIT_EPS;
-  *CVTERMCRITERIA(self) = cvTermCriteria(type, IF_INT(max, 0), IF_DBL(eps, 0.0));
+  try {
+    *CVTERMCRITERIA(self) = cvTermCriteria(type, IF_INT(max, 0), IF_DBL(eps, 0.0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -127,7 +132,8 @@ rb_set_max(VALUE self, VALUE max_value)
   if (max > 0) {
     ptr->type |= CV_TERMCRIT_ITER;
     ptr->max_iter = max;
-  } else {
+  }
+  else {
     ptr->type ^= CV_TERMCRIT_ITER;
     ptr->max_iter = 0;
   }
@@ -144,7 +150,7 @@ VALUE
 rb_eps(VALUE self)
 {
   CvTermCriteria *ptr = CVTERMCRITERIA(self);
-  if(ptr->type & CV_TERMCRIT_EPS)
+  if (ptr->type & CV_TERMCRIT_EPS)
     return rb_float_new(ptr->epsilon);
   else
     return Qnil;
@@ -166,7 +172,8 @@ rb_set_eps(VALUE self, VALUE eps_value)
   if (eps > 0) {
     ptr->type = ptr->type | CV_TERMCRIT_EPS;
     ptr->epsilon = eps;
-  } else {
+  }
+  else {
     ptr->type = ptr->type ^ CV_TERMCRIT_EPS;
     ptr->epsilon = 0;
   }

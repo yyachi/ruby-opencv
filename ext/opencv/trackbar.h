@@ -14,9 +14,9 @@
 #ifndef RUBY_OPENCV_GUI_TRACKBAR_H
 #define RUBY_OPENCV_GUI_TRACKBAR_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_TRACKBAR namespace cTrackbar{
+#define __NAMESPACE_BEGIN_TRACKBAR namespace cTrackbar {
 #define __NAMESPACE_END_TRACKBAR }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -47,7 +47,8 @@ VALUE rb_set_value(VALUE self, VALUE val);
 __NAMESPACE_END_TRACKBAR
 
 
-inline Trackbar *TRACKBAR(VALUE object) {
+inline Trackbar*
+TRACKBAR(VALUE object) {
   Trackbar *ptr;
   Data_Get_Struct(object, Trackbar, ptr);
   return ptr;

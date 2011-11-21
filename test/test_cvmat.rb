@@ -36,6 +36,16 @@ class TestCvMat < OpenCVTestCase
         assert_equal(ch, m.channel)
       }
     }
+
+    assert_raise(TypeError) {
+      m = CvMat.new(DUMMY_OBJ, 20, :cv8u, 1)
+    }
+    assert_raise(TypeError) {
+      m = CvMat.new(10, DUMMY_OBJ, :cv8u, 1)
+    }
+    assert_raise(TypeError) {
+      m = CvMat.new(10, 20, :cv8u, DUMMY_OBJ)
+    }
   end
 
   def test_load
@@ -67,10 +77,10 @@ class TestCvMat < OpenCVTestCase
       CvMat.load
     }
     assert_raise(TypeError) {
-      CvMat.load(123)
+      CvMat.load(DUMMY_OBJ)
     }
     assert_raise(TypeError) {
-      CvMat.load(FILENAME_CAT, 'foobar')
+      CvMat.load(FILENAME_CAT, DUMMY_OBJ)
     }
     assert_raise(StandardError) {
       CvMat.load('file/does/not/exist')
@@ -198,9 +208,9 @@ class TestCvMat < OpenCVTestCase
       }
     }
     assert_nil(m1.copy(-1))
-
+    
     assert_raise(ArgumentError) {
-      m1.copy('foobar')
+      m1.copy(DUMMY_OBJ)
     }
   end
 
@@ -286,55 +296,41 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(m1[j, i], m2[j, i])
       }
     }
-  end
 
-  def test_slice_width
-    m1 = create_cvmat(10, 40, :cv32f, 1)
-    ml, mr = m1.slice_width(2)
-    [ml, mr].each { |m|
-      assert_equal(10, m.height)
-      assert_equal(20, m.width)
-      assert_equal(:cv32f, m.depth)
-      assert_equal(1, m.channel)
+    assert_raise(TypeError) {
+      m1.sub_rect(DUMMY_OBJ)
     }
-
-    ml.height.times { |j|
-      ml.width.times { |i|
-        assert_cvscalar_equal(m1[j, i], ml[j, i])
-        assert_cvscalar_equal(m1[j, (m1.width / 2) + i], mr[j, i])
-      }
+    assert_raise(TypeError) {
+      m1.sub_rect(DUMMY_OBJ, CvSize.new(1, 2))
     }
-  end
-
-  def test_slice_height
-    m1 = create_cvmat(10, 20, :cv32f, 1)
-    mt, mb = m1.slice_height(2)
-    [mt, mb].each { |m|
-      assert_equal(5, m.height)
-      assert_equal(20, m.width)
-      assert_equal(:cv32f, m.depth)
-      assert_equal(1, m.channel)
+    assert_raise(TypeError) {
+      m1.sub_rect(CvPoint.new(1, 2), DUMMY_OBJ)
     }
-
-    mt.height.times { |j|
-      mt.width.times { |i|
-        assert_cvscalar_equal(m1[j, i], mt[j, i])
-        assert_cvscalar_equal(m1[(m1.height / 2) + j, i], mb[j, i])
-      }
+    assert_raise(TypeError) {
+      m1.sub_rect(DUMMY_OBJ, 2, 3, 4)
+    }
+    assert_raise(TypeError) {
+      m1.sub_rect(1, DUMMY_OBJ, 3, 4)
+    }
+    assert_raise(TypeError) {
+      m1.sub_rect(1, 2, DUMMY_OBJ, 4)
+    }
+    assert_raise(TypeError) {
+      m1.sub_rect(1, 2, 3, DUMMY_OBJ)
     }
   end
-  
-  def test_row
+
+  def test_get_rows
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.row(2)
+    m2 = m1.get_rows(2)
     assert_equal(1, m2.height)
     assert_equal(m1.width, m2.width)
     m1.width.times { |i|
       assert_cvscalar_equal(m1[2, i], m2[i])
     }
 
-    m2, m3 = m1.row(1, 2)
+    m2, m3 = m1.get_rows(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.height)
       assert_equal(m1.width, m.width)
@@ -343,19 +339,23 @@ class TestCvMat < OpenCVTestCase
       assert_cvscalar_equal(m1[1, i], m2[i])
       assert_cvscalar_equal(m1[2, i], m3[i])
     }
+
+    assert_raise(TypeError) {
+      m1.get_rows(DUMMY_OBJ)
+    }
   end
 
-  def test_col
+  def test_get_cols
     m1 = create_cvmat(10, 20)
 
-    m2 = m1.col(2)
+    m2 = m1.get_cols(2)
     assert_equal(1, m2.width)
     assert_equal(m1.height, m2.height)
     m1.height.times { |j|
       assert_cvscalar_equal(m1[j, 2], m2[j])
     }
 
-    m2, m3 = m1.col(1, 2)
+    m2, m3 = m1.get_cols(1, 2)
     [m2, m3].each { |m|
       assert_equal(1, m.width)
       assert_equal(m1.height, m.height)
@@ -363,6 +363,10 @@ class TestCvMat < OpenCVTestCase
     m1.height.times { |j|
       assert_cvscalar_equal(m1[j, 1], m2[j])
       assert_cvscalar_equal(m1[j, 2], m3[j])
+    }
+
+    assert_raise(TypeError) {
+      m1.get_cols(DUMMY_OBJ)
     }
   end
 
@@ -438,6 +442,12 @@ class TestCvMat < OpenCVTestCase
     a.each_with_index { |s, i|
       assert_cvscalar_equal(s, d[i])
     }
+
+    [m.rows, m.cols, -m.rows, -m.cols].each { |d|
+      assert_raise(CvStsOutOfRange) {
+        m.diag(d)
+      }
+    }
   end
 
   def test_size
@@ -455,6 +465,10 @@ class TestCvMat < OpenCVTestCase
     m = CvMat.new(2, 3)
     assert_equal(2, m.dim_size(0))
     assert_equal(3, m.dim_size(1))
+
+    assert_raise(TypeError) {
+      m.dim_size(DUMMY_OBJ)
+    }
   end
 
   def test_aref
@@ -468,6 +482,29 @@ class TestCvMat < OpenCVTestCase
 
     # Alias
     assert_cvscalar_equal(CvScalar.new(1, 1, 1, 1), m.at(0))
+
+    assert_raise(TypeError) {
+      m[DUMMY_OBJ]
+    }
+    
+    assert_raise(CvStsOutOfRange) {
+      m[-1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[6]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2, 1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3, 1]
+    }
   end
 
   def test_aset
@@ -480,6 +517,32 @@ class TestCvMat < OpenCVTestCase
     assert_cvscalar_equal(CvScalar.new(4, 4, 4, 4), m[1, 0])
     m[1, 0, 2, 4] = CvScalar.new(5, 5, 5, 5)
     assert_cvscalar_equal(CvScalar.new(5, 5, 5, 5), m[1, 0])
+
+    assert_raise(TypeError) {
+      m[DUMMY_OBJ] = CvScalar.new(10, 10, 10, 10)
+    }
+    assert_raise(TypeError) {
+      m[0] = DUMMY_OBJ
+    }
+
+    assert_raise(CvStsOutOfRange) {
+      m[-1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[6]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[2, 2, 1]
+    }
+    assert_raise(CvStsOutOfRange) {
+      m[1, 3, 1]
+    }
   end
 
   def test_set_data
@@ -506,6 +569,14 @@ class TestCvMat < OpenCVTestCase
     m.set_data(a)
     (m.rows * m.cols).times { |i|
       assert_equal(a.flatten[i], m[i][0])
+    }
+
+    [CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F].each { |depth|
+      m = CvMat.new(2, 3, depth, 1)
+      assert_raise(TypeError) {
+        a = [DUMMY_OBJ] * 6
+        m.set_data(a)
+      }
     }
   end
 
@@ -576,6 +647,13 @@ class TestCvMat < OpenCVTestCase
         end
       }
     }
+
+    assert_raise(TypeError) {
+      m1.fill(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.fill(CvScalar.new(1), DUMMY_OBJ)
+    }
   end
 
   def test_clear
@@ -616,6 +694,26 @@ class TestCvMat < OpenCVTestCase
         end
       }
     }
+
+    m1 = CvMat.new(5, 5, :cv8u, 4)
+    s = CvScalar.new(1, 2, 3, 4)
+    m2 = m1.identity(s)
+    m1.identity!(s)
+    m2.height.times { |j|
+      m2.width.times { |i|
+        if i == j
+          assert_cvscalar_equal(s, m1[j, i])
+          assert_cvscalar_equal(s, m2[j, i])
+        else
+          assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m1[j, i])
+          assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m2[j, i])
+        end
+      }
+    }
+
+    assert_raise(TypeError) {
+      m1.identity(DUMMY_OBJ)
+    }
   end
 
   def test_range
@@ -626,13 +724,17 @@ class TestCvMat < OpenCVTestCase
       assert_cvscalar_equal(CvScalar.new(i, 0, 0, 0), m1[0, i])
       assert_cvscalar_equal(CvScalar.new(i, 0, 0, 0), m2[0, i])
     }
+
+    assert_raise(TypeError) {
+      m1.range(DUMMY_OBJ, 2)
+    }
+    assert_raise(TypeError) {
+      m1.range(1, DUMMY_OBJ)
+    }
   end
 
   def test_reshape
     m = create_cvmat(2, 3, CV_8U, 3)
-    assert_raise(TypeError) {
-      m.reshape(1)
-    }
 
     vec = m.reshape(:rows => 1)
     assert_equal(6, vec.width)
@@ -654,13 +756,16 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(m[j, i], CvScalar.new(s1, s2, s3, 0))
       }
     }
+    
+    [DUMMY_OBJ, { :rows => DUMMY_OBJ }, { :channel => DUMMY_OBJ }].each { |arg|
+      assert_raise(TypeError) {
+        m.reshape(arg)
+      }
+    }
   end
 
   def test_repeat
     m1 = create_cvmat(2, 3, :cv8u, 3)
-    assert_raise(TypeError) {
-      m1.repeat(1)
-    }
     m2 = CvMat.new(6, 9, :cv8u, 3)
     m2 = m1.repeat(m2)
     m2.height.times { |j|
@@ -668,6 +773,9 @@ class TestCvMat < OpenCVTestCase
         a = m1[j % m1.height, i % m1.width]
         assert_cvscalar_equal(m2[j, i], a)
       }
+    }
+    assert_raise(TypeError) {
+      m1.repeat(DUMMY_OBJ)
     }
   end
 
@@ -686,7 +794,7 @@ class TestCvMat < OpenCVTestCase
     m7 = m0.clone
     m7.flip!
     m8 = m0.flip
-
+    
     [m1, m2, m3, m4, m5, m6, m7, m8].each { |m|
       assert_equal(m0.height, m.height)
       assert_equal(m0.width, m.width)
@@ -752,10 +860,31 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(m0[j, i], m[j, i])
       }
     }
-  end
 
-  def test_mix_channels
-    flunk('FIXME: CvMat.mix_channels is not implemented yet.')
+    m5 = create_cvmat(2, 3, :cv8u, 1) { |j, i, c|
+      CvScalar.new(c * 50)
+    }
+
+    assert_raise(TypeError) {
+      CvMat.merge(DUMMY_OBJ)
+    }
+    assert_raise(ArgumentError) {
+      CvMat.merge
+    }
+    assert_raise(ArgumentError) {
+      CvMat.merge(m1, m2, m3, m4, m5)
+    }
+    assert_raise(ArgumentError) {
+      CvMat.merge(CvMat.new(1, 2, :cv8u, 2))
+    }
+    assert_raise(ArgumentError) {
+      CvMat.merge(CvMat.new(1, 2, :cv8u, 1),
+                  CvMat.new(2, 2, :cv8u, 1))
+    }
+    assert_raise(ArgumentError) {
+      CvMat.merge(CvMat.new(1, 2, :cv8u, 1),
+                  CvMat.new(1, 2, :cv32f, 1))
+    }
   end
 
   def test_rand_shuffle
@@ -783,6 +912,13 @@ class TestCvMat < OpenCVTestCase
     [m1, m2, m3, m4].each { |m|
       assert_shuffled_equal.call(m0, m)
     }
+
+    assert_raise(TypeError) {
+      m0.rand_shuffle(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.rand_shuffle(123, DUMMY_OBJ)
+    }
   end
 
   def test_lut
@@ -799,6 +935,10 @@ class TestCvMat < OpenCVTestCase
         r, g, b = m0[j, i].to_ary.map { |c| 255 - c }
         assert_cvscalar_equal(CvScalar.new(r, g, b, 0), m[j, i])
       }
+    }
+    
+    assert_raise(TypeError) {
+      m0.lut(DUMMY_OBJ)
     }
   end
 
@@ -826,6 +966,10 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m4[j, i])
       }
     }
+
+    assert_raise(TypeError) {
+      m0.convert_scale(DUMMY_OBJ)
+    }
   end
 
   def test_convert_scale_abs
@@ -851,6 +995,10 @@ class TestCvMat < OpenCVTestCase
         assert_in_delta(a, m3[j, i], 0.001)
         assert_cvscalar_equal(m0[j, i], m4[j, i])
       }
+    }
+
+    assert_raise(TypeError) {
+      m0.convert_scale(DUMMY_OBJ)
     }
   end
 
@@ -939,6 +1087,13 @@ class TestCvMat < OpenCVTestCase
         n += 1
       }
     }
+
+    assert_raise(TypeError) {
+      m1.add(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.add(CvScalar.new(1), DUMMY_OBJ)
+    }
   end
 
   def test_sub
@@ -1026,6 +1181,13 @@ class TestCvMat < OpenCVTestCase
         n += 1
       }
     }
+
+    assert_raise(TypeError) {
+      m1.sub(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.sub(CvScalar.new(1), DUMMY_OBJ)
+    }
   end
 
   def test_mul
@@ -1070,6 +1232,13 @@ class TestCvMat < OpenCVTestCase
       n = (c + 1) * scale
       CvScalar.new(n * 0.1, n * 0.2, n * 0.3, n * 0.4)
     }
+
+    assert_raise(TypeError) {
+      m1.mul(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.mul(m2, DUMMY_OBJ)
+    }
   end
 
   def test_mat_mul
@@ -1113,6 +1282,13 @@ class TestCvMat < OpenCVTestCase
       assert_in_delta(13.9, m[2, 0][0], 0.001)
       assert_in_delta(17, m[2, 1][0], 0.001)
       assert_in_delta(20.1, m[2, 2][0], 0.001)
+    }
+
+    assert_raise(TypeError) {
+      m0.mat_mul(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.mat_mul(m1, DUMMY_OBJ)
     }
   end
 
@@ -1166,6 +1342,13 @@ class TestCvMat < OpenCVTestCase
     assert_each_cvscalar(m3, 0.001) { |j, i, c|
       n = c + 1
       CvScalar.new(n / 0.1, n / 0.2, n / 0.3, n / 0.4)
+    }
+
+    assert_raise(TypeError) {
+      m1.div(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.div(m2, DUMMY_OBJ)
     }
   end
 
@@ -1238,6 +1421,13 @@ class TestCvMat < OpenCVTestCase
       n = c + 1
       CvScalar.new(n & 1, n & 2, n & 3, n & 4)
     }
+
+    assert_raise(TypeError) {
+      m1.and(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.and(m2, DUMMY_OBJ)
+    }
   end
 
   def test_or
@@ -1309,8 +1499,14 @@ class TestCvMat < OpenCVTestCase
       n = c + 1
       CvScalar.new(n | 1, n | 2, n | 3, n | 4)
     }
-  end
 
+    assert_raise(TypeError) {
+      m1.or(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.or(m2, DUMMY_OBJ)
+    }
+  end
 
   def test_xor
     m1 = create_cvmat(6, 4)
@@ -1381,6 +1577,13 @@ class TestCvMat < OpenCVTestCase
       n = c + 1
       CvScalar.new(n ^ 1, n ^ 2, n ^ 3, n ^ 4)
     }
+
+    assert_raise(TypeError) {
+      m1.xor(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m1.xor(m2, DUMMY_OBJ)
+    }
   end
 
   def test_not
@@ -1419,6 +1622,10 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(n, 0, 0, 0)
       }
     }
+
+    assert_raise(TypeError) {
+      m1.eq(DUMMY_OBJ)
+    }
   end
 
   def test_gt
@@ -1440,6 +1647,10 @@ class TestCvMat < OpenCVTestCase
         n = (c > 10) ? 0xff : 0
         CvScalar.new(n, 0, 0, 0)
       }
+    }
+
+    assert_raise(TypeError) {
+      m1.gt(DUMMY_OBJ)
     }
   end
 
@@ -1463,6 +1674,10 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(n, 0, 0, 0)
       }
     }
+
+    assert_raise(TypeError) {
+      m1.ge(DUMMY_OBJ)
+    }
   end
 
   def test_lt
@@ -1485,6 +1700,10 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(n, 0, 0, 0)
       }
     }
+
+    assert_raise(TypeError) {
+      m1.lt(DUMMY_OBJ)
+    }
   end
 
   def test_le
@@ -1506,6 +1725,10 @@ class TestCvMat < OpenCVTestCase
         n = (c <= 10) ? 0xff : 0
         CvScalar.new(n, 0, 0, 0)
       }
+    }
+
+    assert_raise(TypeError) {
+      m1.le(DUMMY_OBJ)
     }
   end
 
@@ -1535,6 +1758,13 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(n, 0, 0, 0)
       }
     }
+
+    assert_raise(TypeError) {
+      m0.in_range(DUMMY_OBJ, m2)
+    }
+    assert_raise(TypeError) {
+      m0.in_range(m1, DUMMY_OBJ)
+    }
   end
 
   def test_abs_diff
@@ -1558,6 +1788,10 @@ class TestCvMat < OpenCVTestCase
       assert_each_cvscalar(m, 0.001) {
         CvScalar.new(10.5, 10.5, 10.5, 10.5)
       }
+    }
+
+    assert_raise(TypeError) {
+      m0.abs_diff(DUMMY_OBJ)
     }
   end
 
@@ -1607,6 +1841,16 @@ class TestCvMat < OpenCVTestCase
     avg, sdv = m0.avg_sdv(mask)
     assert_in_delta(CvScalar.new(0.75, -0.75, 7.5, -7.5), avg, 0.001)
     assert_in_delta(CvScalar.new(0.55901, 0.55901, 5.5901, 5.5901), sdv, 0.001)
+
+    assert_raise(TypeError) {
+      m0.avg(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.sdv(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.avg_sdv(DUMMY_OBJ)
+    }
   end
 
   def test_min_max_loc
@@ -1623,6 +1867,10 @@ class TestCvMat < OpenCVTestCase
     assert_equal(100.5, max_val)
     assert_equal(2, max_loc.y)
     assert_equal(3, max_loc.x)
+
+    assert_raise(TypeError) {
+      m0.min_max_loc(DUMMY_OBJ)
+    }
   end
 
   def test_dot_product
@@ -1641,6 +1889,10 @@ class TestCvMat < OpenCVTestCase
       CvScalar.new(c * 1.5, c * 2.0, c * 2.5, c * 3.0)
     }
     assert_in_delta(85.39999, m1.dot_product(m2), 0.001)
+
+    assert_raise(TypeError) {
+      m1.dot_product(DUMMY_OBJ)
+    }
   end
 
   def test_cross_product
@@ -1655,6 +1907,10 @@ class TestCvMat < OpenCVTestCase
     assert_in_delta(CvScalar.new(-0.5), m3[0, 0], 0.001)
     assert_in_delta(CvScalar.new(1), m3[0, 1], 0.001)
     assert_in_delta(CvScalar.new(-0.5), m3[0, 2], 0.001)
+
+    assert_raise(TypeError) {
+      m1.cross_product(DUMMY_OBJ)
+    }
   end
 
   def test_transform
@@ -1688,6 +1944,13 @@ class TestCvMat < OpenCVTestCase
     assert_each_cvscalar(m1, 0.01) { |j, i, c|
       CvScalar.new(c * 1.5 - 10, 0, c + 5, 0)
     }
+
+    assert_raise(TypeError) {
+      m0.transform(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.transform(transmat, DUMMY_OBJ)
+    }
   end
 
   def test_perspective_transform
@@ -1720,10 +1983,56 @@ class TestCvMat < OpenCVTestCase
     assert_equal(:cv32f, m.depth)
     assert_equal(3, m.channel)
     assert_in_delta(CvScalar.new(4, 6, 8), m[0], 0.001);
+
+    assert_raise(TypeError) {
+      mat.perspective_transform(DUMMY_OBJ)
+    }
+    assert_raise(CvStsAssert) {
+      mat.perspective_transform(CvMat.new(3, 3, :cv32f, 3))
+    }
   end
 
   def test_mul_transposed
-    flunk('FIXME: CvMat#mul_transposed is not implemented yet.')
+    mat0 = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new((c + 1) * 2)
+    }
+    delta = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c + 1)
+    }
+
+    [mat0.mul_transposed,
+     mat0.mul_transposed(:delta => nil),
+     mat0.mul_transposed(:order => 0),
+     mat0.mul_transposed(:scale => 1.0)].each { |m|
+      expected = [20, 44,
+                  44, 100]
+      assert_equal(2, m.rows)
+      assert_equal(2, m.cols)
+      assert_equal(:cv32f, m.depth)
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, m[i][0], 0.1)
+      }
+    }
+
+    m = mat0.mul_transposed(:delta => delta)
+    expected = [5, 11,
+                11, 25]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
+
+    m = mat0.mul_transposed(:delta => delta, :order => 1, :scale => 2.0)
+    expected = [20, 28,
+                28, 40]
+    assert_equal(2, m.rows)
+    assert_equal(2, m.cols)
+    assert_equal(:cv32f, m.depth)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.1)
+    }
   end
 
   def test_trace
@@ -1734,19 +2043,15 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_transpose
-    m0 = create_cvmat(5, 5, :cv32f, 4) { |j, i, c|
+    m0 = create_cvmat(2, 3, :cv32f, 4) { |j, i, c|
       CvScalar.new(c * 0.5, c * 1.0, c * 1.5, c * 2.0)
     }
-    m1 = m0.clone
-    m2 = m1.transpose
-    m1.transpose!
-    m3 = m0.t
-    m4 = m0.clone
-    m4.t!
+    m1 = m0.transpose
+    m2 = m0.t
 
-    [m1, m2, m3, m4].each { |m|
-      assert_equal(m0.width, m.width)
-      assert_equal(m0.height, m.height)
+    [m1, m2].each { |m|
+      assert_equal(m0.rows, m.cols)
+      assert_equal(m0.cols, m.rows)
       assert_each_cvscalar(m, 0.001) { |j, i, c|
         m0[i, j]
       }
@@ -1784,6 +2089,10 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(expected[c])
       }
     }
+
+    assert_raise(TypeError) {
+      m0.invert(DUMMY_OBJ)
+    }
   end
 
   def test_solve
@@ -1813,14 +2122,102 @@ class TestCvMat < OpenCVTestCase
         CvScalar.new(expected[c])
       }
     }
+
+    assert_raise(TypeError) {
+      m0.solve(b, DUMMY_OBJ)
+    }
   end
 
   def test_svd
-    flunk('CvMat#svd is not implemented yet')
+    rows = 2
+    cols = 3
+    m0 = create_cvmat(rows, cols, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c + 1)
+    }
+
+    [m0.svd, m0.clone.svd(CV_SVD_MODIFY_A)].each { |w, u, v|
+      expected = [0.38632, -0.92237,
+                  0.92237, 0.38632]
+      assert_equal(rows, u.rows)
+      assert_equal(rows, u.cols)
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, u[i][0], 0.0001)
+      }
+
+      assert_equal(rows, w.rows)
+      assert_equal(cols, w.cols)
+      expected = [9.50803, 0, 0,
+                  0, 0.77287, 0]
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, w[i][0], 0.0001)
+      }
+
+      assert_equal(cols, v.rows)
+      assert_equal(rows, v.cols)
+      expected = [0.42867, 0.80596,
+                  0.56631, 0.11238,
+                  0.70395, -0.58120]
+      
+      expected.each_with_index { |x, i|
+        assert_in_delta(x, v[i][0], 0.0001)
+      }
+    }
+
+    w, ut, v = m0.svd(CV_SVD_U_T)
+    expected = [0.38632, 0.92237,
+                -0.92237, 0.38632]
+    assert_equal(rows, ut.rows)
+    assert_equal(rows, ut.cols)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, ut[i][0], 0.0001)
+    }
+
+    assert_equal(rows, w.rows)
+    assert_equal(cols, w.cols)
+    expected = [9.50803, 0, 0,
+                0, 0.77287, 0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, w[i][0], 0.0001)
+    }
+
+    assert_equal(cols, v.rows)
+    assert_equal(rows, v.cols)
+    expected = [0.42867, 0.80596,
+                0.56631, 0.11238,
+                0.70395, -0.58120]
+    
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, v[i][0], 0.0001)
+    }
+
+    w, u, vt = m0.svd(CV_SVD_V_T)
+    expected = [0.38632, -0.92237,
+                0.92237, 0.38632]
+    assert_equal(rows, u.rows)
+    assert_equal(rows, u.cols)
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, u[i][0], 0.0001)
+    }
+
+    assert_equal(rows, w.rows)
+    assert_equal(cols, w.cols)
+    expected = [9.50803, 0, 0,
+                0, 0.77287, 0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, w[i][0], 0.0001)
+    }
+
+    assert_equal(rows, vt.rows)
+    assert_equal(cols, vt.cols)
+    expected = [0.42867, 0.56631, 0.70395,
+                0.80596, 0.11238, -0.58120]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, vt[i][0], 0.0001)
+    }
   end
 
   def test_svdksb
-    flunk('CvMat#svdksb is not implemented yet')
+    flunk('FIXME: CvMat#svdksb is not implemented yet')
   end
 
   def test_eigenvv
@@ -1846,14 +2243,24 @@ class TestCvMat < OpenCVTestCase
     assert_in_delta(-0.615, vec3[0, 0][0], 0.01)
     assert_in_delta(0.788, vec3[0, 1][0], 0.01)
     assert_in_delta(8.562, val3[0][0], 0.01)
+
+    assert_raise(TypeError) {
+      m0.eigenvv(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.eigenvv(nil, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.eigenvv(nil, nil, DUMMY_OBJ)
+    }
   end
 
   def test_calc_covar_matrix
-    flunk('CvMat#calc_covar_matrix is not implemented yet')
+    flunk('FIXME: CvMat#calc_covar_matrix is not implemented yet')
   end
 
   def test_mahalonobis
-    flunk('CvMat#mahalonobis is not implemented yet')
+    flunk('FIXME: CvMat#mahalonobis is not implemented yet')
   end
 
   def test_find_homography
@@ -1920,247 +2327,20 @@ class TestCvMat < OpenCVTestCase
         assert_in_delta(1.0, status[i][0], 0.0001)
       }
     }
-  end
 
-  def test_find_fundamental_mat_7point
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656]]
-
-    mat1 = CvMat.new(7, 2, :cv64f, 1)
-    mat2 = CvMat.new(7, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
+    assert_raise(TypeError) {
+      CvMat.find_homography(DUMMY_OBJ, dst, :ransac, 5, true)
     }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
+    assert_raise(TypeError) {
+      CvMat.find_homography(src, DUMMY_OBJ, :ransac, 5, true)
     }
-
-    f_mat = CvMat.find_fundamental_mat_7point(mat1, mat2)
-
-    assert_equal(9, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-
-    expected = [0.000009, 0.000029, -0.010343,
-                -0.000033, 0.000000, 0.014590,
-                0.004415, -0.013420, 1.000000,
-                0.000000, 0.000001, -0.000223,
-                -0.000001, 0.000036, -0.005309,
-                -0.000097, -0.006463, 1.000000,
-                0.000002, 0.000005, -0.001621,
-                -0.000005, 0.000031, -0.002559,
-                0.000527, -0.007424, 1.000000]
-    expected.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
+    assert_raise(TypeError) {
+      CvMat.find_homography(src, dst, DUMMY_OBJ, 5, true)
     }
-  end
-
-  def test_find_fundamental_mat_8point
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565]]
-
-    mat1 = CvMat.new(8, 2, :cv64f, 1)
-    mat2 = CvMat.new(8, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
+    assert_raise(TypeError) {
+      CvMat.find_homography(src, dst, :ransac, DUMMY_OBJ, true)
     }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    f_mat = CvMat.find_fundamental_mat_8point(mat1, mat2)
-
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-
-    expected = [0.000001, 0.000004, -0.001127,
-                -0.000005, 0.000038, -0.003778,
-                0.000819, -0.008325, 1.000000]
-    expected.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-  end
-
-  def test_find_fundamental_mat_ransac
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134.0],
-               [494.335, 74.544],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565],
-                [534.632, 97.5152],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5]]
-
-    mat1 = CvMat.new(points1.size, 2, :cv64f, 1)
-    mat2 = CvMat.new(points2.size, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    # default
-    [CvMat.find_fundamental_mat_ransac(mat1, mat2, :with_status => false,
-                                       :maximum_distance => 1.0, :desirable_level => 0.99),
-     CvMat.find_fundamental_mat_ransac(mat1, mat2)].each { |f_mat|
-      assert_equal(3, f_mat.rows)
-      assert_equal(3, f_mat.cols)
-      expected = [0.000010, 0.000039, -0.011141,
-                  -0.000045, -0.000001, 0.019631,
-                  0.004873, -0.017604, 1.000000]
-      expected.each_with_index { |val, i|
-        assert_in_delta(val, f_mat[i][0], 1.0e-5)
-      }
-    }
-    
-    # with options
-    f_mat, status = CvMat.find_fundamental_mat_ransac(mat1, mat2, :with_status => true,
-                                                      :maximum_distance => 2.0, :desirable_level => 0.8)
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-    assert_equal(1, status.rows)
-    assert_equal(points1.size, status.cols)
-
-    expected_f_mat = [0.000009, 0.000030, -0.010692,
-                      -0.000039, 0.000000, 0.020567,
-                      0.004779, -0.018064, 1.000000]
-    expected_f_mat.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-    expected_status = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    expected_status.each_with_index { |val, i|
-      assert_in_delta(val, status[i][0], 1.0e-5)
-    }
-  end
-
-  def test_find_fundamental_mat_lmeds
-    points1 = [[488.362, 169.911],
-               [449.488, 174.44],
-               [408.565, 179.669],
-               [364.512, 184.56],
-               [491.483, 122.366],
-               [451.512, 126.56],
-               [409.502, 130.342],
-               [365.5, 134.0],
-               [494.335, 74.544],
-               [453.5, 76.5],
-               [411.646, 79.5901],
-               [366.498, 81.6577]]
-    points2 =  [[526.605, 213.332],
-                [470.485, 207.632],
-                [417.5, 201.0],
-                [367.485, 195.632],
-                [530.673, 156.417],
-                [473.749, 151.39],
-                [419.503, 146.656],
-                [368.669, 142.565],
-                [534.632, 97.5152],
-                [475.84, 94.6777],
-                [421.16, 90.3223],
-                [368.5, 87.5]]
-
-    mat1 = CvMat.new(points1.size, 2, :cv64f, 1)
-    mat2 = CvMat.new(points2.size, 2, :cv64f, 1)
-
-    points1.each_with_index { |pt, i|
-      mat1[i, 0] = CvScalar.new(pt[0])
-      mat1[i, 1] = CvScalar.new(pt[1])
-    }
-    points2.each_with_index { |pt, i|
-      mat2[i, 0] = CvScalar.new(pt[0])
-      mat2[i, 1] = CvScalar.new(pt[1])
-    }
-
-    # default
-    [CvMat.find_fundamental_mat_lmeds(mat1, mat2, :with_status => false,
-                                      :maximum_distance => 1.0, :desirable_level => 0.99),
-     CvMat.find_fundamental_mat_lmeds(mat1, mat2)].each { |f_mat|
-      assert_equal(3, f_mat.rows)
-      assert_equal(3, f_mat.cols)
-      expected = [0.000009, -0.000129, -0.008502,
-                  0.000183, -0.000004, -0.106088,
-                  0.002575, 0.090291, 1.000000]
-      expected.each_with_index { |val, i|
-        assert_in_delta(val, f_mat[i][0], 1.0e-5)
-      }
-    }
-    
-    # with options
-    f_mat, status = CvMat.find_fundamental_mat_lmeds(mat1, mat2, :with_status => true,
-                                                     :desirable_level => 0.8)
-    assert_equal(3, f_mat.rows)
-    assert_equal(3, f_mat.cols)
-    assert_equal(1, status.rows)
-    assert_equal(points1.size, status.cols)
-
-    expected_f_mat = [0.000009, -0.000129, -0.008502, 
-                      0.000183, -0.000004, -0.106088, 
-                      0.002575, 0.090291, 1.000000]
-    expected_f_mat.each_with_index { |val, i|
-      assert_in_delta(val, f_mat[i][0], 1.0e-5)
-    }
-    expected_status = [0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1]
-
-    expected_status.each_with_index { |val, i|
-      assert_in_delta(val, status[i][0], 1.0e-5)
-    }
+    CvMat.find_homography(src, dst, :ransac, 5, DUMMY_OBJ)
   end
 
   def test_find_fundamental_mat
@@ -2330,9 +2510,9 @@ class TestCvMat < OpenCVTestCase
      CvMat.find_fundamental_mat(mat1, mat2, CV_FM_LMEDS)].each { |f_mat|
       assert_equal(3, f_mat.rows)
       assert_equal(3, f_mat.cols)
-      expected = [0.000009, -0.000129, -0.008502,
-                  0.000183, -0.000004, -0.106088,
-                  0.002575, 0.090291, 1.000000]
+      expected = [0.000032, 0.000882, -0.012426,
+                  -0.000854, 0.000091, 0.210136,
+                  0.001034, -0.2405784, 1.000000]
       expected.each_with_index { |val, i|
         assert_in_delta(val, f_mat[i][0], 1.0e-5)
       }
@@ -2346,16 +2526,29 @@ class TestCvMat < OpenCVTestCase
     assert_equal(1, status.rows)
     assert_equal(num_points, status.cols)
 
-    expected_f_mat = [0.000009, -0.000129, -0.008502, 
-                      0.000183, -0.000004, -0.106088, 
-                      0.002575, 0.090291, 1.000000]
+    expected_f_mat = [0.000009, 0.000101, -0.009396,
+                      -0.000113, -0.000002, 0.049380,
+                      0.003335, -0.045132, 1.000000]
     expected_f_mat.each_with_index { |val, i|
       assert_in_delta(val, f_mat[i][0], 1.0e-5)
     }
-    expected_status = [0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1]
+    expected_status = [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1 ]
     expected_status.each_with_index { |val, i|
       assert_in_delta(val, status[i][0], 1.0e-5)
     }
+
+    [CV_FM_7POINT, CV_FM_8POINT, CV_FM_RANSAC, CV_FM_LMEDS].each { |method|
+      assert_raise(TypeError) {
+        CvMat.find_fundamental_mat(DUMMY_OBJ, mat2, method, :with_status => true)
+      }
+      assert_raise(TypeError) {
+        CvMat.find_fundamental_mat(mat1, DUMMY_OBJ, method, :with_status => true)
+      }
+      assert_raise(TypeError) {
+        CvMat.find_fundamental_mat(mat1, mat2, method, DUMMY_OBJ)
+      }
+    }
+    CvMat.find_fundamental_mat(mat1, mat2, DUMMY_OBJ, :with_status => true)
   end
 
   def test_compute_correspond_epilines
@@ -2448,6 +2641,21 @@ class TestCvMat < OpenCVTestCase
       mat2[i] = CvScalar.new(pt)
     }
     test_func.call(mat1, mat2, f_mat_arr, num_points)
+
+
+    f_mat = CvMat.new(3, 3, CV_64F, 1)
+    f_mat_arr.each_with_index { |a, i|
+      f_mat[i] = CvScalar.new(a)
+    }
+    assert_raise(TypeError) {
+      CvMat.compute_correspond_epilines(DUMMY_OBJ, 1, f_mat)
+    }
+    assert_raise(TypeError) {
+      CvMat.compute_correspond_epilines(mat1, DUMMY_OBJ, f_mat)
+    }
+    assert_raise(TypeError) {
+      CvMat.compute_correspond_epilines(mat1, 1, DUMMY_OBJ)
+    }
   end
 end
 

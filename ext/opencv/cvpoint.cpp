@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum. see also CvPoint2D32F
  * 
  * C structure is here, very simple.
- *   typdef struct CvPoint{
+ *   typdef struct CvPoint {
  *     int x;
  *     int y;
  *   }
@@ -104,28 +104,25 @@ rb_allocate(VALUE klass)
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE obj, x, y;
+  CvPoint* self_ptr = CVPOINT(self);
   switch (argc) {
   case 0:
     break;
-  case 1:
-    obj = argv[0];
-    if (rb_compatible_q(rb_klass, obj)) {
-      CVPOINT(self)->x = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("x"), 0), rb_intern("to_i"), 0));
-      CVPOINT(self)->y = NUM2INT(rb_funcall(rb_funcall(obj, rb_intern("y"), 0), rb_intern("to_i"), 0));
-    }else{
-      rb_raise(rb_eArgError, "object is not compatible %s.", rb_class2name(rb_klass));
-    }
+  case 1: {
+    CvPoint point = VALUE_TO_CVPOINT(argv[0]);
+    self_ptr->x = point.x;
+    self_ptr->y = point.y;
     break;
+  }
   case 2:
-    x = argv[0], y = argv[1];
-    CVPOINT(self)->x = NUM2INT(x);
-    CVPOINT(self)->y = NUM2INT(y);
+    self_ptr->x = NUM2INT(argv[0]);
+    self_ptr->y = NUM2INT(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (%d for 0..2)", argc);
+    break;
   }
-  return Qnil;    
+  return self;
 }
 
 /*
@@ -206,7 +203,8 @@ rb_to_s(VALUE self)
 VALUE
 rb_to_ary(VALUE self)
 {
-  return rb_ary_new3(2, rb_x(self), rb_y(self));
+  CvPoint* self_ptr = CVPOINT(self);
+  return rb_ary_new3(2, INT2NUM(self_ptr->x), INT2NUM(self_ptr->y));
 }
 
 VALUE

@@ -95,8 +95,14 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE src, is_binary;
   rb_scan_args(argc, argv, "02", &src, &is_binary);
   if (!NIL_P(src)) {
-    if (rb_obj_is_kind_of(src, cCvMat::rb_class()) || rb_obj_is_kind_of(src, cCvSeq::rb_class()))
-      cvMoments(CVARR(src), CVMOMENTS(self), TRUE_OR_FALSE(is_binary, 0));
+    if (rb_obj_is_kind_of(src, cCvMat::rb_class()) || rb_obj_is_kind_of(src, cCvSeq::rb_class())) {
+      try {
+	cvMoments(CVARR(src), CVMOMENTS(self), TRUE_OR_FALSE(is_binary, 0));
+      }
+      catch (cv::Exception& e) {
+	raise_cverror(e);
+      }
+    }
     else
       rb_raise(rb_eTypeError, "argument 1 (src) should be %s or %s.",
 	       rb_class2name(cCvMat::rb_class()), rb_class2name(cCvSeq::rb_class()));
@@ -138,7 +144,14 @@ CVMOMENTS_ACCESSOR(inv_sqrt_m00);
 VALUE
 rb_spatial(VALUE self, VALUE x_order, VALUE y_order)
 {
-  return rb_float_new(cvGetSpatialMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order)));
+  double result = 0;
+  try {
+    result = cvGetSpatialMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
 }
 
 /*
@@ -154,7 +167,14 @@ rb_spatial(VALUE self, VALUE x_order, VALUE y_order)
 VALUE
 rb_central(VALUE self, VALUE x_order, VALUE y_order)
 {
-  return rb_float_new(cvGetCentralMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order)));
+  double result = 0;
+  try {
+    result = cvGetCentralMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
 }
 
 /*
@@ -168,7 +188,14 @@ rb_central(VALUE self, VALUE x_order, VALUE y_order)
 VALUE
 rb_normalized_central(VALUE self, VALUE x_order, VALUE y_order)
 {
-  return rb_float_new(cvGetNormalizedCentralMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order)));
+  double result = 0;
+  try {
+    result = cvGetNormalizedCentralMoment(CVMOMENTS(self), NUM2INT(x_order), NUM2INT(y_order));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(result);
 }
 
 /*
@@ -203,11 +230,18 @@ VALUE
 rb_gravity_center(VALUE self)
 {
   CvMoments *moments = CVMOMENTS(self);
-  double
-    m00 = cvGetSpatialMoment(moments, 0, 0),
-    m10 = cvGetSpatialMoment(moments, 1, 0),
+  CvPoint2D32f point;
+  double m00 = 0, m01 = 0, m10 = 0;
+  try {
+    m00 = cvGetSpatialMoment(moments, 0, 0);
+    m10 = cvGetSpatialMoment(moments, 1, 0);
     m01 = cvGetSpatialMoment(moments, 0, 1);
-  return cCvPoint2D32f::new_object(cvPoint2D32f(m10 / m00, m01 / m00));
+    point = cvPoint2D32f(m10 / m00, m01 / m00);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvPoint2D32f::new_object(point);
 }
 
 /*
@@ -220,12 +254,17 @@ VALUE
 rb_angle(VALUE self)
 {
   CvMoments *moments = CVMOMENTS(self);
-  double
-    m11 = cvGetCentralMoment(moments, 1, 1),
-    m20 = cvGetCentralMoment(moments, 2, 0),
-    m02 = cvGetCentralMoment(moments, 0, 2),
-    mangle = 0.5 * atan(2 * m11 / (m20 - m02));
-  if(cvIsNaN(mangle) || cvIsInf(mangle))
+  double m11 = 0, m20 = 0, m02 = 0;
+  try {
+    m11 = cvGetCentralMoment(moments, 1, 1);
+    m20 = cvGetCentralMoment(moments, 2, 0);
+    m02 = cvGetCentralMoment(moments, 0, 2);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  double mangle = 0.5 * atan(2 * m11 / (m20 - m02));
+  if (cvIsNaN(mangle) || cvIsInf(mangle))
     return Qnil;
   else
     return rb_float_new(mangle);
@@ -234,8 +273,13 @@ rb_angle(VALUE self)
 VALUE
 new_object(CvArr *arr, int is_binary = 0)
 {
-  VALUE object = rb_allocate(rb_class());
-  cvMoments(arr, CVMOMENTS(object), is_binary);
+  VALUE object = rb_allocate(rb_klass);
+  try {
+    cvMoments(arr, CVMOMENTS(object), is_binary);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return object;
 }
 

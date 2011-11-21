@@ -15,7 +15,7 @@
  * X and Y takes the value of the Fixnum. see also CvTwopoints2D32F
  * 
  * C structure is here, very simple.
- *   typdef struct CvTwopoints{
+ *   typdef struct CvTwopoints {
  *     int x;
  *     int y;
  *   }
@@ -58,13 +58,6 @@ rb_allocate(VALUE klass)
   CvTwoPoints *ptr;
   return Data_Make_Struct(klass, CvTwoPoints, 0, -1, ptr);
 }
-
-VALUE
-rb_cvseqblock(VALUE self)
-{
-  return Qnil;
-}
-
 
 /*
  * Return point 1.

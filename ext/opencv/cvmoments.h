@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVMOMENTS namespace cCvMoments{
+#define __NAMESPACE_BEGIN_CVMOMENTS namespace cCvMoments {
 #define __NAMESPACE_END_CVMOMENTS }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -60,6 +60,14 @@ CVMOMENTS(VALUE object)
   CvMoments *ptr;
   Data_Get_Struct(object, CvMoments, ptr);
   return ptr;
+}
+
+inline CvMoments*
+CVMOMENTS_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvMoments::rb_class()))
+    raise_typeerror(object, cCvMoments::rb_class());
+  return CVMOMENTS(object);
 }
 
 __NAMESPACE_END_OPENCV

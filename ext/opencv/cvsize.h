@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVSIZE_H
 #define RUBY_OPENCV_CVSIZE_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSIZE namespace cCvSize{
+#define __NAMESPACE_BEGIN_CVSIZE namespace cCvSize {
 #define __NAMESPACE_END_CVSIZE }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -50,11 +50,12 @@ CVSIZE(VALUE object)
 inline CvSize
 VALUE_TO_CVSIZE(VALUE object)
 {
-  if(cCvSize::rb_compatible_q(cCvSize::rb_class(), object)){
+  if (cCvSize::rb_compatible_q(cCvSize::rb_class(), object)) {
     return cvSize(NUM2INT(rb_funcall(object, rb_intern("width"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("height"), 0)));
-  }else{
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvSize::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvSize::rb_class());
   }
 }
 

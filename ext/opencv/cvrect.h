@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVRECT_H
 #define RUBY_OPENCV_CVRECT_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVRECT namespace cCvRect{
+#define __NAMESPACE_BEGIN_CVRECT namespace cCvRect {
 #define __NAMESPACE_END_CVRECT }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -24,7 +24,6 @@ void define_ruby_class();
 
 VALUE rb_compatible_q(VALUE klass, VALUE object);
 VALUE rb_max_rect(VALUE klass, VALUE rect1, VALUE rect2);
-VALUE rb_bounding(VALUE klass, VALUE points);
 
 VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
@@ -63,13 +62,14 @@ CVRECT(VALUE object)
 inline CvRect
 VALUE_TO_CVRECT(VALUE object)
 {
-  if(cCvRect::rb_compatible_q(cCvRect::rb_class(), object)){
+  if (cCvRect::rb_compatible_q(cCvRect::rb_class(), object)) {
     return cvRect(NUM2INT(rb_funcall(object, rb_intern("x"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("y"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("width"), 0)),
                   NUM2INT(rb_funcall(object, rb_intern("height"), 0)));
-  }else{
-      rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvRect::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvRect::rb_class());
   }
 }
 

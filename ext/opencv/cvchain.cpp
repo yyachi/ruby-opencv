@@ -17,11 +17,11 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCHAIN
 
-#define APPROX_CHAIN_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("APPROX_CHAIN_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("APPROX_CHAIN_OPTION")), rb_intern("merge"), 1, op)
-#define APPROX_CHAIN_METHOD(op) CVMETHOD("APPROX_CHAIN_METHOD", rb_hash_aref(op, ID2SYM(rb_intern("method"))), CV_CHAIN_APPROX_SIMPLE)
-#define APPROX_CHAIN_PARAMETER(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("parameter"))))
-#define APPROX_CHAIN_MINIMAL_PARAMETER(op) NUM2INT(rb_hash_aref(op, ID2SYM(rb_intern("minimal_parameter"))))
-#define APPROX_CHAIN_RECURSIVE(op) ({VALUE _recursive = rb_hash_aref(op, ID2SYM(rb_intern("recursive"))); NIL_P(_recursive) ? 0 : _recursive == Qfalse ? 0 : 1;})
+#define APPROX_CHAIN_OPTION(op) rb_get_option_table(rb_klass, "APPROX_CHAIN_OPTION", op)
+#define APPROX_CHAIN_METHOD(op) CVMETHOD("APPROX_CHAIN_METHOD", LOOKUP_CVMETHOD(op, "method"), CV_CHAIN_APPROX_SIMPLE)
+#define APPROX_CHAIN_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "parameter"))
+#define APPROX_CHAIN_MINIMAL_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "minimal_parameter"))
+#define APPROX_CHAIN_RECURSIVE(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "recursive"))
 
 VALUE rb_klass;
 
@@ -67,18 +67,8 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvChain *ptr = ALLOC(CvChain);
-  return Data_Wrap_Struct(klass, 0, cvchain_free, ptr);
-}
-
-void
-cvchain_free(void *ptr)
-{
-  if (ptr) {
-    CvChain *chain = (CvChain*)ptr;
-    if (chain->storage)
-      cvReleaseMemStorage(&(chain->storage));
-  }
+  CvChain *ptr;
+  return Data_Make_Struct(klass, CvChain, 0, 0, ptr);
 }
 
 VALUE
@@ -92,9 +82,13 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   else
     storage = rb_cvCreateMemStorage(0);
-  
-  DATA_PTR(self) = (CvChain*)cvCreateSeq(CV_SEQ_ELTYPE_CODE, sizeof(CvChain),
-					 sizeof(char), storage);
+  try {
+    DATA_PTR(self) = (CvChain*)cvCreateSeq(CV_SEQ_ELTYPE_CODE, sizeof(CvChain),
+					   sizeof(char), storage);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return self;
 }
 
@@ -136,10 +130,15 @@ rb_codes(VALUE self)
   CvChainPtReader reader;
   int total = chain->total;
   VALUE ary = rb_ary_new2(total);
-  cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < total; ++i) {
-    CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
-    rb_ary_store(ary, i, CHR2FIX(reader.code));
+  try {
+    cvStartReadChainPoints(chain, &reader);
+    for (int i = 0; i < total; ++i) {
+      CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
+      rb_ary_store(ary, i, CHR2FIX(reader.code));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return ary;
 }
@@ -158,10 +157,15 @@ rb_points(VALUE self)
   CvPoint p = chain->origin;
   int total = chain->total;
   VALUE ary = rb_ary_new2(total);
-  cvStartReadChainPoints(chain, &reader);
-  for (int i = 0; i < total; ++i) {
-    CV_READ_CHAIN_POINT(p, reader);
-    rb_ary_store(ary, i, cCvPoint::new_object(p));
+  try {
+    cvStartReadChainPoints(chain, &reader);
+    for (int i = 0; i < total; ++i) {
+      CV_READ_CHAIN_POINT(p, reader);
+      rb_ary_store(ary, i, cCvPoint::new_object(p));
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
   }
   return ary;
 }
@@ -211,9 +215,14 @@ VALUE
 new_object()
 {
   VALUE storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
-  VALUE object = cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
-  return object;
+  CvSeq *seq = NULL;
+  try {
+    seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
 }
 
 __NAMESPACE_END_CVCHAIN

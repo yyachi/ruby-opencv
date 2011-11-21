@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVPOINT namespace cCvPoint{
+#define __NAMESPACE_BEGIN_CVPOINT namespace cCvPoint {
 #define __NAMESPACE_END_CVPOINT }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -39,18 +39,21 @@ VALUE new_object(CvPoint point);
 
 __NAMESPACE_END_CVPOINT
 
-inline CvPoint *CVPOINT(VALUE object){
+inline CvPoint*
+CVPOINT(VALUE object){
   CvPoint *ptr;
   Data_Get_Struct(object, CvPoint, ptr);
   return ptr;
 }
 
-inline CvPoint VALUE_TO_CVPOINT(VALUE object){
-  if(cCvPoint::rb_compatible_q(cCvPoint::rb_class(), object)){
+inline CvPoint
+VALUE_TO_CVPOINT(VALUE object){
+  if (cCvPoint::rb_compatible_q(cCvPoint::rb_class(), object)) {
     return cvPoint(NUM2INT(rb_funcall(object, rb_intern("x"), 0)),
                    NUM2INT(rb_funcall(object, rb_intern("y"), 0)));
-  }else{
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvPoint::rb_class()));
+  }
+  else {
+    raise_compatible_typeerror(object, cCvPoint::rb_class());
   }
 }
 

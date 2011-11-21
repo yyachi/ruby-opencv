@@ -12,12 +12,12 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVLINE namespace cCvLine{
+#define __NAMESPACE_BEGIN_CVLINE namespace cCvLine {
 #define __NAMESPACE_END_CVLINE }
 
 __NAMESPACE_BEGIN_OPENCV
 
-typedef struct CvLine{
+typedef struct CvLine {
   float rho;
   float theta;
 } CvLine;

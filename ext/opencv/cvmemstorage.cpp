@@ -27,7 +27,7 @@ rb_class()
 void
 define_ruby_class()
 {
-  if(rb_klass)
+  if (rb_klass)
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
@@ -48,7 +48,12 @@ rb_allocate(VALUE klass)
 void
 cvmemstorage_free(void *ptr)
 {
-  cvReleaseMemStorage((CvMemStorage**)&ptr);
+  try {
+    cvReleaseMemStorage((CvMemStorage**)&ptr);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 }
 
 VALUE

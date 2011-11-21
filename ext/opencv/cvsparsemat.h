@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSPARSEMAT namespace cCvSparseMat{
+#define __NAMESPACE_BEGIN_CVSPARSEMAT namespace cCvSparseMat {
 #define __NAMESPACE_END_CVSPARSEMAT }
 
 __NAMESPACE_BEGIN_OPENCV

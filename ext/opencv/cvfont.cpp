@@ -20,6 +20,19 @@ __NAMESPACE_BEGIN_CVFONT
 
 VALUE rb_klass;
 
+int
+rb_font_option_line_type(VALUE font_option)
+{
+  VALUE line_type = LOOKUP_CVMETHOD(font_option, "line_type");
+  if (FIXNUM_P(line_type)) {
+    return FIX2INT(line_type);
+  }
+  else if (line_type == ID2SYM(rb_intern("aa"))) {
+    return CV_AA;
+  }
+  return 0;
+}
+
 VALUE
 rb_class()
 {
@@ -128,13 +141,18 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   font_option = FONT_OPTION(font_option);
 
-  cvInitFont(CVFONT(self),
-	     (FIX2INT(face) | FO_ITALIC(font_option)),
-	     FO_HSCALE(font_option),
-	     FO_VSCALE(font_option),
-	     FO_SHEAR(font_option),
-	     FO_THICKNESS(font_option),
-	     FO_LINE_TYPE(font_option));
+  try {
+    cvInitFont(CVFONT(self),
+	       (FIX2INT(face) | FO_ITALIC(font_option)),
+	       FO_HSCALE(font_option),
+	       FO_VSCALE(font_option),
+	       FO_SHEAR(font_option),
+	       FO_THICKNESS(font_option),
+	       FO_LINE_TYPE(font_option));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
 
   return self;
 }

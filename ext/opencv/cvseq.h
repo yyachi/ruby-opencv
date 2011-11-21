@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVSEQ namespace cCvSeq{
+#define __NAMESPACE_BEGIN_CVSEQ namespace cCvSeq {
 #define __NAMESPACE_END_CVSEQ }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -24,8 +24,6 @@ void define_ruby_class();
 VALUE seqblock_class(void *ptr);
 
 VALUE rb_allocate(VALUE klass);
-void free(void *ptr);
-void resist_class_information_of_sequence(CvSeq *seq, VALUE klass);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_total(VALUE self);
@@ -50,7 +48,6 @@ VALUE rb_clear(VALUE self);
 VALUE new_object(CvSeq *seq, VALUE klass);
 VALUE new_object(CvSeq *seq, VALUE klass, VALUE storage);
 VALUE new_sequence(VALUE klass, CvSeq *seq, VALUE element_klass, VALUE storage);
-VALUE auto_extend(VALUE object);
 
 __NAMESPACE_END_CVSEQ
 
@@ -60,6 +57,14 @@ CVSEQ(VALUE object)
   CvSeq *ptr;
   Data_Get_Struct(object, CvSeq, ptr);
   return ptr;
+}
+
+inline CvSeq*
+CVSEQ_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvSeq::rb_class()))
+    raise_typeerror(object, cCvSeq::rb_class());
+  return CVSEQ(object);
 }
 
 __NAMESPACE_END_OPENCV

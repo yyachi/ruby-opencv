@@ -17,10 +17,10 @@
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCONTOUR
 
-#define APPROX_POLY_OPTION(op) NIL_P(op) ? rb_const_get(rb_class(), rb_intern("APPROX_OPTION")) : rb_funcall(rb_const_get(rb_class(), rb_intern("APPROX_OPTION")), rb_intern("merge"), 1, op)
-#define APPROX_POLY_METHOD(op) CVMETHOD("APPROX_POLY_METHOD", rb_hash_aref(op, ID2SYM(rb_intern("method"))), CV_POLY_APPROX_DP)
-#define APPROX_POLY_ACCURACY(op) NUM2DBL(rb_hash_aref(op, ID2SYM(rb_intern("accuracy"))))
-#define APPROX_POLY_RECURSIVE(op) ({VALUE _recursive = rb_hash_aref(op, ID2SYM(rb_intern("recursive"))); NIL_P(_recursive) ? 0 : _recursive == Qfalse ? 0 : 1;})
+#define APPROX_POLY_OPTION(op) rb_get_option_table(rb_klass, "APPROX_OPTION", op)
+#define APPROX_POLY_METHOD(op) CVMETHOD("APPROX_POLY_METHOD", LOOKUP_CVMETHOD(op, "method"), CV_POLY_APPROX_DP)
+#define APPROX_POLY_ACCURACY(op) NUM2DBL(LOOKUP_CVMETHOD(op, "accuracy"))
+#define APPROX_POLY_RECURSIVE(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "recursive"))
 
 VALUE rb_allocate(VALUE klass);
 void cvcontour_free(void *ptr);
@@ -80,34 +80,31 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvContour *ptr = ALLOC(CvContour);
-  return Data_Wrap_Struct(klass, 0, cvcontour_free, ptr);
-}
-
-void
-cvcontour_free(void *ptr)
-{
-  if (ptr) {
-    CvContour *contour = (CvContour*)ptr;
-    if (contour->storage)
-      cvReleaseMemStorage(&(contour->storage));
-  }
+  CvContour *ptr;
+  return Data_Make_Struct(klass, CvContour, mark_root_object, unregister_object, ptr);
 }
 
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
-  CvMemStorage *storage;
-  VALUE storage_value;
-  if (rb_scan_args(argc, argv, "01", &storage_value) > 0) {
-    storage_value = CHECK_CVMEMSTORAGE(storage_value);
-    storage = CVMEMSTORAGE(storage_value);
-  }
+  VALUE storage;
+  rb_scan_args(argc, argv, "01", &storage);
+
+  if (NIL_P(storage))
+    storage = cCvMemStorage::new_object(0);
   else
-    storage = rb_cvCreateMemStorage(0);
-  
-  DATA_PTR(self) = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
-					   sizeof(CvPoint), storage);
+    storage = CHECK_CVMEMSTORAGE(storage);
+
+  CvContour* contour = (CvContour*)DATA_PTR(self);
+  try {
+    contour = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
+				      sizeof(CvPoint), CVMEMSTORAGE(storage));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  register_root_object((CvSeq*)contour, storage);
+
   return self;
 }
 
@@ -161,11 +158,11 @@ rb_approx_poly(int argc, VALUE *argv, VALUE self)
   approx_poly_option = APPROX_POLY_OPTION(approx_poly_option);
   storage = cCvMemStorage::new_object();
   /*
-  CvSeq *contour = cvApproxPoly(CVCONTOUR(self), sizeof(CvContour), CVMEMSTORAGE(storage),
-				APPROX_POLY_METHOD(approx_poly_option),
-				APPROX_POLY_ACCURACY(approx_poly_option),
-				APPROX_POLY_RECURSIVE(approx_poly_option));
-  return cCvSeq::new_sequence(cCvContour::rb_class(), contour, cCvPoint::rb_class(), storage);
+    CvSeq *contour = cvApproxPoly(CVCONTOUR(self), sizeof(CvContour), CVMEMSTORAGE(storage),
+    APPROX_POLY_METHOD(approx_poly_option),
+    APPROX_POLY_ACCURACY(approx_poly_option),
+    APPROX_POLY_RECURSIVE(approx_poly_option));
+    return cCvSeq::new_sequence(cCvContour::rb_class(), contour, cCvPoint::rb_class(), storage);
   */
   return Qnil;
 }
@@ -180,7 +177,14 @@ rb_approx_poly(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_bounding_rect(VALUE self)
 {
-  return cCvRect::new_object(cvBoundingRect(CVCONTOUR(self), 1));
+  CvRect rect;
+  try {
+    rect = cvBoundingRect(CVCONTOUR(self), 1);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return cCvRect::new_object(rect);
 }
 
 /*
@@ -199,7 +203,13 @@ rb_create_tree(int argc, VALUE *argv, VALUE self)
   VALUE threshold, storage;
   rb_scan_args(argc, argv, "01", &threshold);
   storage = cCvMemStorage::new_object();
-  CvContourTree *tree = cvCreateContourTree(CVSEQ(self), CVMEMSTORAGE(storage), IF_DBL(threshold, 0.0));
+  CvContourTree *tree = NULL;
+  try {
+    tree = cvCreateContourTree(CVSEQ(self), CVMEMSTORAGE(storage), IF_DBL(threshold, 0.0));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return cCvSeq::new_sequence(cCvContourTree::rb_class(), (CvSeq*)tree, cCvPoint::rb_class(), storage);
 }
 
@@ -212,7 +222,13 @@ rb_create_tree(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_in_q(VALUE self, VALUE point)
 {
-  double n = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 0);
+  double n = 0;
+  try {
+    n = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 0);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
   return n == 0 ? Qnil : n > 0 ? Qtrue : Qfalse;
 }
 
@@ -225,7 +241,14 @@ rb_in_q(VALUE self, VALUE point)
 VALUE
 rb_measure_distance(VALUE self, VALUE point)
 {
-  return rb_float_new(cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 1));
+  double distance = 0;
+  try {
+    distance = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), 1);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return rb_float_new(distance);
 }
 
 /*
@@ -239,8 +262,7 @@ VALUE
 rb_point_polygon_test(VALUE self, VALUE point, VALUE measure_dist)
 {
   int measure_dist_flag;
-  double dist;
-  
+
   if (measure_dist == Qtrue)
     measure_dist_flag = 1;
   else if (measure_dist == Qfalse)
@@ -248,8 +270,14 @@ rb_point_polygon_test(VALUE self, VALUE point, VALUE measure_dist)
   else
     measure_dist_flag = NUM2INT(measure_dist);
 
-  dist = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), measure_dist_flag);
-
+  double dist = Qnil;
+  try {
+    dist = cvPointPolygonTest(CVARR(self), VALUE_TO_CVPOINT2D32F(point), measure_dist_flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  
   /* cvPointPolygonTest returns 100, -100 or 0 when measure_dist = 0 */
   if ((!measure_dist_flag) && ((int)dist) != 0)
     dist = (dist > 0) ? 1 : -1;

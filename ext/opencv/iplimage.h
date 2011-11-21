@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_IPLIMAGE namespace cIplImage{
+#define __NAMESPACE_BEGIN_IPLIMAGE namespace cIplImage {
 #define __NAMESPACE_END_IPLIMAGE }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -55,6 +55,14 @@ IPLIMAGE(VALUE object)
   IplImage *ptr, stub;
   Data_Get_Struct(object, IplImage, ptr);
   return cvGetImage(ptr, &stub);
+}
+
+inline IplImage*
+IPLIMAGE_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cIplImage::rb_class()))
+    raise_typeerror(object, cIplImage::rb_class());
+  return IPLIMAGE(object);
 }
 
 __NAMESPACE_END_OPENCV

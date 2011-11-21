@@ -12,7 +12,7 @@
 
 #include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVVIDEOWRITER namespace cCvVideoWriter{
+#define __NAMESPACE_BEGIN_CVVIDEOWRITER namespace cCvVideoWriter {
 #define __NAMESPACE_END_CVVIDEOWRITER }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -31,9 +31,11 @@ __NAMESPACE_END_CVVIDEOWRITER
 inline CvVideoWriter*
 CVVIDEOWRITER(VALUE object)
 {
-  CvVideoWriter *ptr;
-  Data_Get_Struct(object, CvVideoWriter, ptr);
-  return ptr;
+  // CvVideoWriter is 
+  // CvVideoWriter *ptr;
+  // Data_Get_Struct(object, CvVideoWriter, ptr);
+  // return ptr;
+  return (CvVideoWriter*)DATA_PTR(object);
 }
 
 __NAMESPACE_END_OPENCV

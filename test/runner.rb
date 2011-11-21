@@ -2,8 +2,8 @@
 # -*- mode: ruby; coding: utf-8-unix -*- 
 require 'test/unit'
 
+src_testdir = File.dirname(File.expand_path(__FILE__))
 if Test::Unit.methods.include? :setup_argv
-  src_testdir = File.dirname(File.expand_path(__FILE__))
   srcdir = File.dirname(src_testdir)
   Test::Unit.setup_argv {|files|
     if files.empty?
@@ -22,9 +22,9 @@ if Test::Unit.methods.include? :setup_argv
       }
     end
   }
-elsif Test::Unit.constants.include? 'AutoRunner'
-  Test::Unit::AutoRunner.run(true, './')
+elsif Test::Unit.constants.map {|c| c.to_sym }.include? :AutoRunner
+  Test::Unit::AutoRunner.run(true, src_testdir)
 else
-  raise Error, 'Test runner not found'
+  raise 'Test runner not found'
 end
 

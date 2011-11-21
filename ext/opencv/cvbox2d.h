@@ -10,9 +10,9 @@
 #ifndef RUBY_OPENCV_CVBOX2D_H
 #define RUBY_OPENCV_CVBOX2D_H
 
-#include"opencv.h"
+#include "opencv.h"
 
-#define __NAMESPACE_BEGIN_CVBOX2D namespace cCvBox2D{
+#define __NAMESPACE_BEGIN_CVBOX2D namespace cCvBox2D {
 #define __NAMESPACE_END_CVBOX2D }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -38,17 +38,20 @@ VALUE new_object(CvBox2D box);
 
 __NAMESPACE_END_CVBOX2D
 
-inline CvBox2D *CVBOX2D(VALUE object){
+inline CvBox2D*
+CVBOX2D(VALUE object){
   CvBox2D *ptr;
   Data_Get_Struct(object, CvBox2D, ptr);
   return ptr;
 }
 
-inline CvBox2D VALUE_TO_CVBOX2D(VALUE object){
-  if(rb_obj_is_kind_of(object, cCvBox2D::rb_class())) {
+inline CvBox2D
+VALUE_TO_CVBOX2D(VALUE object){
+  if (rb_obj_is_kind_of(object, cCvBox2D::rb_class())) {
     return *CVBOX2D(object);
-  }else{
-    rb_raise(rb_eTypeError, "require %s or compatible object.", rb_class2name(cCvBox2D::rb_class()));
+  }
+  else {
+    raise_typeerror(object, cCvBox2D::rb_class());
   }
 }
 

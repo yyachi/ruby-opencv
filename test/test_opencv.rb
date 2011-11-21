@@ -8,6 +8,12 @@ include OpenCV
 
 class TestOpenCV < OpenCVTestCase
   def test_constants
+    # OpenCV version
+    assert_equal('2.1.0', CV_VERSION)
+    assert_equal(2, CV_MAJOR_VERSION)
+    assert_equal(1, CV_MINOR_VERSION)
+    assert_equal(0, CV_SUBMINOR_VERSION)
+
     # Depths
     assert_equal(0, CV_8U)
     assert_equal(1, CV_8S)
@@ -44,6 +50,10 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(3, CV_MEDIAN)
     assert_equal(4, CV_BILATERAL)
 
+    # Border types
+    assert_equal(0, IPL_BORDER_CONSTANT)
+    assert_equal(1, IPL_BORDER_REPLICATE)
+    
     # Thresholding types
     assert_equal(0, CV_THRESH_BINARY)
     assert_equal(1, CV_THRESH_BINARY_INV)
@@ -105,6 +115,33 @@ class TestOpenCV < OpenCVTestCase
 
     # Object detection mode
     assert_equal(1, CV_HAAR_DO_CANNY_PRUNING)
+    
+    # Interpolation methods
+    assert_equal(0, CV_INTER_NN)
+    assert_equal(1, CV_INTER_LINEAR)
+    assert_equal(2, CV_INTER_CUBIC)
+    assert_equal(3, CV_INTER_AREA)
+    
+    # Warp affine optional flags
+    assert_equal(8, CV_WARP_FILL_OUTLIERS)
+    assert_equal(16, CV_WARP_INVERSE_MAP)
+
+    # SVD operation flags
+    assert_equal(1, CV_SVD_MODIFY_A)
+    assert_equal(2, CV_SVD_U_T)
+    assert_equal(4, CV_SVD_V_T)
+
+    # Histogram representation format
+    assert_equal(0, CV_HIST_ARRAY)
+    assert_equal(1, CV_HIST_SPARSE)
+    assert_equal(1, CV_HIST_TREE)
+    assert_equal(1, CV_HIST_UNIFORM)
+
+    # Histogram comparison method
+    assert_equal(0, CV_COMP_CORREL)
+    assert_equal(1, CV_COMP_CHISQR)
+    assert_equal(2, CV_COMP_INTERSECT)
+    assert_equal(3, CV_COMP_BHATTACHARYYA)
   end
 
   def test_symbols
@@ -231,47 +268,60 @@ class TestOpenCV < OpenCVTestCase
 
     # RGB(A) <=> RGB(A)
     [mat_3ch.BGR2BGRA, mat_3ch.RGB2RGBA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 20, 30, 0), m[0])
     }
     [mat_3ch.BGR2RGBA, mat_3ch.RGB2BGRA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_4ch.BGRA2BGR, mat_4ch.RGBA2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 20, 30, 0), m[0])
     }
     [mat_4ch.RGBA2BGR, mat_4ch.BGRA2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_3ch.BGR2RGB, mat_3ch.RGB2BGR].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 0), m[0])
     }
     [mat_4ch.BGRA2RGBA, mat_4ch.RGBA2BGRA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(30, 20, 10, 40), m[0])
     }
 
     # RGB <=> GRAY
     [mat_3ch.BGR2GRAY, mat_4ch.BGRA2GRAY].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(1, m.channel)
       assert_cvscalar_equal(CvScalar.new(gray_bgr, 0, 0, 0), m[0])
     }
     [mat_3ch.RGB2GRAY, mat_4ch.RGBA2GRAY].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(1, m.channel)
       assert_cvscalar_equal(CvScalar.new(gray_rgb, 0, 0, 0), m[0])
     }
     [mat_1ch.GRAY2BGR, mat_1ch.GRAY2RGB].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(3, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 10, 10, 0), m[0])
     }
     [mat_1ch.GRAY2BGRA, mat_1ch.GRAY2RGBA].each { |m|
+      assert_equal(CvMat, m.class)
       assert_equal(4, m.channel)
       assert_cvscalar_equal(CvScalar.new(10, 10, 10, 0), m[0])
     }
+
+    img_3ch = IplImage.new(1, 1, :cv8u, 3)
+    assert_equal(IplImage, img_3ch.BGR2GRAY.class)
 
     flunk('FIXME: Most cvtColor functions are not tested yet.')
   end

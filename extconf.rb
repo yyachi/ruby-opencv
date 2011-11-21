@@ -15,14 +15,19 @@ require "mkmf"
 # extconf.rb --with-opencv-lib=/path/to/opencv/lib
 # extconf.rb --with-opencv-include=/path/to/opencv/include
 
-dir_config("opencv", "/usr/local/include/opencv", "/usr/local/lib")
-if CONFIG["arch"].include?("darwin")
-	dir_config("ffcall", "/opt/local/include", "/opt/local/lib")
-else
-	dir_config("ffcall", "/usr/local/include", "/usr/local/lib")
-end
+dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 
-opencv_libraries = ["cxcore", "cv", "highgui"]
+if CONFIG["arch"].include?("darwin")
+  dir_config("ffcall", "/opt/local/include", "/opt/local/lib")
+else
+  dir_config("ffcall", "/usr/local/include", "/usr/local/lib")
+end
+dir_config("libxml2", "/usr/include", "/usr/lib")
+
+opencv_headers = ["opencv/cv.h", "opencv/cv.hpp", "opencv/cvaux.h",
+                  "opencv/cvaux.hpp", "opencv/cxcore.h", "opencv/cxcore.hpp",
+                  "opencv/highgui.h", "opencv/highgui.hpp"]
+opencv_libraries = ["cv", "cvaux", "cxcore", "highgui"]
 
 puts ">> check require libraries..."
 case CONFIG["arch"]
@@ -41,7 +46,7 @@ end
 
 # check require headers
 puts ">> check require headers..."
-opencv_libraries.map{|lib| "#{lib}.h"}.each{|header|
+opencv_headers.each{|header|
   raise "#{header} not found." unless have_header(header)
 }
 #have_header("ml.h")

@@ -13,7 +13,7 @@
 #include "opencv.h"
 
 
-#define __NAMESPACE_BEGIN_CVMAT namespace cCvMat{
+#define __NAMESPACE_BEGIN_CVMAT namespace cCvMat {
 #define __NAMESPACE_END_CVMAT }
 
 __NAMESPACE_BEGIN_OPENCV
@@ -56,10 +56,8 @@ VALUE rb_square_q(VALUE self);
 VALUE rb_to_CvMat(VALUE self);
 VALUE rb_to_IplImage(VALUE self);
 VALUE rb_sub_rect(VALUE self, VALUE args);
-VALUE rb_slice_width(VALUE self, VALUE num);
-VALUE rb_slice_height(VALUE self, VALUE num);
-VALUE rb_row(VALUE self, VALUE args);
-VALUE rb_col(VALUE self, VALUE args);
+VALUE rb_get_rows(VALUE self, VALUE args);
+VALUE rb_get_cols(VALUE self, VALUE args);
 VALUE rb_each_row(VALUE self);
 VALUE rb_each_col(VALUE self);
 VALUE rb_diag(int argc, VALUE *argv, VALUE self);
@@ -75,8 +73,8 @@ VALUE rb_clear(VALUE self);
 VALUE rb_clear_bang(VALUE self);
 VALUE rb_set_identity(int argc, VALUE *argv, VALUE self);
 VALUE rb_set_identity_bang(int argc, VALUE *argv, VALUE self);
-VALUE rb_range(int argc, VALUE *argv, VALUE self);
-VALUE rb_range_bang(int argc, VALUE *argv, VALUE self);
+VALUE rb_range(VALUE self, VALUE start, VALUE end);
+VALUE rb_range_bang(VALUE self, VALUE start, VALUE end);
 /* Transforms and Permutations */
 VALUE rb_reshape(VALUE self, VALUE hash);
 VALUE rb_repeat(VALUE self, VALUE object);
@@ -84,7 +82,6 @@ VALUE rb_flip(int argc, VALUE *argv, VALUE self);
 VALUE rb_flip_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_split(VALUE self);
 VALUE rb_merge(VALUE klass, VALUE args);
-VALUE rb_mix_channels(int argc, VALUE *argv, VALUE klass);
 VALUE rb_rand_shuffle(int argc, VALUE *argv, VALUE klass);
 VALUE rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE klass);
 
@@ -124,10 +121,9 @@ VALUE rb_cross_product(VALUE self, VALUE mat);
 // VALUE rb_gemm();
 VALUE rb_transform(int argc, VALUE *argv, VALUE self);
 VALUE rb_perspective_transform(VALUE self, VALUE mat);
-VALUE rb_mul_transposed(VALUE self, VALUE args);
+VALUE rb_mul_transposed(int argc, VALUE *argv, VALUE self);
 VALUE rb_trace(VALUE self);
 VALUE rb_transpose(VALUE self);
-VALUE rb_transpose_bang(VALUE self);
 VALUE rb_det(VALUE self);
 VALUE rb_invert(int argc, VALUE *argv, VALUE self);
 VALUE rb_solve(int argc, VALUE *argv, VALUE self);
@@ -139,8 +135,6 @@ VALUE rb_calc_covar_matrix(int argc, VALUE *argv, VALUE self);
 VALUE rb_mahalonobis(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_dft(int argc, VALUE *argv, VALUE self);
-//VALUE rb_optimal_dft_size(VALUE self);
-//VALUE rb_mul_spectrums(int argc, VALUE *argv, VALUE self);
 VALUE rb_dct(int argc, VALUE *argv, VALUE self);
 
 /* drawing function*/
@@ -160,9 +154,9 @@ VALUE rb_fill_convex_poly(int argc, VALUE *argv, VALUE self);
 VALUE rb_fill_convex_poly_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_poly_line(int argc, VALUE *argv, VALUE self);
 VALUE rb_poly_line_bang(int argc, VALUE *argv, VALUE self);
-
 VALUE rb_put_text(int argc, VALUE *argv, VALUE self);
 VALUE rb_put_text_bang(int argc, VALUE *argv, VALUE self);
+
 /* cv function */
 VALUE rb_sobel(int argc, VALUE *argv, VALUE self);
 VALUE rb_laplace(int argc, VALUE *argv, VALUE self);
@@ -182,37 +176,20 @@ VALUE rb_warp_affine(int argc, VALUE *argv, VALUE self);
 VALUE rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale);
 VALUE rb_warp_perspective(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_homograpy(int argc, VALUE *argv, VALUE self);
-//VALUE rb_perspective_transform();
 VALUE rb_remap(int argc, VALUE *argv, VALUE self);
-VALUE rb_log_polar(int argc, VALUE *argv);
+VALUE rb_log_polar(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_erode(int argc, VALUE *argv, VALUE self);
 VALUE rb_erode_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_dilate(int argc, VALUE *argv, VALUE self);
 VALUE rb_dilate_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_morphology(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_open(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_close(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_gradient(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_tophat(int argc, VALUE *argv, VALUE self);
-VALUE rb_morphology_blackhat(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_smooth(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_blur_no_scale(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_blur(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_gaussian(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_median(int argc, VALUE *argv, VALUE self);
-VALUE rb_smooth_bilateral(int argc, VALUE *argv, VALUE self);
+VALUE rb_copy_make_border(int argc, VALUE *argv, VALUE self);
 VALUE rb_filter2d(int argc, VALUE *argv, VALUE self);
-VALUE rb_copy_make_border_constant(int argc, VALUE *argv, VALUE self);
-VALUE rb_copy_make_border_replicate(int argc, VALUE *argv, VALUE self);
 VALUE rb_integral(int argc, VALUE *argv, VALUE self);
 VALUE rb_threshold(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_binary(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_binary_inverse(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_trunc(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_to_zero(int argc, VALUE *argv, VALUE self);
-VALUE rb_threshold_to_zero_inverse(int argc, VALUE *argv, VALUE self);
 VALUE rb_adaptive_threshold(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_pyr_down(int argc, VALUE *argv, VALUE self);
@@ -222,31 +199,21 @@ VALUE rb_flood_fill(int argc, VALUE *argv, VALUE self);
 VALUE rb_flood_fill_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_contours(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_contours_bang(int argc, VALUE *argv, VALUE self);
-VALUE rb_pyr_segmentation(int argc, VALUE *argv, VALUE self);
+VALUE rb_pyr_segmentation(VALUE self, VALUE level, VALUE threshold1, VALUE threshold2);
 VALUE rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self);
 VALUE rb_watershed(VALUE self, VALUE markers);
 
 VALUE rb_moments(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_hough_lines(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_lines_standard(VALUE self, VALUE rho, VALUE theta, VALUE threshold);
-VALUE rb_hough_lines_probabilistic(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
-VALUE rb_hough_lines_multi_scale(VALUE self, VALUE rho, VALUE theta, VALUE threshold, VALUE p1, VALUE p2);
 VALUE rb_hough_circles(int argc, VALUE *argv, VALUE self);
-VALUE rb_hough_circles_gradient(int argc, VALUE *argv, VALUE self);
 VALUE rb_dist_transform(int argc, VALUE *argv, VALUE self);
 VALUE rb_inpaint(VALUE self, VALUE inpaint_method, VALUE mask, VALUE radius);
-VALUE rb_inpaint_ns(VALUE self, VALUE mask, VALUE radius);
-VALUE rb_inpaint_telea(VALUE self, VALUE mask, VALUE radius);
 
 VALUE rb_equalize_hist(VALUE self);
 /* Matching*/
 VALUE rb_match_template(int argc, VALUE *argv, VALUE self);
 VALUE rb_match_shapes(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i1(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i2(int argc, VALUE *argv, VALUE self);
-VALUE rb_match_shapes_i3(int argc, VALUE *argv, VALUE self);
-// VALUE rb_calc_emd(int argc, VALUE *argv, VALUE self);
 /* Object Tracking */
 VALUE rb_mean_shift(VALUE self, VALUE window, VALUE criteria);
 VALUE rb_cam_shift(VALUE self, VALUE window, VALUE criteria);
@@ -258,13 +225,12 @@ VALUE rb_optical_flow_bm(int argc, VALUE *argv, VALUE self);
 VALUE rb_optical_flow_pyr_lk(int argc, VALUE *argv, VALUE self);
 
 /* Epipolar Geometory */
-VALUE rb_find_fundamental_mat_7point(VALUE klass, VALUE points1, VALUE points2);
-VALUE rb_find_fundamental_mat_8point(VALUE klass, VALUE points1, VALUE points2);
-VALUE rb_find_fundamental_mat_ransac(int argc, VALUE *argv, VALUE klass);
-VALUE rb_find_fundamental_mat_lmeds(int argc, VALUE *argv, VALUE klass);
 VALUE rb_find_fundamental_mat(int argc, VALUE *argv, VALUE klass);
 VALUE rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_image, VALUE fundamental_matrix);
-  
+
+/* Feature detection and description */
+VALUE rb_extract_surf(int argc, VALUE *argv, VALUE self);
+
 // HighGUI function
 VALUE rb_save_image(VALUE self, VALUE filename);
 
@@ -275,7 +241,6 @@ VALUE new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int chann
 
 __NAMESPACE_END_CVMAT
 
-
 inline CvMat*
 CVMAT(VALUE object)
 {
@@ -285,16 +250,26 @@ CVMAT(VALUE object)
 }
 
 inline CvMat*
+CVMAT_WITH_CHECK(VALUE object)
+{
+  if (!rb_obj_is_kind_of(object, cCvMat::rb_class()))
+    raise_typeerror(object, cCvMat::rb_class());
+  return CVMAT(object);
+}
+
+inline CvMat*
 MASK(VALUE object)
 {
-  if(NIL_P(object))
+  if (NIL_P(object))
     return NULL;
-  else if(rb_obj_is_kind_of(object, cCvMat::rb_class()) &&
-	  CV_MAT_DEPTH(CVMAT(object)->type) == CV_8UC1 &&
-	  CV_MAT_CN(CVMAT(object)->type) == 1)
-    return CVMAT(object);
-  else
-    rb_raise(rb_eTypeError, "object is not mask.");
+  else {
+    CvMat* obj_ptr = CVMAT_WITH_CHECK(object);
+    if (CV_MAT_DEPTH(obj_ptr->type) == CV_8UC1 &&
+	CV_MAT_CN(obj_ptr->type) == 1)
+      return obj_ptr;
+    else
+      rb_raise(rb_eTypeError, "Mask should be 8bit 1-channel matrix.");
+  }
 }
 
 __NAMESPACE_END_OPENCV

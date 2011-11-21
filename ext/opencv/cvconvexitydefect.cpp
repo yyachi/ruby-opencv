@@ -18,7 +18,7 @@
  *     CvPoint* end;
  *     CvPoint* depth_point;
  *     float depth;
- *   }CvConvexityDefect;
+ *   } CvConvexityDefect;
  *
  */
 __NAMESPACE_BEGIN_OPENCV
