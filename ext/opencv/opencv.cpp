@@ -670,6 +670,7 @@ extern "C" {
     mOpenCV::cCvCircle32f::define_ruby_class();
 
     mOpenCV::cCvConDensation::define_ruby_class();
+    mOpenCV::cCvFeatureTree::define_ruby_class();
 
     mOpenCV::cCvConnectedComp::define_ruby_class();
     mOpenCV::cCvAvgComp::define_ruby_class();

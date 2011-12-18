@@ -130,6 +130,8 @@ extern "C" {
 #include "cvsurfpoint.h"
 #include "cvsurfparams.h"
 
+#include "cvfeaturetree.h"
+
 // GUI
 #include "gui.h"
 #include "window.h"
