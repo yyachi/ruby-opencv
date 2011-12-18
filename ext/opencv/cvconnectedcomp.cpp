@@ -76,6 +76,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     CVCONNECTEDCOMP(self)->rect = *CVRECT(rect);
   if (!NIL_P(contour))
     CVCONNECTEDCOMP(self)->contour = CVSEQ(contour);
+  return self;
 }
 
 /*

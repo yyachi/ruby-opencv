@@ -120,7 +120,7 @@ cvcapture_free(void *ptr)
 VALUE
 rb_open(int argc, VALUE *argv, VALUE self)
 {
-  VALUE device, interface;
+  VALUE device;
   rb_scan_args(argc, argv, "01", &device);
   CvCapture *capture = 0;
   try {
@@ -131,12 +131,13 @@ rb_open(int argc, VALUE *argv, VALUE self)
     case T_FIXNUM:
       capture = cvCaptureFromCAM(FIX2INT(device));
       break;
-    case T_SYMBOL:    
-      interface = rb_hash_aref(rb_const_get(rb_class(), rb_intern("INTERFACE")), device);
-      if (NIL_P(interface))
-	rb_raise(rb_eArgError, "undefined interface.");
-      capture = cvCaptureFromCAM(NUM2INT(interface));
+    case T_SYMBOL: {
+      VALUE cap_index = rb_hash_aref(rb_const_get(rb_class(), rb_intern("INTERFACE")), device);
+      if (NIL_P(cap_index))
+        rb_raise(rb_eArgError, "undefined interface.");
+      capture = cvCaptureFromCAM(NUM2INT(cap_index));
       break;
+    }
     case T_NIL:
       capture = cvCaptureFromCAM(CV_CAP_ANY);
       break;

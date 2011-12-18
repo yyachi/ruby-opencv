@@ -51,7 +51,7 @@ rb_allocate(VALUE klass)
   return OPENCV_OBJECT(klass, 0);
 }
 
-VALUE
+void
 cvhaarclassifiercascade_free(void* ptr)
 {
   if (ptr) {
@@ -150,7 +150,7 @@ rb_detect_objects(int argc, VALUE *argv, VALUE self)
 
   VALUE result = Qnil;
   try {
-    CvSeq *seq = cvHaarDetectObjects(CVMAT_WITH_CHECK(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
+    CvSeq *seq = cvHaarDetectObjects(CVARR_WITH_CHECK(image), CVHAARCLASSIFIERCASCADE(self), CVMEMSTORAGE(storage_val),
 			      scale_factor, min_neighbors, flags, min_size, max_size);
     result = cCvSeq::new_sequence(cCvSeq::rb_class(), seq, cCvAvgComp::rb_class(), storage_val);
     if (rb_block_given_p()) {

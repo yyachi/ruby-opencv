@@ -290,7 +290,7 @@ rb_show_image(int argc, VALUE *argv, VALUE self)
 {
   CvArr* image = NULL;
   if (argc > 0) {
-    image = CVMAT_WITH_CHECK(argv[0]);
+    image = CVARR_WITH_CHECK(argv[0]);
     st_table *holder;
     if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder))
       st_insert(holder, cCvMat::rb_class(), argv[0]);
