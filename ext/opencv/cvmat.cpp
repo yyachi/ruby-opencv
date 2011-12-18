@@ -678,13 +678,13 @@ VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
 {
   VALUE value, copied;
-  CvMat *src = CVMAT(self);
+  CvArr *src = CVARR(self);
   CvSize size = cvGetSize(src);
   rb_scan_args(argc, argv, "01", &value);
   if (argc == 0) {
     copied = new_mat_kind_object(size, self);
     try {
-      cvCopy(src, CVMAT(copied));
+      cvCopy(src, CVARR(copied));
     }
     catch (cv::Exception& e) {
       raise_cverror(e);
@@ -694,7 +694,7 @@ rb_copy(int argc, VALUE *argv, VALUE self)
   else {
     if (rb_obj_is_kind_of(value, rb_klass)) {
       try {
-	cvCopy(src, CVMAT(value));
+	cvCopy(src, CVARR_WITH_CHECK(value));
       }
       catch (cv::Exception& e) {
 	raise_cverror(e);
@@ -4779,7 +4779,7 @@ rb_moments(int argc, VALUE *argv, VALUE self)
  *   hough_lines(<i>method, rho, theta, threshold, param1, param2</i>) -> cvseq(include CvLine or CvTwoPoints)
  *
  * Finds lines in binary image using a Hough transform.
- * * method –
+ * * method –
  * *   The Hough transform variant, one of the following:
  * *   - CV_HOUGH_STANDARD - classical or standard Hough transform.
  * *   - CV_HOUGH_PROBABILISTIC - probabilistic Hough transform (more efficient in case if picture contains a few long linear segments).
@@ -4787,12 +4787,12 @@ rb_moments(int argc, VALUE *argv, VALUE self)
  * * rho - Distance resolution in pixel-related units.
  * * theta - Angle resolution measured in radians.
  * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * param1 –
+ * * param1 –
  * *   The first method-dependent parameter:
  * *     For the classical Hough transform it is not used (0).
  * *     For the probabilistic Hough transform it is the minimum line length.
  * *     For the multi-scale Hough transform it is the divisor for the distance resolution . (The coarse distance resolution will be rho and the accurate resolution will be (rho / param1)).
- * * param2 –
+ * * param2 –
  * *   The second method-dependent parameter:
  * *     For the classical Hough transform it is not used (0).
  * *     For the probabilistic Hough transform it is the maximum gap between line segments lying on the same line to treat them as a single line segment (i.e. to join them).

@@ -51,7 +51,7 @@ rb_allocate(VALUE klass)
   return OPENCV_OBJECT(klass, 0);
 }
 
-VALUE
+void
 cvhaarclassifiercascade_free(void* ptr)
 {
   if (ptr) {

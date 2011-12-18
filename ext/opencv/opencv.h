@@ -52,6 +52,7 @@ extern "C" {
 }
 
 // standard c headers
+#define _USE_MATH_DEFINES // for VC++
 #include <math.h>
 #include <limits.h>
 #include <float.h>
@@ -115,6 +116,8 @@ extern "C" {
 
 #include "cvsurfpoint.h"
 #include "cvsurfparams.h"
+
+#include "cvfeaturetree.h"
 
 // GUI
 #include "gui.h"

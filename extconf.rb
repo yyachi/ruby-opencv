@@ -8,12 +8,12 @@ usage : ruby extconf.rb
 
 VC : ruby extconf.rb
      nmake
+	 nmake install
 =end
 require "mkmf"
 
 # option "opencv"
-# extconf.rb --with-opencv-lib=/path/to/opencv/lib
-# extconf.rb --with-opencv-include=/path/to/opencv/include
+# extconf.rb --with-opencv-dir=/path/to/opencv
 
 dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 
@@ -32,10 +32,13 @@ opencv_libraries = ["cv", "cvaux", "cxcore", "highgui"]
 puts ">> check require libraries..."
 case CONFIG["arch"]
 when /mswin32/
-  have_library("msvcrt", nil)
+  OPENCV_VERSION_SUFFIX = '231'
+  opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }
+  have_library("msvcrt")
   opencv_libraries.each{|lib|
-    have_library(lib)
+    raise "lib#{lib} not found." unless have_library(lib)
   }
+  $CFLAGS << ' /EHsc'
 else
   opencv_libraries.each{|lib|
     raise "lib#{lib} not found." unless have_library(lib)
