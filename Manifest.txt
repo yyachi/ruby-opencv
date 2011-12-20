@@ -1,3 +1,4 @@
+.gitignore
 Gemfile
 Gemfile.lock
 History.txt
@@ -5,6 +6,8 @@ License.txt
 Manifest.txt
 README.rdoc
 Rakefile
+examples/box.png
+examples/box_in_scene.png
 examples/contours/bitmap-contours-with-labels.png
 examples/contours/bitmap-contours.png
 examples/contours/bounding-box-detect-canny.rb
@@ -12,9 +15,13 @@ examples/contours/contour_retrieval_modes.rb
 examples/contours/rotated-boxes.jpg
 examples/convexhull.rb
 examples/face_detect.rb
+examples/find_obj.rb
 examples/houghcircle.rb
 examples/inpaint.png
 examples/inpaint.rb
+examples/lenna-rotated.jpg
+examples/lenna.jpg
+examples/match_kdtree.rb
 examples/paint.rb
 examples/snake.rb
 examples/stuff.jpg
@@ -42,6 +49,8 @@ ext/opencv/cvconvexitydefect.cpp
 ext/opencv/cvconvexitydefect.h
 ext/opencv/cverror.cpp
 ext/opencv/cverror.h
+ext/opencv/cvfeaturetree.cpp
+ext/opencv/cvfeaturetree.h
 ext/opencv/cvfont.cpp
 ext/opencv/cvfont.h
 ext/opencv/cvhaarclassifiercascade.cpp
@@ -172,8 +181,12 @@ test/test_cvchain.rb
 test/test_cvcircle32f.rb
 test/test_cvconnectedcomp.rb
 test/test_cvcontour.rb
+test/test_cvcontourtree.rb
+test/test_cverror.rb
+test/test_cvfeaturetree.rb
 test/test_cvfont.rb
 test/test_cvhaarclassifiercascade.rb
+test/test_cvhistogram.rb
 test/test_cvhumoments.rb
 test/test_cvline.rb
 test/test_cvmat.rb
@@ -199,6 +212,7 @@ test/test_iplconvkernel.rb
 test/test_iplimage.rb
 test/test_mouseevent.rb
 test/test_opencv.rb
+test/test_pointset.rb
 test/test_preliminary.rb
 test/test_trackbar.rb
 test/test_window.rb
