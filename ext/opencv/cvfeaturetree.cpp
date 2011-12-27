@@ -87,6 +87,7 @@ rb_initialize(VALUE self, VALUE desc)
     raise_cverror(e);
   }
   self_ptr->desc = desc;
+  return self;
 }
 
 /*
