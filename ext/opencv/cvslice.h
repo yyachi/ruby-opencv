@@ -53,6 +53,7 @@ VALUE_TO_CVSLICE(VALUE object)
   else {
     raise_compatible_typeerror(object, cCvSlice::rb_class());
   }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV

@@ -69,16 +69,17 @@ VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
   VALUE center, size, angle;
+  CvBox2D* self_ptr = CVBOX2D(self);
   rb_scan_args(argc, argv, "03", &center, &size, &angle);
-  if (!NIL_P(center))
-    CVBOX2D(self)->center = VALUE_TO_CVPOINT2D32F(center);
-
-  if (!NIL_P(size))
-    CVBOX2D(self)->size = VALUE_TO_CVSIZE2D32F(size);
   
-  if (!NIL_P(size))
-    CVBOX2D(self)->angle = NUM2DBL(angle);
-
+  if (!NIL_P(center)) {
+    self_ptr->center = VALUE_TO_CVPOINT2D32F(center);
+  }
+  if (!NIL_P(size)) {
+    self_ptr->size = VALUE_TO_CVSIZE2D32F(size);
+    self_ptr->angle = NUM2DBL(angle);
+  }
+  
   return self;
 }
 
@@ -172,8 +173,9 @@ rb_points(VALUE self)
     raise_cverror(e);
   }
   VALUE points = rb_ary_new2(n);
-  for (int i = 0; i < n; ++i)
-    rb_ary_store(points, i, cCvPoint2D32f::new_object(p[i]));        
+  for (int i = 0; i < n; ++i) {
+    rb_ary_store(points, i, cCvPoint2D32f::new_object(p[i]));
+  }
   return points;
 }
 
