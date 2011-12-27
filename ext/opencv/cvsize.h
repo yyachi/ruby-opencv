@@ -57,6 +57,7 @@ VALUE_TO_CVSIZE(VALUE object)
   else {
     raise_compatible_typeerror(object, cCvSize::rb_class());
   }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV

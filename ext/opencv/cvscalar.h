@@ -51,15 +51,19 @@ inline CvScalar
 VALUE_TO_CVSCALAR(VALUE object)
 {
   ID aref_id;
-  if (FIXNUM_P(object))
+  if (FIXNUM_P(object)) {
     return cvScalarAll(FIX2INT(object));
-  else if (rb_respond_to(object, (aref_id = rb_intern("[]"))))
+  }
+  else if (rb_respond_to(object, (aref_id = rb_intern("[]")))) {
     return cvScalar(NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(0))),
 		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(1))),
 		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(2))),
 		    NUM2DBL(rb_funcall(object, aref_id, 1, INT2FIX(3))));
-  else
+  }
+  else {
     raise_compatible_typeerror(object, cCvScalar::rb_class());
+  }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV

@@ -41,7 +41,7 @@ when /mswin32/
   opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }
   have_library("msvcrt")
   opencv_libraries.each{|lib|
-    raise "lib#{lib} not found." unless have_library(lib)
+    raise "#{lib}.lib not found." unless have_library(lib)
   }
   $CFLAGS << ' /EHsc'
 else
