@@ -242,6 +242,7 @@ void define_ruby_class()
   rb_define_alias(rb_klass, "*", "mat_mul");
   rb_define_method(rb_klass, "div", RUBY_METHOD_FUNC(rb_div), -1);
   rb_define_alias(rb_klass, "/", "div");
+  rb_define_singleton_method(rb_klass, "add_weighted", RUBY_METHOD_FUNC(rb_add_weighted), 5);
   rb_define_method(rb_klass, "and", RUBY_METHOD_FUNC(rb_and), -1);
   rb_define_alias(rb_klass, "&", "and");
   rb_define_method(rb_klass, "or", RUBY_METHOD_FUNC(rb_or), -1);
@@ -1925,6 +1926,39 @@ rb_div(int argc, VALUE *argv, VALUE self)
     raise_cverror(e);
   }
   return dest;
+}
+
+/*
+ * call-seq:
+ *   add_weighted(src1, alpha, src2, beta, gamma)
+ *
+ * Computes the weighted sum of two arrays.
+ *
+ * src1 - The first source array
+ * alpha - Weight for the first array elements
+ * src2 - The second source array
+ * beta - Weight for the second array elements
+ * gamma - Added to each sum
+ *
+ * The function calculates the weighted sum of two arrays as follows:
+ *   dst(I)=src1(I)*alpha+src2(I)*beta+gamma
+ * All the arrays must have the same type and the same size (or ROI size). 
+ * For types that have limited range this operation is saturating.
+ */
+VALUE
+rb_add_weighted(VALUE klass, VALUE src1, VALUE alpha, VALUE src2, VALUE beta, VALUE gamma)
+{
+  CvArr* src1_ptr = CVARR_WITH_CHECK(src1);
+  VALUE dst = new_mat_kind_object(cvGetSize(src1_ptr), src1);
+  try {
+    cvAddWeighted(src1_ptr, NUM2DBL(alpha),
+		  CVARR_WITH_CHECK(src2), NUM2DBL(beta),
+		  NUM2DBL(gamma), CVARR(dst));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  return dst;
 }
 
 /*
