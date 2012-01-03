@@ -47,7 +47,8 @@ CVPOINT(VALUE object){
 }
 
 inline CvPoint
-VALUE_TO_CVPOINT(VALUE object){
+VALUE_TO_CVPOINT(VALUE object)
+{
   if (cCvPoint::rb_compatible_q(cCvPoint::rb_class(), object)) {
     return cvPoint(NUM2INT(rb_funcall(object, rb_intern("x"), 0)),
                    NUM2INT(rb_funcall(object, rb_intern("y"), 0)));
@@ -55,6 +56,7 @@ VALUE_TO_CVPOINT(VALUE object){
   else {
     raise_compatible_typeerror(object, cCvPoint::rb_class());
   }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV

@@ -306,6 +306,12 @@ rb_show_image(int argc, VALUE *argv, VALUE self)
   return self;
 }
 
+void
+trackbar_callback(int value, void* block)
+{
+  rb_funcall((VALUE)block, rb_intern("call"), 1, INT2NUM(value));
+}
+
 /*
  * call-seq:
  *   set_trackbar(<i>trackbar</i>)
@@ -315,15 +321,6 @@ rb_show_image(int argc, VALUE *argv, VALUE self)
  * Create Trackbar on this window. Return new Trackbar.
  * see Trackbar.new
  */
-#ifdef HAVE_CALLBACK_H
-void
-trackbar_callback(VALUE block, va_alist ap)
-{
-  va_start_void(ap);
-  rb_funcall(block, rb_intern("call"), 1, INT2FIX(va_arg_int(ap)));
-  va_return_void(ap);
-}
-
 VALUE
 rb_set_trackbar(int argc, VALUE *argv, VALUE self)
 {
@@ -335,10 +332,9 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
     instance = cTrackbar::rb_initialize(argc, argv, cTrackbar::rb_allocate(cTrackbar::rb_class()));
   }
   Trackbar *trackbar = TRACKBAR(instance);
-  void *callback = (void *)alloc_callback(&trackbar_callback, trackbar->block);
   try {
-    cvCreateTrackbar(trackbar->name, GET_WINDOW_NAME(self), &(trackbar->val), trackbar->maxval,
-		     (CvTrackbarCallback)callback);
+    cv::createTrackbar(trackbar->name, GET_WINDOW_NAME(self), &(trackbar->val), trackbar->maxval,
+		       (cv::TrackbarCallback)trackbar_callback, (void*)(trackbar->block));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -349,17 +345,10 @@ rb_set_trackbar(int argc, VALUE *argv, VALUE self)
   }
   return instance;
 }
-#else
-VALUE
-rb_set_trackbar(int argc, VALUE *argv, VALUE self)
-{
-  rb_raise(rb_eFatal, "ffcall is required to use Window#set_trackbar");
-  return Qnil;
-}
-#endif // HAVE_CALLBACK_H
 
 void
-on_mouse(int event, int x, int y, int flags, void* param) {
+on_mouse(int event, int x, int y, int flags, void* param)
+{
   VALUE block = (VALUE)param;
   if (rb_obj_is_kind_of(block, rb_cProc))
     rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(event, x, y, flags));

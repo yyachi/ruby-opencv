@@ -16,12 +16,6 @@ require "mkmf"
 # extconf.rb --with-opencv-dir=/path/to/opencv
 
 dir_config("opencv", "/usr/local/include", "/usr/local/lib")
-
-if CONFIG["arch"].include?("darwin")
-  dir_config("ffcall", "/opt/local/include", "/opt/local/lib")
-else
-  dir_config("ffcall", "/usr/local/include", "/usr/local/lib")
-end
 dir_config("libxml2", "/usr/include", "/usr/lib")
 
 opencv_headers = ["opencv/cv.h", "opencv/cv.hpp", "opencv/cvaux.h",
@@ -32,11 +26,11 @@ opencv_libraries = ["cv", "cvaux", "cxcore", "highgui"]
 puts ">> check require libraries..."
 case CONFIG["arch"]
 when /mswin32/
-  OPENCV_VERSION_SUFFIX = '231'
+  OPENCV_VERSION_SUFFIX = '210'
   opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }
   have_library("msvcrt")
   opencv_libraries.each{|lib|
-    raise "lib#{lib} not found." unless have_library(lib)
+    raise "#{lib}.lib not found." unless have_library(lib)
   }
   $CFLAGS << ' /EHsc'
 else
@@ -57,17 +51,6 @@ have_header("stdarg.h")
 
 # check require functions.
 # todo
-
-# optional libraies check.
-puts ">> ----- optional -----"
-puts ">> check ffcall..."
-# check ffcall
-if have_library("callback") && have_header("callback.h")
-  puts ">> support OpenCV::GUI::Window#set_trackbar"
-else
-  puts ">> ! unsupport OpenCV::GUI::Window#set_trackbar (if need it. install ffcall)"
-  puts "http://www.haible.de/bruno/packages-ffcall.html"
-end
 
 # Quick fix for 1.8.7
 $CFLAGS << " -I#{File.dirname(__FILE__)}/ext/opencv"

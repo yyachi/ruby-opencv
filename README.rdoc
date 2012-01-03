@@ -24,13 +24,6 @@ Ruby/OpenCV relies on the OpenCV library.
 See http://opencv.willowgarage.com/wiki/InstallGuide
 
 
-* ffcall (optional)
-ffcall is needed to use GUI trackbar component.
-Other GUI components work without ffcall.
-
-See http://www.haible.de/bruno/packages-ffcall.html
-
-
 == INSTALLATION:
 === Install Ruby/OpenCV manually
 ==== Unix/Linux/Mac
