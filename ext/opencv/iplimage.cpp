@@ -358,7 +358,7 @@ compute_smoothness(const IplImage *pFourierImage, const double lowFreqRatio, con
 
   filteredFourierImage = create_frequency_filtered_image(pFourierImage, low, high);
   scalar = cvSum(filteredFourierImage);
-  totalIntensity = scalar.val[0];
+  totalIntensity = (int)scalar.val[0];
   cvReleaseImage(&filteredFourierImage);
   outLowDensity = den = totalIntensity / totalArea;
 
@@ -370,7 +370,7 @@ compute_smoothness(const IplImage *pFourierImage, const double lowFreqRatio, con
 
   filteredFourierImage = create_frequency_filtered_image(pFourierImage, low, high);
   scalar = cvSum(filteredFourierImage);
-  totalIntensity = scalar.val[0];
+  totalIntensity = (int)scalar.val[0];
   cvReleaseImage(&filteredFourierImage);
   outHighDensity = den = totalIntensity / totalArea;
 
@@ -516,13 +516,13 @@ create_frequency_filtered_image(const IplImage *pImage, int low, int high)
 {
 
   CvPoint2D32f  center;
-  center.x = pImage->width / 2;
-  center.y = pImage->height / 2;
+  center.x = (float)(pImage->width / 2);
+  center.y = (float)(pImage->height / 2);
   CvBox2D box;
   box.center = center;
 
-  box.size.width = high;
-  box.size.height = high;
+  box.size.width = (float)high;
+  box.size.height = (float)high;
 
   IplImage *pFilterMask = rb_cvCreateImage(cvGetSize(pImage), IPL_DEPTH_64F, 1);
   IplImage *pFiltered = rb_cvCreateImage(cvGetSize(pImage), IPL_DEPTH_64F, 1);
@@ -533,8 +533,8 @@ create_frequency_filtered_image(const IplImage *pImage, int low, int high)
   if (high > 0)
     cvEllipseBox(pFilterMask, box, cvScalar(255, 255, 255, 255), CV_FILLED, 8, 0);
 
-  box.size.width = low;
-  box.size.height = low;
+  box.size.width = (float)low;
+  box.size.height = (float)low;
   if (low > 0)
     cvEllipseBox(pFilterMask, box, cvScalar(0, 0, 0, 0), CV_FILLED, 8, 0);
 

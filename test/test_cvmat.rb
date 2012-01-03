@@ -1352,6 +1352,43 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
+  def test_add_weighted
+    m1 = create_cvmat(3, 2, :cv8u) { |j, i, c| c + 1 }
+    m2 = create_cvmat(3, 2, :cv8u) { |j, i, c| (c + 1) * 10 }
+    a = 2.0
+    b = 0.1
+    g = 100
+    m3 = CvMat.add_weighted(m1, a, m2, b, g)
+    assert_equal(m1.class, m3.class)
+    assert_equal(m1.rows, m3.rows)
+    assert_equal(m1.cols, m3.cols)
+    assert_equal(m1.depth, m3.depth)
+    assert_equal(m1.channel, m3.channel)
+
+    m1.rows.times { |j|
+      m1.cols.times { |i|
+        expected = m1[j, i][0] * a + m2[j, i][0] * b + g
+        assert_equal(expected, m3[j, i][0])
+      }
+    }
+
+    assert_raise(TypeError) {
+      CvMat.add_weighted(DUMMY_OBJ, a, m2, b, g)
+    }
+    assert_raise(TypeError) {
+      CvMat.add_weighted(m1, DUMMY_OBJ, m2, b, g)
+    }
+    assert_raise(TypeError) {
+      CvMat.add_weighted(m1, a, DUMMY_OBJ, b, g)
+    }
+    assert_raise(TypeError) {
+      CvMat.add_weighted(m1, a, m2, DUMMY_OBJ, g)
+    }
+    assert_raise(TypeError) {
+      CvMat.add_weighted(m1, a, m2, b, DUMMY_OBJ)
+    }
+  end
+
   def test_and
     m1 = create_cvmat(6, 4)
     s1 = CvScalar.new(1, 2, 3, 4)

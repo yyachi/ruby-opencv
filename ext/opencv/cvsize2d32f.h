@@ -56,6 +56,7 @@ VALUE_TO_CVSIZE2D32F(VALUE object)
   else {
     raise_compatible_typeerror(object, cCvSize2D32f::rb_class());
   }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV

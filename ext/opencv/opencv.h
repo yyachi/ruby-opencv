@@ -38,10 +38,6 @@ extern "C" {
 #include <st.h>
 #endif
 
-#ifdef HAVE_CALLBACK_H
-#include <callback.h> // callhack.h is ffcall header
-#endif
-
 #ifdef HAVE_STDARG_H
 #include <stdarg.h>
 #define va_init_list(a,b) va_start(a,b)

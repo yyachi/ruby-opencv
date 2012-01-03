@@ -53,6 +53,7 @@ VALUE_TO_CVBOX2D(VALUE object){
   else {
     raise_typeerror(object, cCvBox2D::rb_class());
   }
+  throw "Should never reach here";
 }
 
 __NAMESPACE_END_OPENCV
