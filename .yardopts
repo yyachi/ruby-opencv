@@ -1,0 +1,4 @@
+README.rdoc
+ext/opencv/*.h
+ext/opencv/*.cpp
+
