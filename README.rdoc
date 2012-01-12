@@ -14,7 +14,7 @@ OpenCV wrapper for Ruby
 == FEATURES/PROBLEMS:
 
 * Some OpenCV functions are wrapped.
-* Ruby 1.8.7, 1.9.3 and OpenCV 2.3 are supported.
+* Ruby 1.8.7, 1.9.3 and OpenCV 2.3.1 are supported.
 
 == DEPENDENCIES:
 
@@ -38,10 +38,13 @@ See http://opencv.willowgarage.com/wiki/InstallGuide
 ==== Windows (mswin32)
 Use "nmake" instead of "make".
 
+In mswin32, OpenCV include folder and library folder are not installed in the same folder by default.
+You may need to specify OpenCV include folder and library folder respectively when you run extconf.rb.
+
   $ git clone git://github.com/ser1zw/ruby-opencv.git
   $ cd ruby-opencv
   $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
-  $ ruby extconf.rb --with-opencv-dir=/path/to/opencvdir
+  $ ruby extconf.rb --with-opencv-include=C:\path\to\opencvdir\build\include --with-opencv-lib=C:\path\to\opencvdir\build\x86\vc10\lib
   $ nmake
   $ nmake install
 
