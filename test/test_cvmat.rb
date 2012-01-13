@@ -809,9 +809,16 @@ class TestCvMat < OpenCVTestCase
         assert_cvscalar_equal(m0[rj, i], m4[j, i])
         assert_cvscalar_equal(m0[rj, ri], m5[j, i])
         assert_cvscalar_equal(m0[rj, ri], m6[j, i])
-        assert_cvscalar_equal(m0[rj, i], m7[j, i])
-        assert_cvscalar_equal(m0[rj, i], m8[j, i])
+        assert_cvscalar_equal(m0[j, ri], m7[j, i])
+        assert_cvscalar_equal(m0[j, ri], m8[j, i])
       }
+    }
+
+    assert_raise(TypeError) {
+      m0.flip(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m0.flip!(DUMMY_OBJ)
     }
   end
 
