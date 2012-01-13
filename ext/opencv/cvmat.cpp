@@ -1546,16 +1546,19 @@ VALUE
 rb_flip_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE format;
-  int mode = 0;
+  int mode = 1;
   if (rb_scan_args(argc, argv, "01", &format) > 0) {
-    if (rb_to_id(format) == rb_intern("x"))
+    Check_Type(format, T_SYMBOL);
+    ID flip_mode = rb_to_id(format);
+    if (flip_mode == rb_intern("x")) {
       mode = 1;
-    else if (rb_to_id(format) == rb_intern("y"))
+    }
+    else if (flip_mode == rb_intern("y")) {
       mode = 0;
-    else if (rb_to_id(format) == rb_intern("xy"))
+    }
+    else if (flip_mode == rb_intern("xy")) {
       mode = -1;
-    else
-      rb_warn("argument may be :x or :y or :xy");
+    }
   }
   try {
     cvFlip(CVARR(self), NULL, mode);
