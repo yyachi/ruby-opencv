@@ -77,6 +77,7 @@ You can also install this library creating a gem like:
 To add ruby-opencv in your Gemfile:
 
   $ echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
+  $ bundle config build.opencv --with-opencv-dir=/path/to/opencvdir
   $ bundle install  # or bundle update
 
 == SYNOPSIS:
