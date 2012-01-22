@@ -28,7 +28,7 @@ See http://opencv.willowgarage.com/wiki/InstallGuide
 === Install Ruby/OpenCV manually
 ==== Unix/Linux/Mac
 
-  $ git clone git://github.com/ser1zw/ruby-opencv.git
+  $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
   $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
   $ ruby extconf.rb --with-opencv-dir=/path/to/opencvdir
@@ -41,7 +41,7 @@ Use "nmake" instead of "make".
 In mswin32, OpenCV include folder and library folder are not installed in the same folder by default.
 You may need to specify OpenCV include folder and library folder respectively when you run extconf.rb.
 
-  $ git clone git://github.com/ser1zw/ruby-opencv.git
+  $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
   $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
   $ ruby extconf.rb --with-opencv-include=C:\path\to\opencvdir\build\include --with-opencv-lib=C:\path\to\opencvdir\build\x86\vc10\lib
@@ -67,7 +67,7 @@ Install Ruby/OpenCV with the following command:
 === Create Ruby/OpenCV Gem
 You can also install this library creating a gem like:
 
-  $ git clone git://github.com/ser1zw/ruby-opencv.git
+  $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
   $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
   $ bundle install
@@ -76,7 +76,7 @@ You can also install this library creating a gem like:
 
 To add ruby-opencv in your Gemfile:
 
-  $ echo -e "\n"'gem "opencv", :git => "https://github.com/ser1zw/ruby-opencv"' >> Gemfile
+  $ echo -e "\n"'gem "opencv", :git => "https://github.com/ruby-opencv/ruby-opencv"' >> Gemfile
   $ bundle config build.opencv --with-opencv-dir=/path/to/opencvdir
   $ bundle install  # or bundle update
 
