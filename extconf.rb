@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#/usr/local/bin/ruby
 =begin
 create Makefile script for Ruby/OpenCV
 
@@ -11,9 +10,6 @@ VC : ruby extconf.rb
 	 nmake install
 =end
 require "mkmf"
-
-# option "opencv"
-# extconf.rb --with-opencv-dir=/path/to/opencv
 
 dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 dir_config("libxml2", "/usr/include", "/usr/lib")
@@ -29,38 +25,40 @@ opencv_libraries = ["opencv_calib3d", "opencv_contrib", "opencv_core", "opencv_f
                     "opencv_legacy", "opencv_ml", "opencv_objdetect", "opencv_video"]
 
 
-puts ">> check require libraries..."
+puts ">> Check the required libraries..."
+
+OPENCV_VERSION_SUFFIX = '220'
 case CONFIG["arch"]
 when /mswin32/
-  OPENCV_VERSION_SUFFIX = '220'
   opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }
   have_library("msvcrt")
-  opencv_libraries.each{|lib|
+  opencv_libraries.each {|lib|
     raise "#{lib}.lib not found." unless have_library(lib)
   }
   $CFLAGS << ' /EHsc'
-else
-  opencv_libraries.each{|lib|
+when /mingw32/
+  opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }
+  have_library("msvcrt")
+  opencv_libraries.each {|lib|
     raise "lib#{lib} not found." unless have_library(lib)
   }
-  #have_library("ml")
+else
+  opencv_libraries.each {|lib|
+    raise "lib#{lib} not found." unless have_library(lib)
+  }
   have_library("stdc++")
 end
 
-# check require headers
-puts ">> check require headers..."
-opencv_headers.each{|header|
+# Check the required headers
+puts ">> Check the required headers..."
+opencv_headers.each {|header|
   raise "#{header} not found." unless have_header(header)
 }
-#have_header("ml.h")
 have_header("stdarg.h")
-
-# check require functions.
-# todo
 
 # Quick fix for 1.8.7
 $CFLAGS << " -I#{File.dirname(__FILE__)}/ext/opencv"
 
-# step-final. create Makefile
+# Create Makefile
 create_makefile("opencv", "./ext/opencv")
 

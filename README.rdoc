@@ -19,9 +19,14 @@ OpenCV wrapper for Ruby
 == DEPENDENCIES:
 
 * OpenCV (required)
-Ruby/OpenCV relies on the OpenCV library.
+  * Ruby/OpenCV relies on the OpenCV library http://opencv.willowgarage.com/wiki/InstallGuide
 
-See http://opencv.willowgarage.com/wiki/InstallGuide
+* Microsoft Visual C++ (for mswin32)
+  * http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+
+* MinGW and MSYS (for mingw32)
+  * gcc, g++ and MSYS are needed.
+  * http://www.mingw.org
 
 
 == INSTALLATION:
@@ -30,27 +35,42 @@ See http://opencv.willowgarage.com/wiki/InstallGuide
 
   $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
-  $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
+  $ git checkout OpenCV_2.2
   $ ruby extconf.rb --with-opencv-dir=/path/to/opencvdir
   $ make
   $ make install
 
 ==== Windows (mswin32)
-Use "nmake" instead of "make".
+
+Use *nmake* instead of *make*.
 
   $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
-  $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
-  $ ruby extconf.rb --with-opencv-dir=/path/to/opencvdir
+  $ git checkout OpenCV_2.2
+  $ ruby extconf.rb --with-opencv-dir=C:\path\to\opencvdir
   $ nmake
   $ nmake install
 
+
+==== Windows (mingw32)
+
+Type the following commands on the *MSYS* *console*.
+
+  $ git clone git://github.com/ruby-opencv/ruby-opencv.git
+  $ cd ruby-opencv
+  $ git checkout OpenCV_2.2
+  $ ruby extconf.rb --with-opencv-dir=/C/path/to/opencvdir/
+  $ make
+  $ make install
+
+
+==== NOTE:
 
 */path/to/opencvdir* is the path you installs OpenCV library (default: /usr/local).
 
 For example, if you install OpenCV library to */opt/local/* like:
 
-  $ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/opt/local/ ./OpenCV-2.3.1
+  $ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/opt/local/ ./OpenCV-2.2.0
   $ make
   $ make install
 
@@ -66,7 +86,7 @@ You can also install this library creating a gem like:
 
   $ git clone git://github.com/ruby-opencv/ruby-opencv.git
   $ cd ruby-opencv
-  $ git checkout master  # for OpenCV 2.3 or later. To use OpenCV 2.2, type "git checkout OpenCV_2.2" instead
+  $ git checkout OpenCV_2.2
   $ bundle install
   $ rake gem
   $ gem install pkg/opencv-*.gem -- --with-opencv-dir=/path/to/opencvdir
