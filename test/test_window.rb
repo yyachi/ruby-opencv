@@ -82,7 +82,7 @@ class TestWindow < OpenCVTestCase
   def test_show_image
     img = IplImage.load(FILENAME_CAT, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR)
     @window1.show_image(img)
-    @window2.show # Alias
+    @window2.show(img) # Alias
 
     # Uncomment the following lines to show the results
     # GUI::wait_key
