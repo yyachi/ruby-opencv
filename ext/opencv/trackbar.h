@@ -37,6 +37,7 @@ void define_ruby_class();
 VALUE rb_allocate(VALUE klass);
 
 void trackbar_mark(void *ptr);
+void trackbar_free(void *ptr);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_name(VALUE self);

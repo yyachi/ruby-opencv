@@ -30,7 +30,7 @@ void define_ruby_class() {
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
-   * GUI = rb_define_module_under(opencv, "GUI");         
+   * GUI = rb_define_module_under(opencv, "GUI");
    *
    * note: this comment is used by rdoc.
    */
@@ -46,11 +46,17 @@ void define_ruby_class() {
 
 VALUE rb_allocate(VALUE klass) {
   Trackbar *ptr;
-  return Data_Make_Struct(klass, Trackbar, trackbar_mark, 0, ptr);
+  return Data_Make_Struct(klass, Trackbar, trackbar_mark, trackbar_free, ptr);
 }
 
 void trackbar_mark(void *ptr) {
   rb_gc_mark(((Trackbar*)ptr)->block);
+}
+
+void trackbar_free(void *ptr) {
+  Trackbar *trackbar = (Trackbar*)ptr;
+  free(trackbar->name);
+  free(trackbar);
 }
 
 /*
