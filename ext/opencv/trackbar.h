@@ -37,6 +37,7 @@ void define_ruby_class();
 VALUE rb_allocate(VALUE klass);
 
 void trackbar_mark(void *ptr);
+void trackbar_free(void *ptr);
 
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_name(VALUE self);
@@ -46,7 +47,6 @@ VALUE rb_set_value(VALUE self, VALUE val);
 
 __NAMESPACE_END_TRACKBAR
 
-
 inline Trackbar*
 TRACKBAR(VALUE object) {
   Trackbar *ptr;
@@ -54,8 +54,15 @@ TRACKBAR(VALUE object) {
   return ptr;
 }
 
-__NAMESPACE_END_GUI
+inline Trackbar*
+TRACKBAR_WITH_CHECK(VALUE object) {
+  if (!rb_obj_is_kind_of(object, cTrackbar::rb_class())) {
+    raise_typeerror(object, cTrackbar::rb_class());
+  }
+  return TRACKBAR(object);
+}
 
+__NAMESPACE_END_GUI
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_GUI_TRACKBAR_H

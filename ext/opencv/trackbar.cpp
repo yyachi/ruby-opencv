@@ -30,7 +30,7 @@ void define_ruby_class() {
     return;
   /* 
    * opencv = rb_define_module("OpenCV");
-   * GUI = rb_define_module_under(opencv, "GUI");         
+   * GUI = rb_define_module_under(opencv, "GUI");
    *
    * note: this comment is used by rdoc.
    */
@@ -46,11 +46,17 @@ void define_ruby_class() {
 
 VALUE rb_allocate(VALUE klass) {
   Trackbar *ptr;
-  return Data_Make_Struct(klass, Trackbar, trackbar_mark, 0, ptr);
+  return Data_Make_Struct(klass, Trackbar, trackbar_mark, trackbar_free, ptr);
 }
 
 void trackbar_mark(void *ptr) {
   rb_gc_mark(((Trackbar*)ptr)->block);
+}
+
+void trackbar_free(void *ptr) {
+  Trackbar *trackbar = (Trackbar*)ptr;
+  free(trackbar->name);
+  free(trackbar);
 }
 
 /*
@@ -70,7 +76,7 @@ VALUE rb_initialize(int argc, VALUE *argv, VALUE self) {
     rb_raise(rb_eArgError, "block not given.");
   Check_Type(name, T_STRING);
   Trackbar *trackbar = TRACKBAR(self);
-  trackbar->name = strcpy(ALLOC_N(char, RSTRING_LEN(name)), StringValueCStr(name));
+  trackbar->name = strcpy(ALLOC_N(char, RSTRING_LEN(name) + 1), StringValueCStr(name));
   trackbar->maxval = NUM2INT(maxval);
   trackbar->val = IF_INT(val, 0);
   trackbar->block = block;

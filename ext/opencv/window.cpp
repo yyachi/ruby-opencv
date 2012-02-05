@@ -8,12 +8,13 @@
 
 ************************************************************/
 #include "window.h"
+
 /*
  * Document-class: OpenCV::GUI::Window
  *
- * Simple Window wedget. Window can show image(CvMat/IplImage).
+ * Simple Window wedget to show images(CvMat/IplImage).
  *
- * view image sample:
+ * Sample:
  *   image = OpenCV::IplImage::load("opencv.bmp")     #=> load image
  *   window = OpenCV::GUI::Window.new("simple viewer")#=> create new window named "simaple viewer"
  *   window.show(image)                               #=> show image
@@ -22,24 +23,7 @@ __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI
 __NAMESPACE_BEGIN_WINDOW
 
-const char*
-GET_WINDOW_NAME(VALUE object)
-{
-  void *handle = DATA_PTR(object);
-  if (!handle)
-    rb_raise(rb_eStandardError, "window handle error");
-  char* window_name = NULL;
-  try {
-    window_name = (char*)cvGetWindowName(handle);
-  }
-  catch (cv::Exception& e) {
-    raise_cverror(e);
-  }
-  return (const char*)window_name;
-}
-
-st_table *windows = st_init_numtable();
-
+int num_windows = 0;
 VALUE rb_klass;
 
 VALUE
@@ -61,14 +45,14 @@ define_ruby_class()
    */
   VALUE GUI = rb_module_GUI();
   rb_klass = rb_define_class_under(GUI, "Window", rb_cObject);
-  rb_define_singleton_method(rb_klass, "[]", RUBY_METHOD_FUNC(rb_aref), 1);
+  rb_define_alloc_func(rb_klass, rb_allocate);
   rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "alive?", RUBY_METHOD_FUNC(rb_alive_q), 0);
   rb_define_method(rb_klass, "destroy", RUBY_METHOD_FUNC(rb_destroy), 0);
   rb_define_singleton_method(rb_klass, "destroy_all", RUBY_METHOD_FUNC(rb_destroy_all), 0);
   rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
   rb_define_method(rb_klass, "move", RUBY_METHOD_FUNC(rb_move), -1);
-  rb_define_method(rb_klass, "show_image", RUBY_METHOD_FUNC(rb_show_image), -1);
+  rb_define_method(rb_klass, "show_image", RUBY_METHOD_FUNC(rb_show_image), 1);
   rb_define_alias(rb_klass, "show", "show_image");
   rb_define_method(rb_klass, "set_trackbar", RUBY_METHOD_FUNC(rb_set_trackbar), -1);
   rb_define_method(rb_klass, "set_mouse_callback", RUBY_METHOD_FUNC(rb_set_mouse_callback), -1);
@@ -78,60 +62,29 @@ define_ruby_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  return Data_Wrap_Struct(klass, mark, free, 0);
+  Window *ptr;
+  return Data_Make_Struct(klass, Window, window_mark, window_free, ptr);
 }
 
 void
-mark(void *ptr)
+window_mark(void *ptr)
 {
-  st_table *holder;
-  if (st_lookup(windows, (st_data_t)ptr, (st_data_t*)&holder)) {
-    st_foreach(holder, (int (*)(ANYARGS))each_protect, 0);
-  }
-}
-
-VALUE
-each_protect(VALUE key, VALUE value)
-{
-  rb_gc_mark(value);
-  return ST_CONTINUE;
+  Window* window_ptr = (Window*)ptr;
+  rb_gc_mark(window_ptr->name);
+  rb_gc_mark(window_ptr->image);
+  rb_gc_mark(window_ptr->trackbars);
+  rb_gc_mark(window_ptr->blocks);
 }
 
 void
-free(void *ptr)
+window_free(void *ptr)
 {
-  cvFree(&ptr);
+  free(ptr);
 }
 
 /*
  * call-seq:
- *   [<i>name</i>]
- *
- * Return window named <i>name</i> if exist, otherwise nil.
- */
-VALUE
-rb_aref(VALUE klass, VALUE name)
-{
-  VALUE window;
-  Check_Type(name, T_STRING);
-  void *handle = NULL;
-  try {
-    handle = cvGetWindowHandle(StringValueCStr(name));
-  }
-  catch (cv::Exception& e) {
-    raise_cverror(e);
-  }
-  st_table *holder;
-  if (st_lookup(windows, (st_data_t)handle, (st_data_t*)&holder) && 
-      st_lookup(holder, 0, (st_data_t*)&window)) {
-    return window;
-  }
-  return Qnil;
-}
-
-/*
- * call-seq:
- *   new(<i>name[,flags]</i>)
+ *   new(<i>name[, flags]</i>)
  *
  * Create new window named <i>name</i>.
  * If <i>flags</i> is CV_WINDOW_AUTOSIZE (default), window size automatically resize when image given.
@@ -142,28 +95,28 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   VALUE name, flags;
   rb_scan_args(argc, argv, "11", &name, &flags);
   Check_Type(name, T_STRING);
+  char* name_str = StringValueCStr(name);
+  if (cvGetWindowHandle(name_str) != NULL) {
+    rb_raise(rb_eStandardError, "window name should be unique.");
+  }      
+  
   int mode = CV_WINDOW_AUTOSIZE;
   if (argc == 2) {
     Check_Type(flags, T_FIXNUM);
     mode = FIX2INT(flags);
   }
 
-  char* name_str = StringValueCStr(name);
-  void *handle = NULL;
+  Window* self_ptr = WINDOW(self);
+  self_ptr->name = name;
+  self_ptr->trackbars = rb_ary_new();
+  self_ptr->blocks = rb_ary_new();
   try {
     cvNamedWindow(name_str, mode);
-    handle = cvGetWindowHandle(name_str);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  if (st_lookup(windows, (st_data_t)handle, 0)) {
-    rb_raise(rb_eStandardError, "window name should be unique.");
-  }
-  DATA_PTR(self) = handle;
-  st_table *holder = st_init_numtable();
-  st_insert(holder, (st_data_t)0, (st_data_t)self);
-  st_insert(windows, (st_data_t)handle, (st_data_t)holder);
+  num_windows++;
   return self;
 }
 
@@ -173,10 +126,8 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_alive_q(VALUE self)
 {
-  if (st_lookup(windows, (st_data_t)DATA_PTR(self), 0)) {
-    return Qtrue;
-  }
-  return Qfalse;
+  const char* name_str = GET_WINDOW_NAME(self);
+  return (cvGetWindowHandle(name_str) == NULL) ? Qfalse : Qtrue;
 }
 
 /*
@@ -185,17 +136,14 @@ rb_alive_q(VALUE self)
 VALUE
 rb_destroy(VALUE self)
 {
-  void *handle = DATA_PTR(self);
-  st_table *holder;
-  if (st_delete(windows, (st_data_t*)&handle, (st_data_t*)&holder)) {
-    st_free_table(holder);
-  }
+  const char* name_str = GET_WINDOW_NAME(self);
   try {
-    cvDestroyWindow(GET_WINDOW_NAME(self));
+    cvDestroyWindow(name_str);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
+  num_windows--;
   return self;
 }
 
@@ -205,13 +153,14 @@ rb_destroy(VALUE self)
 VALUE
 rb_destroy_all(VALUE klass)
 {
-  st_free_table(windows);
-  windows = st_init_numtable();
-  try {
-    cvDestroyAllWindows();
-  }
-  catch (cv::Exception& e) {
-    raise_cverror(e);
+  if (num_windows > 0) {
+    try {
+      cvDestroyAllWindows();
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
+    num_windows = 0;
   }
   return Qnil;
 }
@@ -226,20 +175,25 @@ rb_destroy_all(VALUE klass)
 VALUE
 rb_resize(int argc, VALUE *argv, VALUE self)
 {
-  CvSize size;
+  int width = 0;
+  int height = 0;
   switch (argc) {
-  case 1:
-    size = VALUE_TO_CVSIZE(argv[0]);
+  case 1: {
+    CvSize size = VALUE_TO_CVSIZE(argv[0]);
+    width = size.width;
+    height = size.height;
     break;
+  }
   case 2:
-    size = cvSize(NUM2INT(argv[0]), NUM2INT(argv[1]));
+    width = NUM2INT(argv[0]);
+    height = NUM2INT(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");
     break;
   }
   try {
-    cvResizeWindow(GET_WINDOW_NAME(self), size.width, size.height);
+    cvResizeWindow(GET_WINDOW_NAME(self), width, height);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -257,20 +211,25 @@ rb_resize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_move(int argc, VALUE *argv, VALUE self)
 {
-  CvPoint point;
+  int x = 0;
+  int y = 0;
   switch (argc) {
-  case 1:
-    point = VALUE_TO_CVPOINT(argv[0]);
+  case 1: {
+    CvPoint point = VALUE_TO_CVPOINT(argv[0]);
+    x = point.x;
+    y = point.y;
     break;
+  }
   case 2:
-    point = cvPoint(FIX2INT(argv[0]), FIX2INT(argv[1]));
+    x = NUM2INT(argv[0]);
+    y = NUM2INT(argv[1]);
     break;
   default:
     rb_raise(rb_eArgError, "wrong number of arguments (1 or 2)");
     break;
   }
   try {
-    cvMoveWindow(GET_WINDOW_NAME(self), point.x, point.y);
+    cvMoveWindow(GET_WINDOW_NAME(self), x, y);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -286,17 +245,10 @@ rb_move(int argc, VALUE *argv, VALUE self)
  * with its original size, otherwize the image is scaled to fit the window.
  */
 VALUE
-rb_show_image(int argc, VALUE *argv, VALUE self)
+rb_show_image(VALUE self, VALUE img)
 {
-  CvArr* image = NULL;
-  if (argc > 0) {
-    image = CVARR_WITH_CHECK(argv[0]);
-    st_table *holder;
-    if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder))
-      st_insert(holder, cCvMat::rb_class(), argv[0]);
-    else
-      rb_raise(rb_eFatal, "invalid window operation.");
-  }
+  CvArr* image = CVARR_WITH_CHECK(img);
+  WINDOW(self)->image = img;
   try {
     cvShowImage(GET_WINDOW_NAME(self), image);
   }
@@ -324,40 +276,39 @@ trackbar_callback(int value, void* block)
 VALUE
 rb_set_trackbar(int argc, VALUE *argv, VALUE self)
 {
-  VALUE instance;
-  if (argc == 1 && rb_obj_is_kind_of(argv[0], cTrackbar::rb_class())) {
-    instance = argv[0];
+  VALUE trackbar;
+  if (argc == 1) {
+    trackbar = argv[0];
   }
   else {
-    instance = cTrackbar::rb_initialize(argc, argv, cTrackbar::rb_allocate(cTrackbar::rb_class()));
+    trackbar = cTrackbar::rb_initialize(argc, argv, cTrackbar::rb_allocate(cTrackbar::rb_class()));
   }
-  Trackbar *trackbar = TRACKBAR(instance);
+  Trackbar *trackbar_ptr = TRACKBAR_WITH_CHECK(trackbar);
   try {
-    cv::createTrackbar(trackbar->name, GET_WINDOW_NAME(self), &(trackbar->val), trackbar->maxval,
-		       (cv::TrackbarCallback)trackbar_callback, (void*)(trackbar->block));
+    cv::createTrackbar(trackbar_ptr->name, GET_WINDOW_NAME(self), &(trackbar_ptr->val), trackbar_ptr->maxval,
+		       (cv::TrackbarCallback)trackbar_callback, (void*)(trackbar_ptr->block));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  st_table *holder;
-  if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
-    st_insert(holder, (st_data_t)&trackbar->name, (st_data_t)instance);
-  }
-  return instance;
+  rb_ary_push(WINDOW(self)->trackbars, trackbar);
+  
+  return trackbar;
 }
 
 void
 on_mouse(int event, int x, int y, int flags, void* param)
 {
   VALUE block = (VALUE)param;
-  if (rb_obj_is_kind_of(block, rb_cProc))
+  if (rb_obj_is_kind_of(block, rb_cProc)) {
     rb_funcall(block, rb_intern("call"), 1, cMouseEvent::new_object(event, x, y, flags));
+  }
 }
 
 /*
  * call-seq:
  *   set_mouse_callback(&block)
- *   set_mouse_callback {|| ... }
+ *   set_mouse_callback {|mouse_event| ... }
  *
  * Set mouse callback.
  * When the mouse is operated on the window, block will be called.
@@ -383,8 +334,9 @@ on_mouse(int event, int x, int y, int flags, void* param)
 VALUE
 rb_set_mouse_callback(int argc, VALUE* argv, VALUE self)
 {
-  if (!rb_block_given_p())
+  if (!rb_block_given_p()) {
     rb_raise(rb_eArgError, "block not given.");
+  }
 
   VALUE block = Qnil;
   rb_scan_args(argc, argv, "0&", &block);
@@ -394,13 +346,8 @@ rb_set_mouse_callback(int argc, VALUE* argv, VALUE self)
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  st_table *holder;
-  if (st_lookup(windows, (st_data_t)DATA_PTR(self), (st_data_t*)&holder)) {
-    st_insert(holder, rb_cProc, block);
-  }
-  else {
-    rb_raise(rb_eStandardError, "window is destroied.");
-  }
+
+  rb_ary_push(WINDOW(self)->blocks, block);
   return block;
 }
 
