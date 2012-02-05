@@ -20,26 +20,43 @@
 
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_GUI
+
+typedef struct Window {
+  VALUE name;
+  VALUE image;
+  VALUE trackbars;
+  VALUE blocks;
+} Window;
+
 __NAMESPACE_BEGIN_WINDOW
 
 void define_ruby_class();
 
 VALUE rb_allocate(VALUE klass);
 
-void mark(void *ptr);
-VALUE each_protect(VALUE key, VALUE value);
-void free(void *ptr);
-
-VALUE rb_aref(VALUE klass, VALUE name);
-VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
+void window_mark(void *ptr);
+void window_free(void *ptr);
 VALUE rb_alive_q(VALUE self);
+VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_destroy(VALUE self);
 VALUE rb_destroy_all(VALUE klass);
 VALUE rb_resize(int argc, VALUE *argv, VALUE self);
 VALUE rb_move(int argc, VALUE *argv, VALUE self);
-VALUE rb_show_image(int argc, VALUE *argv, VALUE self);
+VALUE rb_show_image(VALUE self, VALUE img);
 VALUE rb_set_trackbar(int argc, VALUE *argv, VALUE self);
 VALUE rb_set_mouse_callback(int argc, VALUE* argv, VALUE self);
+
+inline Window*
+WINDOW(VALUE object) {
+  Window *ptr;
+  Data_Get_Struct(object, Window, ptr);
+  return ptr;
+}
+
+inline const char*
+GET_WINDOW_NAME(VALUE object) {
+  return StringValueCStr(WINDOW(object)->name);
+}
 
 __NAMESPACE_END_WINDOW
 __NAMESPACE_END_GUI
