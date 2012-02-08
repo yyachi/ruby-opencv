@@ -110,6 +110,7 @@ ext/opencv/iplconvkernel.h
 ext/opencv/iplimage.cpp
 ext/opencv/iplimage.h
 ext/opencv/lib/opencv.rb
+ext/opencv/lib/opencv/psyched_yaml.rb
 ext/opencv/lib/opencv/version.rb
 ext/opencv/mouseevent.cpp
 ext/opencv/mouseevent.h
