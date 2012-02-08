@@ -1,14 +1,13 @@
 # -*- ruby -*-
-
 require 'rubygems'
+require './ext/opencv/lib/opencv/psyched_yaml'
 require 'hoe'
-
 require 'rake/extensiontask'
 require './ext/opencv/lib/opencv/version'
 
 Hoe.plugin :gemspec
 
-hoespec = Hoe.spec 'opencv'  do |p|
+hoespec = Hoe.spec 'opencv' do |p|
   p.version = OpenCV::VERSION
   p.changes = p.paragraphs_of('History.txt', 0..1).join("\n\n")
   p.description = <<EOF
