@@ -983,6 +983,72 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat0.threshold(1, 2, :binary, DUMMY_OBJ)
   end
 
+  def test_adaptive_threshold
+    mat0 = create_cvmat(5, 5, :cv8u, 1) { |j, i, c| (c + 1) * 10 }
+    
+    mat1 = mat0.adaptive_threshold(128)
+    expected1 = [0, 0, 0, 0, 0, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128]
+    expected1.each_with_index { |expected, i|
+      assert_equal(expected, mat1[i][0])
+    }
+
+    mat2a = mat0.adaptive_threshold(255, :adaptive_method => :mean_c,
+                                    :threshold_type => :binary, :block_size => 5,
+                                    :param1 => 10)
+    mat2b = mat0.adaptive_threshold(255, :adaptive_method => CV_THRESH_BINARY,
+                                    :threshold_type => CV_ADAPTIVE_THRESH_MEAN_C, :block_size => 5,
+                                    :param1 => 10)
+    expected2 = [0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255]
+    [mat2a, mat2b].each { |mat2|
+      assert_equal(CvMat, mat2.class)
+      assert_equal(mat0.rows, mat2.rows)
+      assert_equal(mat0.cols, mat2.cols)
+      assert_equal(mat0.depth, mat2.depth)
+      assert_equal(mat0.channel, mat2.channel)
+      expected2.each_with_index { |expected, i|
+        assert_equal(expected, mat2[i][0])
+      }
+    }
+
+
+    mat3a = mat0.adaptive_threshold(255, :adaptive_method => :gaussian_c,
+                                    :threshold_type => :binary_inv, :block_size => 5,
+                                    :param1 => 10)
+    mat3b = mat0.adaptive_threshold(255, :adaptive_method => CV_ADAPTIVE_THRESH_GAUSSIAN_C,
+                                    :threshold_type => CV_THRESH_BINARY_INV, :block_size => 5,
+                                    :param1 => 10)
+    expected3 = [255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [mat3a, mat3b].each { |mat3|
+      assert_equal(CvMat, mat3.class)
+      assert_equal(mat0.rows, mat3.rows)
+      assert_equal(mat0.cols, mat3.cols)
+      assert_equal(mat0.depth, mat3.depth)
+      assert_equal(mat0.channel, mat3.channel)
+      expected3.each_with_index { |expected, i|
+        assert_equal(expected, mat3[i][0])
+      }
+    }
+
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(0, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(0, :adaptive_method => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(0, :threshold_type => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(0, :block_size => DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat0.adaptive_threshold(0, :param1 => DUMMY_OBJ)
+    }
+  end
+
   def test_pyr_down
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
     mat1 = mat0.pyr_down

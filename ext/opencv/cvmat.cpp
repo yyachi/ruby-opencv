@@ -338,6 +338,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
   rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
   rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
+  rb_define_method(rb_klass, "adaptive_threshold", RUBY_METHOD_FUNC(rb_adaptive_threshold), -1);
 
   rb_define_method(rb_klass, "pyr_down", RUBY_METHOD_FUNC(rb_pyr_down), -1);
   rb_define_method(rb_klass, "pyr_up", RUBY_METHOD_FUNC(rb_pyr_up), -1);
@@ -4416,6 +4417,60 @@ rb_threshold(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eArgError, "Invalid threshold type.");
   
   return rb_threshold_internal(type, threshold, max_value, use_otsu, self);
+}
+
+
+/*
+ * call-seq:
+ *   adaptive_threshold(max_value[, options]) -> cvmat
+ *
+ * Applies an adaptive threshold to an array.
+ *
+ * ==== params:
+ *
+ * * <b>max_value (Number)</b> - Maximum value that is used with +CV_THRESH_BINARY+ and +CV_THRESH_BINARY_INV+
+ * * <b>options (Hash)</b> - threshold option
+ *   * <b>:threshold_type (Integer or Symbol)</b> - Thresholding type; must be one of +CV_THRESH_BINARY+ or +:binary+, +CV_THRESH_BINARY_INV+ or +:binary_inv+ (default: +CV_THRESH_BINARY+)
+ *   * <b>:adaptive_method (Integer or Symbol)</b> - Adaptive thresholding algorithm to use: +CV_ADAPTIVE_THRESH_MEAN_C+ or +:mean_c+, +CV_ADAPTIVE_THRESH_GAUSSIAN_C+ or +:gaussian_c+ (default: +CV_ADAPTIVE_THRESH_MEAN_C+)
+ *   * <b>:block_size (Integer)</b> - The size of a pixel neighborhood that is used to calculate a threshold value for the pixel: 3, 5, 7, and so on (default: 3)
+ *   * <b>:param1 (Number)</b> - The method-dependent parameter. For the methods +CV_ADAPTIVE_THRESH_MEAN_C+ and +CV_ADAPTIVE_THRESH_GAUSSIAN_C+ it is a constant subtracted from the mean or weighted mean, though it may be negative (default: 5)
+ */
+VALUE
+rb_adaptive_threshold(int argc, VALUE *argv, VALUE self)
+{
+  VALUE max_value, options;
+  rb_scan_args(argc, argv, "11", &max_value, &options);
+
+  int threshold_type = CV_THRESH_BINARY;
+  int adaptive_method = CV_ADAPTIVE_THRESH_MEAN_C;
+  int block_size = 3;
+  double param1 = 5;
+  if (!NIL_P(options)) {
+    Check_Type(options, T_HASH);
+    threshold_type = CVMETHOD("THRESHOLD_TYPE", LOOKUP_CVMETHOD(options, "threshold_type"),
+			      CV_THRESH_BINARY);
+    adaptive_method = CVMETHOD("ADAPTIVE_METHOD", LOOKUP_CVMETHOD(options, "adaptive_method"),
+			       CV_ADAPTIVE_THRESH_MEAN_C);
+    VALUE _block_size = LOOKUP_CVMETHOD(options, "block_size");
+    if (!NIL_P(_block_size)) {
+      block_size = NUM2INT(_block_size);
+    }
+    VALUE _param1 = LOOKUP_CVMETHOD(options, "param1");
+    if (!NIL_P(_param1)) {
+      param1 = NUM2INT(_param1);
+    }
+  }
+  CvArr* self_ptr = CVARR(self);
+  VALUE dst = new_mat_kind_object(cvGetSize(self_ptr), self);
+  try {
+    cvAdaptiveThreshold(self_ptr, CVARR(dst), NUM2DBL(max_value), adaptive_method, threshold_type,
+			block_size, param1);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+  
+  return dst;
 }
 
 /*
