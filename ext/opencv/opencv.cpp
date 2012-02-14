@@ -216,6 +216,10 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_THRESH_TOZERO_INV", INT2FIX(CV_THRESH_TOZERO_INV));
   rb_define_const(rb_module, "CV_THRESH_OTSU", INT2FIX(CV_THRESH_OTSU));
 
+  /* Adaptive methods */
+  rb_define_const(rb_module, "CV_ADAPTIVE_THRESH_MEAN_C", INT2FIX(CV_ADAPTIVE_THRESH_MEAN_C));
+  rb_define_const(rb_module, "CV_ADAPTIVE_THRESH_GAUSSIAN_C", INT2FIX(CV_ADAPTIVE_THRESH_GAUSSIAN_C));
+
   /* Border type */
   rb_define_const(rb_module, "IPL_BORDER_CONSTANT", INT2FIX(IPL_BORDER_CONSTANT));
   rb_define_const(rb_module, "IPL_BORDER_REPLICATE", INT2FIX(IPL_BORDER_REPLICATE));
@@ -412,6 +416,12 @@ define_ruby_module()
   REGISTER_CVMETHOD(smoothing_type, "gaussian", CV_GAUSSIAN);
   REGISTER_CVMETHOD(smoothing_type, "median", CV_MEDIAN);
   REGISTER_CVMETHOD(smoothing_type, "bilateral", CV_BILATERAL);
+
+  VALUE adaptive_method = rb_hash_new();
+  /* {:mean_c, :gaussian_c}: Adaptive thresholding algorithm */
+  rb_define_const(rb_module, "ADAPTIVE_METHOD", adaptive_method);
+  REGISTER_CVMETHOD(adaptive_method, "mean_c", CV_ADAPTIVE_THRESH_MEAN_C);
+  REGISTER_CVMETHOD(adaptive_method, "gaussian_c", CV_ADAPTIVE_THRESH_GAUSSIAN_C);
 
   VALUE threshold_type = rb_hash_new();
   /* {:binary, :binary_inv, :trunc, :tozero, :tozero_inv, :otsu} : Thresholding types */

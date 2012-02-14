@@ -62,6 +62,10 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(4, CV_THRESH_TOZERO_INV)
     assert_equal(8, CV_THRESH_OTSU)
 
+    # Adaptive methods
+    assert_equal(0, CV_ADAPTIVE_THRESH_MEAN_C)
+    assert_equal(1, CV_ADAPTIVE_THRESH_GAUSSIAN_C)
+
     # Retrieval mode
     assert_equal(0, CV_RETR_EXTERNAL)
     assert_equal(1, CV_RETR_LIST)
