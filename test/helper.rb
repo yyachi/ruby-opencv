@@ -99,6 +99,19 @@ class OpenCVTestCase < Test::Unit::TestCase
     m
   end
 
+  def create_iplimage(width, height, depth = :cv8u, channel = 4, &block)
+    m = IplImage.new(width, height, depth, channel)
+    block = lambda { |j, i, c| CvScalar.new(*([c + 1] * channel)) } unless block_given?
+    count = 0
+    height.times { |j|
+      width.times { |i|
+        m[j, i] = block.call(j, i, count)
+        count += 1
+      }
+    }
+    m
+  end
+
   def assert_each_cvscalar(actual, delta = 0, &block)
     raise unless block_given?
     count = 0
