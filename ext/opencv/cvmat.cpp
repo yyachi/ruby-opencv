@@ -1588,22 +1588,25 @@ rb_flip_bang(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_split(VALUE self)
 {
-  CvMat* self_ptr = CVMAT(self);
-  int type = self_ptr->type, depth = CV_MAT_DEPTH(type), channel = CV_MAT_CN(type);
-  CvMat *dest[] = { NULL, NULL, NULL, NULL };
+  CvArr* self_ptr = CVARR(self);
+  int type = cvGetElemType(self_ptr);
+  int depth = CV_MAT_DEPTH(type), channel = CV_MAT_CN(type);
+  VALUE dest = rb_ary_new2(channel);
   try {
+    CvArr *dest_ptr[] = { NULL, NULL, NULL, NULL };
     CvSize size = cvGetSize(self_ptr);
-    for (int i = 0; i < channel; ++i)
-      dest[i] = rb_cvCreateMat(size.height, size.width, CV_MAKETYPE(depth, 1));
-    cvSplit(self_ptr, dest[0], dest[1], dest[2], dest[3]);
+    for (int i = 0; i < channel; ++i) {
+      VALUE tmp = new_mat_kind_object(size, self, depth, 1);
+      rb_ary_store(dest, i, tmp);
+      dest_ptr[i] = CVARR(tmp);
+    }
+    cvSplit(self_ptr, dest_ptr[0], dest_ptr[1], dest_ptr[2], dest_ptr[3]);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  VALUE ary = rb_ary_new2(channel);
-  for (int i = 0; i < channel; ++i)
-    rb_ary_store(ary, i, OPENCV_OBJECT(rb_klass, dest[i]));
-  return ary;
+
+  return dest;
 }
 
 /*
