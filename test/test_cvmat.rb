@@ -826,9 +826,14 @@ class TestCvMat < OpenCVTestCase
     m0 = create_cvmat(2, 3, :cv8u, 3) { |j, i, c|
       CvScalar.new(c * 10, c * 20, c * 30)
     }
-    m0.split.each_with_index { |m, idx|
+
+    splitted = m0.split
+    assert_equal(m0.channel, splitted.size)
+    splitted.each_with_index { |m, idx|
+      assert_equal(CvMat, m.class)
       assert_equal(m0.height, m.height)
       assert_equal(m0.width, m.width)
+      assert_equal(1, m.channel)
 
       c = 0
       m0.height.times { |j|
@@ -836,6 +841,27 @@ class TestCvMat < OpenCVTestCase
           val = c * 10 * (idx + 1)
           assert_cvscalar_equal(CvScalar.new(val), m[j, i])
           c += 1
+        }
+      }
+    }
+
+    # IplImage#split should return Array<IplImage>
+    image = create_iplimage(2, 3, :cv8u, 3) { |j, i, c|
+      CvScalar.new(c * 10, c * 20, c * 30)
+    }
+
+    splitted = image.split
+    assert_equal(3, splitted.size)
+    splitted.each_with_index { |img, channel|
+      assert_equal(IplImage, img.class)
+      assert_equal(image.height, img.height)
+      assert_equal(image.width, img.width)
+      assert_equal(1, img.channel)
+
+      img.height.times { |j|
+        img.width.times { |i|
+          val = image[j, i][channel]
+          assert_cvscalar_equal(CvScalar.new(val), img[j, i])
         }
       }
     }
