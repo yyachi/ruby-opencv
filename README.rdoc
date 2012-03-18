@@ -1,3 +1,6 @@
+= NOTE:
+The main repository was moved to https://github.com/ruby-opencv/ruby-opencv .
+
 = OpenCV
 
 The initial Open Computer Vision library was originally developed by Intel 
