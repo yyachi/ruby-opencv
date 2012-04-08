@@ -215,8 +215,10 @@ void define_ruby_class()
   rb_define_alias(rb_klass, "set!", "fill!");
   rb_define_method(rb_klass, "clear", RUBY_METHOD_FUNC(rb_clear), 0);
   rb_define_alias(rb_klass, "set_zero", "clear");
+  rb_define_alias(rb_klass, "zero", "clear");
   rb_define_method(rb_klass, "clear!", RUBY_METHOD_FUNC(rb_clear_bang), 0);
   rb_define_alias(rb_klass, "set_zero!", "clear!");
+  rb_define_alias(rb_klass, "zero!", "clear!");
   rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
   rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
   rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);

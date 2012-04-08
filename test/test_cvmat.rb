@@ -687,10 +687,15 @@ class TestCvMat < OpenCVTestCase
     m1 = create_cvmat(2, 3)
     m2 = m1.set_zero
     m1.set_zero!
+    m3 = create_cvmat(2, 3)
+    m4 = m3.zero
+    m3.zero!
     m2.height.times { |j|
       m2.width.times { |i|
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m1[j, i])
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m2[j, i])
+        assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m3[j, i])
+        assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m4[j, i])
       }
     }
   end
