@@ -87,6 +87,22 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
+  def test_save_image
+    filename = 'save_image_test.jpg'
+    m = CvMat.new(20, 20, :cv8u, 1)
+    
+    File.delete filename if File.exists? filename
+    m.save_image filename
+    assert(File.exists? filename)
+
+    # Alias
+    File.delete filename if File.exists? filename
+    m.save filename
+    assert(File.exists? filename)
+    
+    File.delete filename
+  end
+
   def test_GOOD_FEATURES_TO_TRACK_OPTION
     assert_equal(0xff, CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:max])
     assert_nil(CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:mask])
@@ -671,10 +687,15 @@ class TestCvMat < OpenCVTestCase
     m1 = create_cvmat(2, 3)
     m2 = m1.set_zero
     m1.set_zero!
+    m3 = create_cvmat(2, 3)
+    m4 = m3.zero
+    m3.zero!
     m2.height.times { |j|
       m2.width.times { |i|
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m1[j, i])
         assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m2[j, i])
+        assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m3[j, i])
+        assert_cvscalar_equal(CvScalar.new(0, 0, 0, 0), m4[j, i])
       }
     }
   end
