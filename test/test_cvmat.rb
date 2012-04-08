@@ -87,6 +87,22 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
+  def test_save_image
+    filename = 'save_image_test.jpg'
+    m = CvMat.new(20, 20, :cv8u, 1)
+    
+    File.delete filename if File.exists? filename
+    m.save_image filename
+    assert(File.exists? filename)
+
+    # Alias
+    File.delete filename if File.exists? filename
+    m.save filename
+    assert(File.exists? filename)
+    
+    File.delete filename
+  end
+
   def test_GOOD_FEATURES_TO_TRACK_OPTION
     assert_equal(0xff, CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:max])
     assert_nil(CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:mask])

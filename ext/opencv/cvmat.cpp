@@ -380,6 +380,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
 
   rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
+  rb_define_alias(rb_klass, "save", "save_image");
 }
 
 
