@@ -695,5 +695,7 @@ extern "C" {
        mOpenCV::mMachineLearning::define_ruby_module();
     */
 #endif
+
+    cv::initModule_nonfree();
   }
 }
