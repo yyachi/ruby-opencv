@@ -58,7 +58,7 @@ define_ruby_class()
 VALUE
 rb_dp(VALUE self)
 {
-  return INT2FIX(CVCONDENSATION(self)->DP);
+  return INT2NUM(CVCONDENSATION(self)->DP);
 }
 
 /*
@@ -70,7 +70,7 @@ rb_dp(VALUE self)
 VALUE
 rb_mp(VALUE self)
 {
-  return INT2FIX(CVCONDENSATION(self)->MP);
+  return INT2NUM(CVCONDENSATION(self)->MP);
 }
 
 /*
@@ -162,7 +162,7 @@ rb_state(VALUE self)
 VALUE
 rb_samples_num(VALUE self)
 {
-  return INT2FIX(CVCONDENSATION(self)->SamplesNum);
+  return INT2NUM(CVCONDENSATION(self)->SamplesNum);
 }
 
 /*

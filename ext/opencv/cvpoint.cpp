@@ -131,7 +131,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_x(VALUE self)
 {
-  return INT2FIX(CVPOINT(self)->x);
+  return INT2NUM(CVPOINT(self)->x);
 }
 
 /*
@@ -159,7 +159,7 @@ rb_set_x(VALUE self, VALUE x)
 VALUE
 rb_y(VALUE self)
 {
-  return INT2FIX(CVPOINT(self)->y);
+  return INT2NUM(CVPOINT(self)->y);
 }
 
 /*

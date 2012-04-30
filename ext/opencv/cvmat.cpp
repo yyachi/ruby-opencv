@@ -569,7 +569,7 @@ rb_create_mask(VALUE self)
 VALUE
 rb_width(VALUE self)
 {
-  return INT2FIX(CVMAT(self)->width);
+  return INT2NUM(CVMAT(self)->width);
 }
 
 /*
@@ -581,7 +581,7 @@ rb_width(VALUE self)
 VALUE
 rb_height(VALUE self)
 {
-  return INT2FIX(CVMAT(self)->height);
+  return INT2NUM(CVMAT(self)->height);
 }
 
 /*
@@ -1132,7 +1132,7 @@ rb_dims(VALUE self)
   }
   VALUE ary = rb_ary_new2(dims);
   for (int i = 0; i < dims; ++i) {
-    rb_ary_store(ary, i, INT2FIX(size[i]));
+    rb_ary_store(ary, i, INT2NUM(size[i]));
   }
   return ary;
 }
@@ -1155,7 +1155,7 @@ rb_dim_size(VALUE self, VALUE index)
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  return INT2FIX(dimsize);
+  return INT2NUM(dimsize);
 }
 
 /*
@@ -2269,7 +2269,7 @@ rb_count_non_zero(VALUE self)
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  return INT2FIX(n);
+  return INT2NUM(n);
 }
 
 /*

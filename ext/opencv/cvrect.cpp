@@ -167,7 +167,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_x(VALUE self)
 {
-  return INT2FIX(CVRECT(self)->x);
+  return INT2NUM(CVRECT(self)->x);
 }
 
 /*
@@ -190,7 +190,7 @@ rb_set_x(VALUE self, VALUE x)
 VALUE
 rb_y(VALUE self)
 {
-  return INT2FIX(CVRECT(self)->y);
+  return INT2NUM(CVRECT(self)->y);
 }
 
 /*
@@ -213,7 +213,7 @@ rb_set_y(VALUE self, VALUE y)
 VALUE
 rb_width(VALUE self)
 {
-  return INT2FIX(CVRECT(self)->width);
+  return INT2NUM(CVRECT(self)->width);
 }
 
 /*
@@ -236,7 +236,7 @@ rb_set_width(VALUE self, VALUE x)
 VALUE
 rb_height(VALUE self)
 {
-  return INT2FIX(CVRECT(self)->height);
+  return INT2NUM(CVRECT(self)->height);
 }
 
 /*
