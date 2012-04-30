@@ -11,8 +11,7 @@
 /*
  * Document-class: OpenCV::CvCapture
  *
- * Capture image from video stream.
- *
+ * Class for video capturing from video files or cameras
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCAPTURE
@@ -40,8 +39,10 @@ define_ruby_class()
   rb_klass = rb_define_class_under(opencv, "CvCapture", rb_cData);
   
   VALUE video_interface = rb_hash_new();
-  /* {:any, :mil, :vfw, :v4l, :v4l2, :fireware, :ieee1394, :dc1394, :cmu1394, :stereo,
-     :tyzx, :tyzx_left, :tyzx_right, :tyzx_color, :tyzx_z, :qt, :qtuicktime}: video source */
+  /*
+   * :any, :mil, :vfw, :v4l, :v4l2, :fireware, :ieee1394, :dc1394, :cmu1394,
+   * :stereo, :tyzx, :tyzx_left, :tyzx_right, :tyzx_color, :tyzx_z, :qt, :qtuicktime
+   */
   rb_define_const(rb_klass, "INTERFACE", video_interface);
   rb_hash_aset(video_interface, ID2SYM(rb_intern("any")), INT2FIX(CV_CAP_ANY));
   rb_hash_aset(video_interface, ID2SYM(rb_intern("mil")), INT2FIX(CV_CAP_MIL));
@@ -102,20 +103,16 @@ cvcapture_free(void *ptr)
 }
 
 /*
- * call-seq:
- *   CvCapture.open(<i>[dev = -1]</i>)
- *
- * Reading video stream from the specified file or camera device.
- * If <i>dev</i> is string (i.e "stream.avi"), reading video stream from file.
- * If <i>dev</i> is number or symbol(include CvCapture::INTERFACE),
- * reading video stream from camera. 
- * Currently two camera interfaces can be used on Windows:
- * * Video for Windows(VFW)
- * * Matrox Imaging Library(MIL)
- * and two on Linux
- * * V4L
- * * FireWire(IEEE1394).
- * If there is only one camera or it does not matter what camera to use <i>nil</i> may be passed.
+ * Open video file or a capturing device for video capturing
+ * @scope class
+ * @overload open(dev = nil)
+ *   @param dev [String,Fixnum,Simbol,nil] Video capturing device
+ *     * If dev is a string (i.e "stream.avi"), reads video stream from a file.
+ *     * If dev is a number or symbol (included in CvCapture::INTERFACE), reads video stream from a device.
+ *     * If dev is a nil, same as CvCapture.open(:any)
+ * @return [CvCapture] Opened CvCapture instance
+ * @opencv_func cvCaptureFromCAM
+ * @opencv_func cvCaptureFromFile
  */
 VALUE
 rb_open(int argc, VALUE *argv, VALUE self)
@@ -151,18 +148,11 @@ rb_open(int argc, VALUE *argv, VALUE self)
   return Data_Wrap_Struct(rb_klass, 0, cvcapture_free, capture);
 }
 
-
 /*
- * call-seq:
- *   grab -> true or false
- *
- * Grabbed frame is stored internally. To grab frame
- * <i>fast</i> that is important for syncronization in case of reading from
- * several cameras simultaneously. The grabbed frames are not exposed because
- * they may be stored in compressed format (as defined by camera/driver).
- * To retrieve the grabbed frame, retrieve should be used.
- *
- * If grabbed frame was success, return true. Otherwise return false.
+ * Grabs the next frame from video file or capturing device.
+ * @overload grab
+ * @return [Boolean] If grabbing a frame successed, returns true, otherwise returns false.
+ * @opencv_func cvGrabFrame
  */
 VALUE
 rb_grab(VALUE self)
@@ -178,10 +168,11 @@ rb_grab(VALUE self)
 }
 
 /*
- * call-seq:
- *   retrieve -> IplImage or nil
- *
- * Gets the image grabbed with grab.
+ * Decodes and returns the grabbed video frame.
+ * @overload retrieve
+ * @return [IplImage] Grabbed video frame
+ * @return [nil] Failed to grabbing a frame
+ * @opencv_func cvRetrieveFrame
  */
 VALUE
 rb_retrieve(VALUE self)
@@ -205,10 +196,11 @@ rb_retrieve(VALUE self)
 }
 
 /*
- * call-seq:
- *   query -> IplImage or nil
- *
- * Grabs and returns a frame camera or file. Just a combination of grab and retrieve in one call.
+ * Grabs, decodes and returns the next video frame.
+ * @overload query
+ * @return [IplImage] Next video frame
+ * @return [nil] Failed to read next video frame
+ * @opencv_func cvQueryFrame
  */
 VALUE
 rb_query(VALUE self)
@@ -259,30 +251,47 @@ rb_set_capture_property(VALUE self, int id, VALUE value)
 
 /*
  * Get film current position in milliseconds or video capture timestamp.
+ * @overload millisecond
+ * @return [Number] Current position of the video file in milliseconds or video capture timestamp
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_POS_MSEC)
  */
 VALUE
 rb_get_millisecond(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_POS_MSEC);
 }
+
 /*
  * Set film current position in milliseconds or video capture timestamp.
+ * @overload millisecond=value
+ *   @param value [Number] Position in milliseconds or video capture timestamp.
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_POS_MSEC)
  */
 VALUE
 rb_set_millisecond(VALUE self, VALUE value)
 {
   return rb_set_capture_property(self, CV_CAP_PROP_POS_MSEC, value);
 }
+
 /*
  * Get 0-based index of the frame to be decoded/captured next
+ * @overload frames
+ * @return [Number] 0-based index of the frame to be decoded/captured next
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_POS_FRAMES)
  */
 VALUE
 rb_get_frames(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_POS_FRAMES);
 }
+
 /*
  * Set 0-based index of the frame to be decoded/captured next
+ * @overload frames=value
+ *   @param value [Number] 0-based index of the frame to be decoded/captured next
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_POS_FRAMES)
  */
 VALUE
 rb_set_frames(VALUE self, VALUE value)
@@ -290,7 +299,10 @@ rb_set_frames(VALUE self, VALUE value)
   return rb_set_capture_property(self, CV_CAP_PROP_POS_FRAMES, value);
 }
 /*
- * Get relative position of video file (0 - start of the film, 1 - end of the film)
+ * Get relative position of video file
+ * @overload avi_ratio
+ * @return [Number] Relative position of video file (0: Start of the film, 1: End of the film)
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_POS_AVI_RATIO)
  */
 VALUE
 rb_get_avi_ratio(VALUE self)
@@ -298,15 +310,23 @@ rb_get_avi_ratio(VALUE self)
   return rb_get_capture_property(self, CV_CAP_PROP_POS_AVI_RATIO);
 }
 /*
- * Set relative position of video file (0 - start of the film, 1 - end of the film)
+ * Set relative position of video file
+ * @overload avi_ratio=value
+ *   @param value [Number] Relative position of video file (0: Start of the film, 1: End of the film)
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_POS_AVI_RATIO)
  */
 VALUE
 rb_set_avi_ratio(VALUE self, VALUE value)
 {
   return rb_set_capture_property(self, CV_CAP_PROP_POS_AVI_RATIO, value);
 }
+
 /*
  * Get size of frames in the video stream.
+ * @overload size
+ * @return [Size] Size of frames in the video stream.
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FRAME_WIDTH,CV_CAP_PROP_FRAME_HEIGHT)
  */
 VALUE
 rb_get_size(VALUE self)
@@ -322,8 +342,13 @@ rb_get_size(VALUE self)
   }
   return cCvSize::new_object(size);
 }
+
 /*
  * Set size of frames in the video stream.
+ * @overload size=value
+ *   @param value [CvSize] Size of frames
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_FRAME_WIDTH,CV_CAP_PROP_FRAME_HEIGHT)
  */
 VALUE
 rb_set_size(VALUE self, VALUE value)
@@ -340,56 +365,87 @@ rb_set_size(VALUE self, VALUE value)
   }
   return DBL2NUM(result);
 }
+
 /*
  * Get width of frames in the video stream.
+ * @overload width
+ * @return [Number] Width of frames in the video stream.
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_FRAME_WIDTH)
  */
 VALUE
 rb_get_width(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_FRAME_WIDTH);
 }
+
 /*
  * Set width of frames in the video stream.
+ * @overload width=value
+ *   @param value [Number] Width of frames
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_FRAME_WIDTH)
  */
 VALUE
 rb_set_width(VALUE self, VALUE value)
 {
   return rb_set_capture_property(self, CV_CAP_PROP_FRAME_WIDTH, value);
 }
+
 /*
  * Get height of frames in the video stream.
+ * @overload height
+ * @return [Number] Height of frames in the video stream.
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FRAME_HEIGHT)
  */
 VALUE
 rb_get_height(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_FRAME_HEIGHT);
 }
+
 /*
  * Set height of frames in the video stream.
+ * @overload height=value
+ *   @param value [Number] Height of frames
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_FRAME_HEIGHT)
  */
 VALUE
 rb_set_height(VALUE self, VALUE value)
 {
   return rb_set_capture_property(self, CV_CAP_PROP_FRAME_HEIGHT, value);
 }
+
 /*
  * Get frame rate
+ * @overload fps
+ * @return [Number] Frame rate
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FPS)
  */
 VALUE
 rb_get_fps(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_FPS);
 }
+
 /*
  * Set frame rate
+ * @overload fps=value
+ *   @param value [Number] Frame rate
+ * @return [Number]
+ * @opencv_func cvSetCaptureProperty (propId=CV_CAP_PROP_FPS)
  */
 VALUE
 rb_set_fps(VALUE self, VALUE value)
 {
   return rb_set_capture_property(self, CV_CAP_PROP_FPS, value);
 }
+
 /*
- * Get 4character code of codec. see http://www.fourcc.org/
+ * Get 4 character code of codec. see http://www.fourcc.org/
+ * @overload fourcc
+ * @return [Number] Codec code
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FOURCC)
  */
 VALUE
 rb_get_fourcc(VALUE self)
@@ -399,48 +455,72 @@ rb_get_fourcc(VALUE self)
   sprintf(str, "%s", (char*)&fourcc);
   return rb_str_new2(str);
 }
+
 /*
  * Get number of frames in video file.
+ * @overload frame_count
+ * @return [Number] Number of frames
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FRAME_COUNT)
  */
 VALUE
 rb_get_frame_count(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_FRAME_COUNT);
 }
+
 /*
- * Get the format of the Mat objects returned by CvCapture#retrieve
+ * Get format of images returned by CvCapture#retrieve
+ * @overload format
+ * @return [Number] format
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_FORMAT)
  */
 VALUE
 rb_get_format(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_FORMAT);
 }
+
 /*
  * Get a backend-specific value indicating the current capture mode
+ * @overload mode
+ * @return [Number] Backend-specific value indicating the current capture mode
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_MODE)
  */
 VALUE
 rb_get_mode(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_MODE);
 }
+
 /*
  * Get brightness of the image (only for cameras)
+ * @overload brightness
+ * @return [Number] Brightness
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_BRIGHTNESS)
  */
 VALUE
 rb_get_brightness(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_BRIGHTNESS);
 }
+
 /*
  * Get contrast of the image (only for cameras)
+ * @overload contrast
+ * @return [Number] Contrast
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_CONTRAST)
  */
 VALUE
 rb_get_contrast(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_CONTRAST);
 }
+
 /*
  * Get saturation of the image (only for cameras)
+ * @overload saturation
+ * @return [Number] Saturation
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_SATURATION)
  */
 VALUE
 rb_get_saturation(VALUE self)
@@ -449,30 +529,45 @@ rb_get_saturation(VALUE self)
 }
 /*
  * Get hue of the image (only for cameras)
+ * @overload hue
+ * @return [Number] Hue
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_HUE)
  */
 VALUE
 rb_get_hue(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_HUE);
 }
+
 /*
  * Get gain of the image (only for cameras)
+ * @overload gain
+ * @return [Number] Gain
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_GAIN)
  */
 VALUE
 rb_get_gain(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_GAIN);
 }
+
 /*
  * Get exposure (only for cameras)
+ * @overload exposure
+ * @return [Number] Exposure
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_EXPOSURE)
  */
 VALUE
 rb_get_exposure(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_EXPOSURE);
 }
+
 /*
  * Get boolean flags indicating whether images should be converted to RGB
+ * @overload convert_rgb
+ * @return [Boolean] Whether images should be converted to RGB
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_CONVERT_RGB)
  */
 VALUE
 rb_get_convert_rgb(VALUE self)
@@ -486,14 +581,19 @@ rb_get_convert_rgb(VALUE self)
   }
   return flag ? Qtrue : Qfalse;
 }
+
 /*
- * Get TOWRITE (note: only supported by DC1394 v 2.x backend currently)
+ * Get rectification flag for stereo cameras (note: only supported by DC1394 v 2.x backend currently)
+ * @overload rectification
+ * @return [Number] Rectification flag
+ * @opencv_func cvGetCaptureProperty (propId=CV_CAP_PROP_RECTIFICATION)
  */
 VALUE
 rb_get_rectification(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_RECTIFICATION);
 }
+
 __NAMESPACE_END_CVCAPTURE
 __NAMESPACE_END_OPENCV
 
