@@ -8,7 +8,11 @@
 
 ************************************************************/
 #include "curve.h"
-
+/*
+ * Document-class: OpenCV::Curve
+ *
+ * Curve sequence
+ */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CURVE
 
@@ -25,6 +29,11 @@ define_ruby_module()
 {
   if (module)
     return;
+  /*
+   * opencv = rb_define_module("OpenCV");
+   *
+   * note: this comment is used by rdoc.
+   */
   VALUE opencv = rb_module_opencv();
   module = rb_define_module_under(opencv, "Curve");
   rb_define_method(module, "closed?", RUBY_METHOD_FUNC(rb_closed_q), 0);
