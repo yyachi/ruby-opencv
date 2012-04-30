@@ -19,7 +19,7 @@ __NAMESPACE_BEGIN_CVCHAIN
 #define APPROX_CHAIN_OPTION(op) rb_get_option_table(rb_klass, "APPROX_CHAIN_OPTION", op)
 #define APPROX_CHAIN_METHOD(op) CVMETHOD("APPROX_CHAIN_METHOD", LOOKUP_CVMETHOD(op, "method"), CV_CHAIN_APPROX_SIMPLE)
 #define APPROX_CHAIN_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "parameter"))
-#define APPROX_CHAIN_MINIMAL_PARAMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "minimal_parameter"))
+#define APPROX_CHAIN_MINIMAL_PERIMETER(op) NUM2INT(LOOKUP_CVMETHOD(op, "minimal_perimeter"))
 #define APPROX_CHAIN_RECURSIVE(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "recursive"))
 
 VALUE rb_klass;
@@ -51,7 +51,7 @@ define_ruby_class()
   rb_define_const(rb_klass, "APPROX_CHAIN_OPTION", approx_chain_option); 
   rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("method")), ID2SYM(rb_intern("approx_simple")));
   rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("parameter")), rb_float_new(0));
-  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("minimal_parameter")), INT2FIX(0));
+  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("minimal_perimeter")), INT2FIX(0));
   rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("recursive")), Qfalse);
 
   rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
@@ -59,8 +59,8 @@ define_ruby_class()
   rb_define_method(rb_klass, "origin=", RUBY_METHOD_FUNC(rb_set_origin), 1);
   rb_define_method(rb_klass, "codes", RUBY_METHOD_FUNC(rb_codes), 0);
   rb_define_method(rb_klass, "points", RUBY_METHOD_FUNC(rb_points), 0);
-  rb_define_method(rb_klass, "approx_chain", RUBY_METHOD_FUNC(rb_approx_chain), -1);
-  rb_define_alias(rb_klass, "approx", "approx_chain");
+  rb_define_method(rb_klass, "approx_chains", RUBY_METHOD_FUNC(rb_approx_chains), -1);
+  rb_define_alias(rb_klass, "approx", "approx_chains");
 }
 
 VALUE
@@ -188,25 +188,26 @@ rb_points(VALUE self)
  *   @option options [Boolean] :recursive Recursion flag. If it is true, the function approximates
  *     all chains that can be obtained from chain by using the h_next or v_next links.
  *     Otherwise, the single input chain is approximated.
- * @return [Array<CvPoint>] Polygonal curve
+ * @return [CvSeq<CvPoint>] Polygonal curve
  * @opencv_func cvApproxChains
  */
 VALUE
-rb_approx_chain(int argc, VALUE *argv, VALUE self)
+rb_approx_chains(int argc, VALUE *argv, VALUE self)
 {
-  VALUE approx_chain_option, storage;
+  VALUE approx_chain_option;
   rb_scan_args(argc, argv, "01", &approx_chain_option);
-  approx_chain_option = APPROX_CHAIN_OPTION(approx_chain_option);
-  /* can't compile VC
-     storage = cCvMemStorage::new_object();
-     CvSeq *seq = cvApproxChains(CVSEQ(self), CVMEMSTORAGE(storage),
-     APPROX_CHAIN_METHOD(approx_chain_option),
-     APPROX_CHAIN_PARAMETER(approx_chain_option),
-     APPROX_CHAIN_MINIMAL_PARAMETER(approx_chain_option),
-     APPROX_CHAIN_RECURSIVE(approx_chain_option));
 
-     return cCvSeq::new_sequence(cCvContour::rb_class(), seq, cCvPoint::rb_class(), storage);
-  */
+  approx_chain_option = APPROX_CHAIN_OPTION(approx_chain_option);
+  VALUE storage = cCvMemStorage::new_object();
+  CvSeq *seq = cvApproxChains(CVSEQ(self), CVMEMSTORAGE(storage),			      
+			      APPROX_CHAIN_METHOD(approx_chain_option),
+			      APPROX_CHAIN_PARAMETER(approx_chain_option),
+			      APPROX_CHAIN_MINIMAL_PERIMETER(approx_chain_option),
+			      APPROX_CHAIN_RECURSIVE(approx_chain_option));
+
+  if (seq && seq->total > 0) {
+    return cCvSeq::new_sequence(cCvChain::rb_class(), seq, cCvPoint::rb_class(), storage);
+  }
   return Qnil;
 }
 
