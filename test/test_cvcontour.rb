@@ -10,8 +10,8 @@ include OpenCV
 class TestCvContour < OpenCVTestCase
   def test_APPROX_OPTION
     assert_equal(0, CvContour::APPROX_OPTION[:method])
-    assert_equal(1.0, CvContour::APPROX_OPTION[:accuracy])
-    assert_false(CvContour::APPROX_OPTION[:recursive])
+    assert_equal(1.0, CvContour::APPROX_OPTION[:parameter])
+    assert_false(CvContour::APPROX_OPTION[:parameter2])
   end
   
   def test_initialize
@@ -41,7 +41,46 @@ class TestCvContour < OpenCVTestCase
   end
 
   def test_approx_poly
-    flunk('FIXME: CvContour#approx_poly is not implemented yet.')
+    mat0 = create_cvmat(128, 128, :cv8u, 1) { |j, i|
+      (j - 64) ** 2 + (i - 64) ** 2 <= (32 ** 2) ? CvColor::White : CvColor::Black
+    }
+    contours = mat0.find_contours(:mode => CV_RETR_EXTERNAL)
+
+    poly = contours.approx_poly
+    assert_equal(CvContour, poly.class)
+    assert(poly.size > 0)
+    assert(poly.all? { |c| c.class == CvPoint })
+
+    poly = contours.approx_poly(:method => :dp)
+    assert_equal(CvContour, poly.class)
+    assert(poly.size > 0)
+    assert(poly.all? { |c| c.class == CvPoint })
+
+    poly = contours.approx_poly(:parameter => 2.0)
+    assert_equal(CvContour, poly.class)
+    assert(poly.size > 0)
+    assert(poly.all? { |c| c.class == CvPoint })
+
+    [true, false, 1, 0].each { |recursive|
+      poly = contours.approx_poly(:recursive => recursive)
+      assert_equal(CvContour, poly.class)
+      assert(poly.size > 0)
+      assert(poly.all? { |c| c.class == CvPoint })
+    }
+
+    poly = contours.approx_poly(:method => :dp, :parameter => 2.0, :parameter2 => false)
+    assert_equal(CvContour, poly.class)
+    assert(poly.size > 0)
+    assert(poly.all? { |c| c.class == CvPoint })
+
+    # Uncomment the following lines to show the result
+    # poly = contours.approx_poly(:parameter => 3.0)
+    # dst = mat0.clone.zero
+    # begin
+    #   dst.draw_contours!(poly, CvColor::White, CvColor::Black, 2,
+    #                      :thickness => 1, :line_type => :aa)
+    # end while (poly = poly.h_next)
+    # snap dst
   end
   
   def test_bounding_rect

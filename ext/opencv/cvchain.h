@@ -28,7 +28,7 @@ VALUE rb_origin(VALUE self);
 VALUE rb_set_origin(VALUE self, VALUE origin);
 VALUE rb_codes(VALUE self);
 VALUE rb_points(VALUE self);
-VALUE rb_approx_chain(int argc, VALUE *argv, VALUE self);
+VALUE rb_approx_chains(int argc, VALUE *argv, VALUE self);
 
 VALUE new_object();
 
