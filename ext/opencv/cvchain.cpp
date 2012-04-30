@@ -11,8 +11,7 @@
 /*
  * Document-class: OpenCV::CvChain
  *
- * Freeman chain code.
- * CvMat#find_contours(:method => :code)
+ * Freeman chain code
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCHAIN
@@ -71,6 +70,14 @@ rb_allocate(VALUE klass)
   return Data_Make_Struct(klass, CvChain, 0, 0, ptr);
 }
 
+/*
+ * Create a new chain code
+ * @scope class
+ * @overload new(storage=nil)
+ *   @param storage [CvMemStorage,nil] Sequence location (If storage is nil, allocates a new storage automatically)
+ * @return [CvChain] New CvChain instance
+ * @opencv_func cvCreateSeq (seq_flags=CV_SEQ_ELTYPE_CODE)
+ */
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
@@ -93,10 +100,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   origin -> cvpoint
- *
- * Return Freeman chain code origin.
+ * Returns Freeman chain code origin
+ * @overload origin
+ * @return [CvPoint] Origin of the chain code
  */
 VALUE
 rb_origin(VALUE self)
@@ -105,10 +111,10 @@ rb_origin(VALUE self)
 }
 
 /*
- * call-seq:
- *   origin = point -> self
- *
- * Set Freeman chain code origin.
+ * Set Freeman chain code origin
+ * @overload origin=value
+ *   @param value [CvPoint] Origin of the chain code
+ * @return [CvChain] self
  */
 VALUE
 rb_set_origin(VALUE self, VALUE origin)
@@ -118,10 +124,11 @@ rb_set_origin(VALUE self, VALUE origin)
 }
 
 /*
- * call-seq:
- *   codes -> array(contain fixnum)
- *
- * Return Freeman chain codes.
+ * Returns the chain codes
+ * @overload codes
+ * @return [Array<Fixnum>] Chain codes
+ * @opencv_func cvStartReadChainPoints
+ * @opencv_func CV_READ_SEQ_ELEM
  */
 VALUE
 rb_codes(VALUE self)
@@ -144,10 +151,11 @@ rb_codes(VALUE self)
 }
 
 /*
- * call-seq:
- *   points -> array(contain cvpoint)
- *
- * Return points that represent by Freeman chain code.
+ * Returns the points of the chain codes
+ * @overload points
+ * @return [Array<CvPoint>] Points of the chain codes
+ * @opencv_func cvStartReadChainPoints
+ * @opencv_func CV_READ_CHAIN_POINT
  */
 VALUE
 rb_points(VALUE self)
@@ -171,26 +179,17 @@ rb_points(VALUE self)
 }
 
 /*
- * call-seq:
- *   approx_chain(<i>[approx_chain_option]</i>) -> cvcontour
- *
- * Approximates Freeman chain(s) with polygonal curve.
- * <i>approx_chain_option</i> should be Hash include these keys.
- *   :method - Approximation method.
- *      :approx_none - translate all the points from the chain code into points;
- *      :approx_simple(default) - compress horizontal, vertical, and diagonal segments, that is,
- *                                the function leaves only their ending points.
- *      :approx_tc89_l1
- *      :approx_tc89_kcos - apply one of the flavors of Teh-Chin chain approximation algorithm.
- *      If set the difference between the current pixel and seed pixel is considered,
- *      otherwise difference between neighbor pixels is considered (the range is floating).
- *   :parameter - Method parameter (not used now).
- *   :minimal_perimeter (default 0)
- *      Approximates only those contours whose perimeters are not less than minimal_perimeter. Other chains are removed from the resulting structure.
- *   :recursive (default false)
- *      If not nil or false, the function approximates all chains that access can be obtained to
- *      from self by h_next or v_next links. If 0, the single chain is approximated.
- *
+ * Approximates Freeman chains with a polygonal curve
+ * @overload approx_chain(options)
+ *   @param options [Hash] Parameters
+ *   @option options [Symbol] :method Approximation method (see the description of CvMat#find_contours)
+ *   @option options [Number] :minimal_perimeter Approximates only those contours whose perimeters
+ *     are not less than minimal_perimeter. Other chains are removed from the resulting structure.
+ *   @option options [Boolean] :recursive Recursion flag. If it is true, the function approximates
+ *     all chains that can be obtained from chain by using the h_next or v_next links.
+ *     Otherwise, the single input chain is approximated.
+ * @return [Array<CvPoint>] Polygonal curve
+ * @opencv_func cvApproxChains
  */
 VALUE
 rb_approx_chain(int argc, VALUE *argv, VALUE self)
@@ -199,14 +198,14 @@ rb_approx_chain(int argc, VALUE *argv, VALUE self)
   rb_scan_args(argc, argv, "01", &approx_chain_option);
   approx_chain_option = APPROX_CHAIN_OPTION(approx_chain_option);
   /* can't compile VC
-  storage = cCvMemStorage::new_object();
-  CvSeq *seq = cvApproxChains(CVSEQ(self), CVMEMSTORAGE(storage),			      
-			      APPROX_CHAIN_METHOD(approx_chain_option),
-			      APPROX_CHAIN_PARAMETER(approx_chain_option),			    
-			      APPROX_CHAIN_MINIMAL_PARAMETER(approx_chain_option),			      
-			      APPROX_CHAIN_RECURSIVE(approx_chain_option));
-  
-  return cCvSeq::new_sequence(cCvContour::rb_class(), seq, cCvPoint::rb_class(), storage);
+     storage = cCvMemStorage::new_object();
+     CvSeq *seq = cvApproxChains(CVSEQ(self), CVMEMSTORAGE(storage),
+     APPROX_CHAIN_METHOD(approx_chain_option),
+     APPROX_CHAIN_PARAMETER(approx_chain_option),
+     APPROX_CHAIN_MINIMAL_PARAMETER(approx_chain_option),
+     APPROX_CHAIN_RECURSIVE(approx_chain_option));
+
+     return cCvSeq::new_sequence(cCvContour::rb_class(), seq, cCvPoint::rb_class(), storage);
   */
   return Qnil;
 }
