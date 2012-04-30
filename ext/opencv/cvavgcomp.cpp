@@ -11,13 +11,7 @@
 /*
  * Document-class: OpenCV::CvAvgComp
  *
- * CvRect with parameter "neighbors".
- * CvHaarClassifierCascade#detect_object. 
- *
- *   typedef struct CvAvgComp {
- *     CvRect rect;
- *     int neighbors;
- *   }
+ * CvRect with parameter "neighbors"
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_AVGCOMP
@@ -55,7 +49,9 @@ rb_allocate(VALUE klass)
 }
 
 /*
- * Return neighbors.
+ * Return neighbors
+ * @overload neighbors
+ * @return [Integer] neighbors
  */
 VALUE
 rb_neighbors(VALUE self)
