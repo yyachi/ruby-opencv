@@ -20,3 +20,4 @@ doc/
 log.txt
 videowriter_result.avi
 examples/contours/rotated-boxes-with-detected-bounding-rectangles.jpg
+.yardoc

@@ -4,6 +4,9 @@ require './ext/opencv/lib/opencv/psyched_yaml'
 require 'hoe'
 require 'rake/extensiontask'
 require './ext/opencv/lib/opencv/version'
+require 'yard'
+require 'yard/rake/yardoc_task'
+require File.dirname(__FILE__) + '/yard_extension'
 
 Hoe.plugin :gemspec
 
@@ -46,5 +49,9 @@ hoespec.spec.cert_chain = []
 hoespec.spec.signing_key = nil
 
 Rake::Task[:test].prerequisites << :compile
+
+YARD::Rake::YardocTask.new do |t|
+  t.files = ['ext/opencv/*.cpp', 'ext/opencv/lib/*.rb']
+end
 
 # vim: syntax=Ruby
