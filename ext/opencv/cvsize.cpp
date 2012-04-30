@@ -131,7 +131,7 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_width(VALUE self)
 {
-  return INT2FIX(CVSIZE(self)->width);
+  return INT2NUM(CVSIZE(self)->width);
 }
 
 /*
@@ -154,7 +154,7 @@ rb_set_width(VALUE self, VALUE x)
 VALUE
 rb_height(VALUE self)
 {
-  return INT2FIX(CVSIZE(self)->height);
+  return INT2NUM(CVSIZE(self)->height);
 }
 
 /*

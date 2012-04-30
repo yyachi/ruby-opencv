@@ -1,6 +1,5 @@
 .gitignore
 Gemfile
-Gemfile.lock
 History.txt
 License.txt
 Manifest.txt

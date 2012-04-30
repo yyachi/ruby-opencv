@@ -56,7 +56,7 @@ rb_allocate(VALUE klass)
 VALUE
 rb_neighbors(VALUE self)
 {
-  return INT2FIX(CVAVGCOMP(self)->neighbors);
+  return INT2NUM(CVAVGCOMP(self)->neighbors);
 }
 
 __NAMESPACE_END_AVGCOMP

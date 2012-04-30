@@ -32,7 +32,7 @@ EOF
   p.test_globs = ['test/test_*.rb']
   p.clean_globs << 'lib/*.so' << 'tmp'
 
-  p.url = 'http://blueruby.mydns.jp/opencv'
+  p.urls = ['http://blueruby.mydns.jp/opencv']
 
   p.extra_dev_deps << ['rake-compiler', '>= 0'] << ['hoe-gemspec'] << ['rspec']
 
