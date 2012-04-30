@@ -11,7 +11,7 @@ class TestCvChain < OpenCVTestCase
   def test_APPROX_OPTION
     assert_equal(:approx_simple, CvChain::APPROX_CHAIN_OPTION[:method])
     assert_equal(0, CvChain::APPROX_CHAIN_OPTION[:parameter])
-    assert_equal(0, CvChain::APPROX_CHAIN_OPTION[:minimal_parameter])
+    assert_equal(0, CvChain::APPROX_CHAIN_OPTION[:minimal_perimeter])
     assert_false(CvChain::APPROX_CHAIN_OPTION[:recursive])
   end
   
