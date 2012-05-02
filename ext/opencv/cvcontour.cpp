@@ -11,8 +11,9 @@
 /*
  * Document-class: OpenCV::CvContour
  *
- * Contour.
- * CvMat#find_contours
+ * Contour
+ *
+ * @see CvMat#find_contours
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCONTOUR
@@ -84,6 +85,13 @@ rb_allocate(VALUE klass)
   return Data_Make_Struct(klass, CvContour, mark_root_object, unregister_object, ptr);
 }
 
+/*
+ * Constructor
+ * @overload new(storage = nil)
+ *   @param [CvMemStorage] storage Sequence location
+ * @return [CvContour] self
+ * @opencv_func cvCreateSeq
+ */
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
@@ -108,18 +116,33 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   return self;
 }
 
+/*
+ * Returns bounding box of the contour
+ * @overload rect
+ * @return [CvRect] Bounding box of the contour
+ */
 VALUE
 rb_rect(VALUE self)
 {
   return cCvRect::new_object(CVCONTOUR(self)->rect);
 }
 
+/*
+ * Returns color of the contour
+ * @overload color
+ * @return [Number] Color of the contour
+ */
 VALUE
 rb_color(VALUE self)
 {
   return INT2NUM(CVCONTOUR(self)->color);
 }
 
+/*
+ * Set color of the contour
+ * @overload color=value
+ *   @param value [Number] Color of the contour
+ */
 VALUE
 rb_set_color(VALUE self, VALUE color)
 {
@@ -127,6 +150,11 @@ rb_set_color(VALUE self, VALUE color)
   return self;
 }
 
+/*
+ * Returns reserved region values of the contour
+ * @overload reserved
+ * @return [Array<Number>] Reserved region values of the contour
+ */
 VALUE
 rb_reserved(VALUE self)
 {
@@ -137,17 +165,18 @@ rb_reserved(VALUE self)
 }
 
 /*
- * call-seq:
- *   approx_poly(<i>approx_poly_option</i>) -> cvcontour
- *
- * Approximates polygonal curve(s) with desired precision.
- * <i>approx_poly_option</i> should be Hash include these keys.
- *   :method - Approximation method.
- *     :dp - corresponds to Douglas-Peucker algorithm.
- *   :accuracy - approximation accuracy. (high-accuracy will create more simple contours)
- *   :recursive - (default false)
- *      If not nil or false, the function approximates all chains that access can be obtained to
- *      from self by h_next or v_next links. If 0, approximated this one.
+ * Approximates polygonal curves with desired precision
+ * @overload approx_poly(options)
+ *   @param options [Hash] Parameters
+ *   @option options [Symbol] :method Approximation method (default :dp)
+ *     * :dp - Douglas-Peucker algorithm.
+ *   @option options [Number] :accuracy Parameter specifying the approximation accuracy.
+ *     This is the maximum distance between the original curve and its approximation.
+ *   @option options [Boolean] :recursive Recursion flag. If true, the function approximates
+ *     all the contours accessible from curve by h_next and v_next links.
+ * @return [CvContour] Result of the approximation
+ * @return [nil] Approximation faied
+ * @opencv_func cvApproxPoly
  */
 VALUE
 rb_approx_poly(int argc, VALUE *argv, VALUE self)
@@ -168,11 +197,10 @@ rb_approx_poly(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   bounding_rect -> rect
- *
  * Calculates up-right bounding rectangle of point set.
- * 
+ * @overload bounding_rect
+ * @return [CvRect] Bounding rectangle
+ * @opencv_func cvBoundingRect
  */
 VALUE
 rb_bounding_rect(VALUE self)
@@ -188,14 +216,12 @@ rb_bounding_rect(VALUE self)
 }
 
 /*
- * call-seq:
- *   create_tree([threshold = 0.0]) -> cvcontourtree
- *
- * Creates hierarchical representation of contour.
- * If the parameter <i>threshold</i> is less than or equal to 0,
- * the method creates full binary tree representation.
- * If the threshold is greater than 0, the function creates
- * representation with the precision threshold: 
+ * Creates hierarchical representation of contour
+ * @overload create_tree(threshold = 0.0)
+ *   @param threshold [Number] If <= 0, the method creates full binary tree representation.
+ *     If > 0, the method creates representation with the precision threshold.
+ * @return [CvContourTree] Hierarchical representation of the contour
+ * @opencv_func cvCreateContourTree
  */
 VALUE
 rb_create_tree(int argc, VALUE *argv, VALUE self)
@@ -214,10 +240,14 @@ rb_create_tree(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *    in?(<i>point</i>) -> true or nil or false
- *
- * Determines whether the <i>point</i> is inside contour(true), outside(false) or lies on an edge(nil).
+ * Performs a point-in-contour test.
+ * The method determines whether the point is inside a contour, outside,
+ * or lies on an edge (or coincides with a vertex).
+ * @overload in?(point)
+ *   @param point [CvPoint2D32f] Point tested against the contour
+ * @return [Boolean] If the point is inside, returns true. If outside, returns false.
+ *   If lies on an edge, returns nil.
+ * @opencv_func cvPointPolygonTest
  */
 VALUE
 rb_in_q(VALUE self, VALUE point)
@@ -233,10 +263,11 @@ rb_in_q(VALUE self, VALUE point)
 }
 
 /*
- * call-seq:
- *    measure_distance(<i>point</i>) -> float
- *
- * Return distance between the point and the nearest contour edge.
+ * Calculates distance between a point and the nearest contour edgex
+ * @overload measure_distance(point)
+ *   @param point [CvPoint2D32f] Point tested against the contour
+ * @return Signed distance between the point and the nearest contour edge
+ * @opencv_func cvPointPolygonTest
  */
 VALUE
 rb_measure_distance(VALUE self, VALUE point)
@@ -252,11 +283,14 @@ rb_measure_distance(VALUE self, VALUE point)
 }
 
 /*
- * call-seq:
- *    point_polygon_test(<i>point, measure_dist</i>) -> float
- *
  * Determines whether the point is inside a contour, outside, or lies on an edge (or coinsides with a vertex).
- * It returns positive, negative or zero value, correspondingly. When measure_dist = false or 0, the return value is +1, -1 and 0, respectively. When measure_dist = true or 1, it is a signed distance between the point and the nearest contour edge.
+ * @overload point_polygon_test(point, measure_dist)
+ *   @param point [CvPoint2D32f] Point tested against the contour
+ *   @param measure_dist [Boolean] If true, the method estimates the signed distance from the point to
+ *      the nearest contour edge. Otherwise, the function only checks if the point is inside a contour or not.
+ * @return [Number] When measure_dist = false, the return value is +1, -1 and 0, respectively.
+ *   When measure_dist = true, it is a signed distance between the point and the nearest contour edge.
+ * @opencv_func cvPointPolygonTest
  */
 VALUE
 rb_point_polygon_test(VALUE self, VALUE point, VALUE measure_dist)
