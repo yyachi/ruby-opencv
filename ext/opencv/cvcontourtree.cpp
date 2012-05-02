@@ -11,15 +11,8 @@
 /*
  * Document-class: OpenCV::CvContourTree
  *
- * Contour tree. CvContour#create_tree
- *
- * C structure is here.
- *  typedef struct CvContourTree {
- *    CV_SEQUENCE_FIELDS()
- *    CvPoint p1;
- *    CvPoint p2;
- *  } CvContourTree;
- * 
+ * Contour tree
+ * @see CvContour#create_tree
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCONTOURTREE
@@ -52,12 +45,22 @@ define_ruby_class()
   rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 1);
 }
 
+/*
+ * Returns the first point of the binary tree root segment
+ * @overload p1
+ * @return [CvPoint] First point of the binary tree root segment
+ */
 VALUE
 rb_p1(VALUE self)
 {
   return REFER_OBJECT(cCvPoint::rb_class(), &CVCONTOURTREE(self)->p1, self);
 }
 
+/*
+ * Returns the last point of the binary tree root segment
+ * @overload p2
+ * @return [CvPoint] Last point of the binary tree root segment
+ */
 VALUE
 rb_p2(VALUE self)
 {
@@ -65,12 +68,14 @@ rb_p2(VALUE self)
 }
 
 /*
- * call-seq:
- *   contour(<i>[criteria = 0]</i>) -> cvcontour
- *
  * Restores the contour from its binary tree representation.
- * The parameter criteria determines the accuracy and/or the number of tree levels
+ *
+ * The parameter +criteria+ determines the accuracy and/or the number of tree levels
  * used for reconstruction, so it is possible to build approximated contour.
+ * @overload contour(criteria = 0)
+ *   @param criteria [Integer] Criteria, where to stop reconstruction
+ * @return [CvContour] Contour tree
+ * @opencv_func cvContourFromContourTree
  */
 VALUE
 rb_contour(VALUE self, VALUE criteria)
