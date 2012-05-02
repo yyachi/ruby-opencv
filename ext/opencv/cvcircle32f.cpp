@@ -55,7 +55,9 @@ rb_allocate(VALUE klass)
 }
 
 /*
- * Return parameter on center.
+ * Returns center point of the circle
+ * @overload center
+ * @return [CvPoint2D32f] Center point of the circle
  */
 VALUE
 rb_center(VALUE self)
@@ -64,7 +66,9 @@ rb_center(VALUE self)
 }
 
 /*
- * Return parameter on radius.
+ * Returns radius of the circle
+ * @overload radius
+ * @return [Number] Radius of the circle
  */
 VALUE
 rb_radius(VALUE self)
@@ -73,10 +77,10 @@ rb_radius(VALUE self)
 }
 
 /*
- * call-seq:
- *   [<i>index</i>]
- *
- * Return value of <i>index</i> dimension.
+ * Accesses to parameters of the circle by array-like interface ([X-coordinate, Y-coordinate, radius])
+ * @overload []
+ *   @param index [Integer] Index
+ * @return [Number] X-coordinate, Y-coordinate or radius of the circle
  */
 VALUE
 rb_aref(VALUE self, VALUE index)
@@ -98,6 +102,11 @@ rb_aref(VALUE self, VALUE index)
   return Qnil;
 }
 
+/*
+ * Returns parameters of the circle as an array which contains [center<CvPoint2D32f>, radius<Number>]
+ * @overload to_ary
+ * @return [Array<CvPoint2D32f,Number>] An array which contains [center, radius]
+ */
 VALUE
 rb_to_ary(VALUE self)
 {
