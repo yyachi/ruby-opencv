@@ -10,17 +10,9 @@
 #include "cvconnectedcomp.h"
 /*
  * Document-class: OpenCV::CvConnectedComp
- *
+ * 
+ * Connected component
  * see CvMat#flood_fill
- *
- * C structure is here.
- *   typedef struct CvConnectedComp
- *   {
- *     double area;    
- *     CvScalar value; 
- *     CvRect rect;    
- *     CvSeq* contour;
- *   } CvConnectedComp;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVCONNECTEDCOMP
@@ -62,6 +54,15 @@ rb_allocate(VALUE klass)
   return Data_Make_Struct(klass, CvConnectedComp, 0, -1, ptr);
 }
 
+/*
+ * Constructor
+ * @overload new(area = nil, value = nil, rect = nil, contour = nil)
+ *   @param area [Number] Area of the segmented component
+ *   @param value [CvScalar] Average color of the connected component
+ *   @param rect [CvRect] ROI of the segmented component
+ *   @param contour [CvSeq] Optional component boundary
+ * @return [CvConnectedComp] self
+ */
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
 {
@@ -80,7 +81,9 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * Return area of connected component.
+ * Returns area of connected component
+ * @overload area
+ * @return [Number] Area of the connected component
  */
 VALUE
 rb_area(VALUE self)
@@ -90,6 +93,8 @@ rb_area(VALUE self)
 
 /*
  * Return average color of the connected component.
+ * @overload value
+ * @return [CvScalar] Average color of the connected component
  */
 VALUE
 rb_value(VALUE self)
@@ -98,7 +103,9 @@ rb_value(VALUE self)
 }
 
 /*
- * Return ROI of the component.
+ * Return ROI of the segmented component
+ * @overload rect
+ * @return [CvRect] ROI of the segmented component
  */
 VALUE
 rb_rect(VALUE self)
@@ -107,7 +114,10 @@ rb_rect(VALUE self)
 }
 
 /*
- * Set ROI of the component.
+ * Set ROI of the segmented component
+ * @overload rect=value
+ *   @param value [CvRect] ROI to set
+ * @return [CvRect] ROI of the segmented component
  */
 VALUE
 rb_set_rect(VALUE self, VALUE rect)
@@ -117,7 +127,9 @@ rb_set_rect(VALUE self, VALUE rect)
 }
 
 /*
- * Return optional component boundary
+ * Returns optional component boundary
+ * @overload contour
+ * @return [CvContour] Optional component boundary
  */
 VALUE
 rb_contour(VALUE self)
