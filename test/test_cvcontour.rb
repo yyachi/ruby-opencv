@@ -10,8 +10,8 @@ include OpenCV
 class TestCvContour < OpenCVTestCase
   def test_APPROX_OPTION
     assert_equal(0, CvContour::APPROX_OPTION[:method])
-    assert_equal(1.0, CvContour::APPROX_OPTION[:parameter])
-    assert_false(CvContour::APPROX_OPTION[:parameter2])
+    assert_equal(1.0, CvContour::APPROX_OPTION[:accuracy])
+    assert_false(CvContour::APPROX_OPTION[:recursive])
   end
   
   def test_initialize
@@ -56,7 +56,7 @@ class TestCvContour < OpenCVTestCase
     assert(poly.size > 0)
     assert(poly.all? { |c| c.class == CvPoint })
 
-    poly = contours.approx_poly(:parameter => 2.0)
+    poly = contours.approx_poly(:accuracy => 2.0)
     assert_equal(CvContour, poly.class)
     assert(poly.size > 0)
     assert(poly.all? { |c| c.class == CvPoint })
@@ -68,13 +68,13 @@ class TestCvContour < OpenCVTestCase
       assert(poly.all? { |c| c.class == CvPoint })
     }
 
-    poly = contours.approx_poly(:method => :dp, :parameter => 2.0, :parameter2 => false)
+    poly = contours.approx_poly(:method => :dp, :accuracy => 2.0, :recursive => false)
     assert_equal(CvContour, poly.class)
     assert(poly.size > 0)
     assert(poly.all? { |c| c.class == CvPoint })
 
     # Uncomment the following lines to show the result
-    # poly = contours.approx_poly(:parameter => 3.0)
+    # poly = contours.approx_poly(:accuracy => 3.0)
     # dst = mat0.clone.zero
     # begin
     #   dst.draw_contours!(poly, CvColor::White, CvColor::Black, 2,

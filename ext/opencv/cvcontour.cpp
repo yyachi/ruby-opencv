@@ -19,8 +19,8 @@ __NAMESPACE_BEGIN_CVCONTOUR
 
 #define APPROX_POLY_OPTION(op) rb_get_option_table(rb_klass, "APPROX_OPTION", op)
 #define APPROX_POLY_METHOD(op) CVMETHOD("APPROX_POLY_METHOD", LOOKUP_CVMETHOD(op, "method"), CV_POLY_APPROX_DP)
-#define APPROX_POLY_PARAMETER(op) NUM2DBL(LOOKUP_CVMETHOD(op, "parameter"))
-#define APPROX_POLY_PARAMETER2(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "parameter2"))
+#define APPROX_POLY_ACCURACY(op) NUM2DBL(LOOKUP_CVMETHOD(op, "accuracy"))
+#define APPROX_POLY_RECURSIVE(op) TRUE_OR_FALSE(LOOKUP_CVMETHOD(op, "recursive"))
 
 VALUE rb_allocate(VALUE klass);
 void cvcontour_free(void *ptr);
@@ -60,8 +60,8 @@ define_ruby_class()
   VALUE approx_option = rb_hash_new();
   rb_define_const(rb_klass, "APPROX_OPTION", approx_option);
   rb_hash_aset(approx_option, ID2SYM(rb_intern("method")), INT2FIX(CV_POLY_APPROX_DP));
-  rb_hash_aset(approx_option, ID2SYM(rb_intern("parameter")), rb_float_new(1.0));
-  rb_hash_aset(approx_option, ID2SYM(rb_intern("parameter2")), Qfalse);
+  rb_hash_aset(approx_option, ID2SYM(rb_intern("accuracy")), rb_float_new(1.0));
+  rb_hash_aset(approx_option, ID2SYM(rb_intern("recursive")), Qfalse);
   
   rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);
@@ -158,8 +158,8 @@ rb_approx_poly(int argc, VALUE *argv, VALUE self)
   VALUE storage = cCvMemStorage::new_object();
   CvSeq *contour = cvApproxPoly(CVCONTOUR(self), sizeof(CvContour), CVMEMSTORAGE(storage),
 				APPROX_POLY_METHOD(approx_poly_option),
-				APPROX_POLY_PARAMETER(approx_poly_option),
-				APPROX_POLY_PARAMETER2(approx_poly_option));
+				APPROX_POLY_ACCURACY(approx_poly_option),
+				APPROX_POLY_RECURSIVE(approx_poly_option));
 
   if (contour && contour->total > 0) {
     return cCvSeq::new_sequence(cCvContour::rb_class(), contour, cCvPoint::rb_class(), storage);
