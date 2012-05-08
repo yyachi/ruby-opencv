@@ -12,6 +12,7 @@
  * Document-class: OpenCV::CvContourTree
  *
  * Contour tree
+ *
  * @see CvContour#create_tree
  */
 __NAMESPACE_BEGIN_OPENCV
@@ -23,26 +24,6 @@ VALUE
 rb_class()
 {
   return rb_klass;
-}
-
-void
-define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /* 
-   * opencv = rb_define_module("OpenCV");
-   * cvseq = rb_define_class_under(opencv, "CvSeq");
-   *
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  VALUE cvseq = cCvSeq::rb_class();
-  
-  rb_klass = rb_define_class_under(opencv, "CvContourTree", cvseq);
-  rb_define_method(rb_klass, "p1", RUBY_METHOD_FUNC(rb_p1), 0);
-  rb_define_method(rb_klass, "p2", RUBY_METHOD_FUNC(rb_p2), 0);
-  rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 1);
 }
 
 /*
@@ -90,6 +71,25 @@ rb_contour(VALUE self, VALUE criteria)
     raise_cverror(e);
   }
   return cCvSeq::new_sequence(cCvContour::rb_class(), contour, cCvPoint::rb_class(), storage);
+}
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+  VALUE cvseq = rb_define_class_under(opencv, "CvSeq");
+#endif
+  if (rb_klass)
+    return;
+  VALUE opencv = rb_module_opencv();
+  VALUE cvseq = cCvSeq::rb_class();
+
+  rb_klass = rb_define_class_under(opencv, "CvContourTree", cvseq);
+  rb_define_method(rb_klass, "p1", RUBY_METHOD_FUNC(rb_p1), 0);
+  rb_define_method(rb_klass, "p2", RUBY_METHOD_FUNC(rb_p2), 0);
+  rb_define_method(rb_klass, "contour", RUBY_METHOD_FUNC(rb_contour), 1);
 }
 
 __NAMESPACE_END_CVCONTOURTREE

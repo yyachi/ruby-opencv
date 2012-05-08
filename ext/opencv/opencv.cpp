@@ -665,7 +665,7 @@ extern "C" {
     mOpenCV::mPointSet::define_ruby_module();
     mOpenCV::cCvChain::define_ruby_class();
     mOpenCV::cCvContour::define_ruby_class();
-    mOpenCV::cCvContourTree::define_ruby_class();
+    mOpenCV::cCvContourTree::init_ruby_class();
 
     mOpenCV::cCvMat::define_ruby_class();
     mOpenCV::cIplImage::define_ruby_class();
