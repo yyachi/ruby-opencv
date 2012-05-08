@@ -5404,8 +5404,8 @@ rb_optical_flow_bm(int argc, VALUE *argv, VALUE self)
   int use_previous = 0;
   try {
     CvSize image_size = cvGetSize(self_ptr);
-    CvSize velocity_size = cvSize((image_size.width - block_size.width) / shift_size.width,
-				  (image_size.height - block_size.height) / shift_size.height);
+    CvSize velocity_size = cvSize((image_size.width - block_size.width + shift_size.width) / shift_size.width,
+				  (image_size.height - block_size.height + shift_size.height) / shift_size.height);
     CvMat *velx_ptr, *vely_ptr;
     if (NIL_P(velx) && NIL_P(vely)) {
       int type = CV_MAKETYPE(CV_32F, 1);

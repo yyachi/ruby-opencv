@@ -141,9 +141,13 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   }
   font_option = FONT_OPTION(font_option);
 
+  int font_face = NUM2INT(face);
+  if (FO_ITALIC(font_option)) {
+    font_face |= CV_FONT_ITALIC;
+  }
   try {
     cvInitFont(CVFONT(self),
-	       (FIX2INT(face) | FO_ITALIC(font_option)),
+	       font_face,
 	       FO_HSCALE(font_option),
 	       FO_VSCALE(font_option),
 	       FO_SHEAR(font_option),
