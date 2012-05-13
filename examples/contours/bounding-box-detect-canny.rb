@@ -10,9 +10,7 @@ cvmat = OpenCV::CvMat.load("rotated-boxes.jpg")
 
 # The "canny" edge-detector does only work with grayscale images
 # so to be sure, convert the image
-# otherwise you will get something like:
-# terminate called after throwing an instance of 'cv::Exception'
-#  what():  /opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_ports_graphics_opencv/work/OpenCV-2.2.0/modules/imgproc/src/canny.cpp:67: error: (-210)  in function cvCanny
+# otherwise you will get an OpenCV::CvStsAssert exception.
 cvmat = cvmat.BGR2GRAY
 
 # Use the "canny" edge detection algorithm (http://en.wikipedia.org/wiki/Canny_edge_detector)
@@ -53,7 +51,7 @@ while contour
     # The corner of the rectangle with the lowest y and x position is the anchor (see image here: http://bit.ly/lT1XvB)
     # The zero angle position is always straight up. 
     # Positive angle values are clockwise and negative values counter clockwise (so -60 means 60 degree counter clockwise)
-    box = contour.min_area_rect
+    box = contour.min_area_rect2
     puts "found minimal rectangle with its center at (#{box.center.x.round},#{box.center.y.round}), width of #{box.size.width.round}px, height of #{box.size.height.round} and an angle of #{box.angle.round} degree"
   end
   contour = contour.h_next
