@@ -527,6 +527,8 @@ define_ruby_module()
   rb_define_module_function(rb_module, "Luv2RGB", RUBY_METHOD_FUNC(rb_Luv2RGB), 1);
   rb_define_module_function(rb_module, "HLS2BGR", RUBY_METHOD_FUNC(rb_HLS2BGR), 1);
   rb_define_module_function(rb_module, "HLS2RGB", RUBY_METHOD_FUNC(rb_HLS2RGB), 1);
+
+  rb_define_module_function(rb_module, "build_information", RUBY_METHOD_FUNC(rb_build_information), 0);
 }
 
 #define CREATE_CVTCOLOR_FUNC(rb_func_name, c_const_name, src_cn, dest_cn) \
@@ -619,6 +621,13 @@ CREATE_CVTCOLOR_FUNC(rb_Luv2BGR, CV_Luv2BGR, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_Luv2RGB, CV_Luv2RGB, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2BGR, CV_HLS2BGR, 3, 3);
 CREATE_CVTCOLOR_FUNC(rb_HLS2RGB, CV_HLS2RGB, 3, 3);
+
+VALUE
+rb_build_information(VALUE klass)
+{
+  return rb_str_new_cstr(cv::getBuildInformation().c_str());
+}
+
 
 int
 error_callback(int status, const char *function_name, const char *error_message,
