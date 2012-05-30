@@ -329,6 +329,12 @@ class TestOpenCV < OpenCVTestCase
 
     flunk('FIXME: Most cvtColor functions are not tested yet.')
   end
+
+  def test_build_information
+    s = build_information
+    assert_equal(String, s.class)
+    assert(s =~ /^\s+General configuration for OpenCV #{CV_VERSION}/)
+  end
 end
 
 

@@ -393,6 +393,8 @@ VALUE rb_Luv2RGB(VALUE klass, VALUE image);
 VALUE rb_HLS2BGR(VALUE klass, VALUE image);
 VALUE rb_HLS2RGB(VALUE klass, VALUE image);
 
+VALUE rb_build_information(VALUE klass);
+
 __NAMESPACE_END_OPENCV
 
 #endif // RUBY_OPENCV_H
