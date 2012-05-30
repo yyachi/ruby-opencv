@@ -24,29 +24,6 @@ rb_class()
   return rb_klass;
 }
 
-void
-define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /* 
-   * opencv = rb_define_module("OpenCV");
-   * 
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  rb_klass = rb_define_class_under(opencv, "CvBox2D", rb_cObject);
-  rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
-  rb_define_method(rb_klass, "center", RUBY_METHOD_FUNC(rb_center), 0);
-  rb_define_method(rb_klass, "center=", RUBY_METHOD_FUNC(rb_set_center), 1);
-  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_size), 0);
-  rb_define_method(rb_klass, "size=", RUBY_METHOD_FUNC(rb_set_size), 1);
-  rb_define_method(rb_klass, "angle", RUBY_METHOD_FUNC(rb_angle), 0);
-  rb_define_method(rb_klass, "angle=", RUBY_METHOD_FUNC(rb_set_angle), 1);
-  rb_define_method(rb_klass, "points", RUBY_METHOD_FUNC(rb_points), 0);
-}
-
 VALUE
 rb_allocate(VALUE klass)
 {
@@ -188,6 +165,30 @@ new_object(CvBox2D box)
   VALUE object = rb_allocate(rb_klass);
   *CVBOX2D(object) = box;
   return object;
+}
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+#endif
+
+  if (rb_klass)
+    return;
+
+  VALUE opencv = rb_module_opencv();
+  rb_klass = rb_define_class_under(opencv, "CvBox2D", rb_cObject);
+  rb_define_alloc_func(rb_klass, rb_allocate);
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "center", RUBY_METHOD_FUNC(rb_center), 0);
+  rb_define_method(rb_klass, "center=", RUBY_METHOD_FUNC(rb_set_center), 1);
+  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_size), 0);
+  rb_define_method(rb_klass, "size=", RUBY_METHOD_FUNC(rb_set_size), 1);
+  rb_define_method(rb_klass, "angle", RUBY_METHOD_FUNC(rb_angle), 0);
+  rb_define_method(rb_klass, "angle=", RUBY_METHOD_FUNC(rb_set_angle), 1);
+  rb_define_method(rb_klass, "points", RUBY_METHOD_FUNC(rb_points), 0);
 }
 
 __NAMESPACE_END_CVBOX2D

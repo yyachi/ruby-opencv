@@ -34,50 +34,6 @@ rb_class()
   return rb_klass;
 }
 
-void
-define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /* 
-   * opencv = rb_define_module("OpenCV");
-   * cvseq = rb_define_class_under(opencv, "CvSeq");
-   * curve = rb_define_module_under(opencv, "Curve");
-   * pointset = rb_define_module_under(opencv, "PointSet");
-   *
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  VALUE cvseq = cCvSeq::rb_class();
-  VALUE curve = mCurve::rb_module();
-  VALUE pointset = mPointSet::rb_module();
-
-  rb_klass = rb_define_class_under(opencv, "CvContour", cvseq);
-  rb_include_module(rb_klass, curve);
-  rb_include_module(rb_klass, pointset);
-
-  rb_define_alloc_func(rb_klass, rb_allocate);
-
-  VALUE approx_option = rb_hash_new();
-  rb_define_const(rb_klass, "APPROX_OPTION", approx_option);
-  rb_hash_aset(approx_option, ID2SYM(rb_intern("method")), INT2FIX(CV_POLY_APPROX_DP));
-  rb_hash_aset(approx_option, ID2SYM(rb_intern("accuracy")), rb_float_new(1.0));
-  rb_hash_aset(approx_option, ID2SYM(rb_intern("recursive")), Qfalse);
-  
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
-  rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);
-  rb_define_method(rb_klass, "color", RUBY_METHOD_FUNC(rb_color), 0);
-  rb_define_method(rb_klass, "color=", RUBY_METHOD_FUNC(rb_set_color), 1);
-  rb_define_method(rb_klass, "reserved", RUBY_METHOD_FUNC(rb_reserved), 0);
-  rb_define_method(rb_klass, "approx_poly", RUBY_METHOD_FUNC(rb_approx_poly), -1);
-  rb_define_alias(rb_klass, "approx", "approx_poly");
-  rb_define_method(rb_klass, "bounding_rect", RUBY_METHOD_FUNC(rb_bounding_rect), 0);
-  rb_define_method(rb_klass, "create_tree", RUBY_METHOD_FUNC(rb_create_tree), -1);
-  rb_define_method(rb_klass, "in?", RUBY_METHOD_FUNC(rb_in_q), 1);
-  rb_define_method(rb_klass, "measure_distance", RUBY_METHOD_FUNC(rb_measure_distance), 1);
-  rb_define_method(rb_klass, "point_polygon_test", RUBY_METHOD_FUNC(rb_point_polygon_test), 2);
-}
-
 VALUE
 rb_allocate(VALUE klass)
 {
@@ -324,6 +280,52 @@ VALUE new_object()
   VALUE object = rb_allocate(rb_klass);
   rb_initialize(0, NULL, object);
   return object;
+}
+
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+  VALUE cvseq = rb_define_class_under(opencv, "CvSeq");
+  VALUE curve = rb_define_module_under(opencv, "Curve");
+  VALUE pointset = rb_define_module_under(opencv, "PointSet");
+#endif
+
+  if (rb_klass)
+    return;
+
+  VALUE opencv = rb_module_opencv();
+  VALUE cvseq = cCvSeq::rb_class();
+  VALUE curve = mCurve::rb_module();
+  VALUE pointset = mPointSet::rb_module();
+
+  rb_klass = rb_define_class_under(opencv, "CvContour", cvseq);
+  rb_include_module(rb_klass, curve);
+  rb_include_module(rb_klass, pointset);
+
+  rb_define_alloc_func(rb_klass, rb_allocate);
+
+  VALUE approx_option = rb_hash_new();
+  rb_define_const(rb_klass, "APPROX_OPTION", approx_option);
+  rb_hash_aset(approx_option, ID2SYM(rb_intern("method")), INT2FIX(CV_POLY_APPROX_DP));
+  rb_hash_aset(approx_option, ID2SYM(rb_intern("accuracy")), rb_float_new(1.0));
+  rb_hash_aset(approx_option, ID2SYM(rb_intern("recursive")), Qfalse);
+  
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);
+  rb_define_method(rb_klass, "color", RUBY_METHOD_FUNC(rb_color), 0);
+  rb_define_method(rb_klass, "color=", RUBY_METHOD_FUNC(rb_set_color), 1);
+  rb_define_method(rb_klass, "reserved", RUBY_METHOD_FUNC(rb_reserved), 0);
+  rb_define_method(rb_klass, "approx_poly", RUBY_METHOD_FUNC(rb_approx_poly), -1);
+  rb_define_alias(rb_klass, "approx", "approx_poly");
+  rb_define_method(rb_klass, "bounding_rect", RUBY_METHOD_FUNC(rb_bounding_rect), 0);
+  rb_define_method(rb_klass, "create_tree", RUBY_METHOD_FUNC(rb_create_tree), -1);
+  rb_define_method(rb_klass, "in?", RUBY_METHOD_FUNC(rb_in_q), 1);
+  rb_define_method(rb_klass, "measure_distance", RUBY_METHOD_FUNC(rb_measure_distance), 1);
+  rb_define_method(rb_klass, "point_polygon_test", RUBY_METHOD_FUNC(rb_point_polygon_test), 2);
 }
 
 __NAMESPACE_END_CVCONTOUR

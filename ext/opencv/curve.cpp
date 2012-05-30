@@ -24,25 +24,6 @@ rb_module()
   return module;
 }
 
-void
-define_ruby_module()
-{
-  if (module)
-    return;
-  /*
-   * opencv = rb_define_module("OpenCV");
-   *
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  module = rb_define_module_under(opencv, "Curve");
-  rb_define_method(module, "closed?", RUBY_METHOD_FUNC(rb_closed_q), 0);
-  rb_define_method(module, "convex?", RUBY_METHOD_FUNC(rb_convex_q), 0);
-  rb_define_method(module, "hole?", RUBY_METHOD_FUNC(rb_hole_q), 0);
-  rb_define_method(module, "simple?", RUBY_METHOD_FUNC(rb_simple_q), 0);
-  rb_define_method(module, "arc_length", RUBY_METHOD_FUNC(rb_arc_length), -1);
-}
-
 /*
  * If the curve is closed, return true. Otherwise return false.
  * @overload closed?
@@ -119,6 +100,26 @@ rb_arc_length(int argc, VALUE *argv, VALUE self)
     raise_cverror(e);
   }
   return rb_float_new(length);
+}
+
+void
+init_ruby_module()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+#endif
+
+  if (module)
+    return;
+
+  VALUE opencv = rb_module_opencv();
+  module = rb_define_module_under(opencv, "Curve");
+  rb_define_method(module, "closed?", RUBY_METHOD_FUNC(rb_closed_q), 0);
+  rb_define_method(module, "convex?", RUBY_METHOD_FUNC(rb_convex_q), 0);
+  rb_define_method(module, "hole?", RUBY_METHOD_FUNC(rb_hole_q), 0);
+  rb_define_method(module, "simple?", RUBY_METHOD_FUNC(rb_simple_q), 0);
+  rb_define_method(module, "arc_length", RUBY_METHOD_FUNC(rb_arc_length), -1);
 }
 
 __NAMESPACE_END_CURVE

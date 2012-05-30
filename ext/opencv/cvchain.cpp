@@ -30,39 +30,6 @@ rb_class()
   return rb_klass;
 }
 
-void
-define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /* 
-   * opencv = rb_define_module("OpenCV");
-   * cvseq = rb_define_class_under(opencv, "CvSeq");
-   * curve = rb_define_module_under(opencv, "Curve");
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  VALUE cvseq = cCvSeq::rb_class();
-  VALUE curve = mCurve::rb_module();
-
-  rb_klass = rb_define_class_under(opencv, "CvChain", cvseq);
-  rb_include_module(rb_klass, curve);
-  VALUE approx_chain_option = rb_hash_new();
-  rb_define_const(rb_klass, "APPROX_CHAIN_OPTION", approx_chain_option); 
-  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("method")), ID2SYM(rb_intern("approx_simple")));
-  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("parameter")), rb_float_new(0));
-  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("minimal_perimeter")), INT2FIX(0));
-  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("recursive")), Qfalse);
-
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
-  rb_define_method(rb_klass, "origin", RUBY_METHOD_FUNC(rb_origin), 0);
-  rb_define_method(rb_klass, "origin=", RUBY_METHOD_FUNC(rb_set_origin), 1);
-  rb_define_method(rb_klass, "codes", RUBY_METHOD_FUNC(rb_codes), 0);
-  rb_define_method(rb_klass, "points", RUBY_METHOD_FUNC(rb_points), 0);
-  rb_define_method(rb_klass, "approx_chains", RUBY_METHOD_FUNC(rb_approx_chains), -1);
-  rb_define_alias(rb_klass, "approx", "approx_chains");
-}
-
 VALUE
 rb_allocate(VALUE klass)
 {
@@ -223,6 +190,41 @@ new_object()
     raise_cverror(e);
   }
   return cCvSeq::new_sequence(cCvChain::rb_class(), seq, T_FIXNUM, storage);
+}
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+  VALUE cvseq = rb_define_class_under(opencv, "CvSeq");
+  VALUE curve = rb_define_module_under(opencv, "Curve");
+#endif
+
+  if (rb_klass)
+    return;
+
+  VALUE opencv = rb_module_opencv();
+  VALUE cvseq = cCvSeq::rb_class();
+  VALUE curve = mCurve::rb_module();
+
+  rb_klass = rb_define_class_under(opencv, "CvChain", cvseq);
+  rb_include_module(rb_klass, curve);
+  VALUE approx_chain_option = rb_hash_new();
+  rb_define_const(rb_klass, "APPROX_CHAIN_OPTION", approx_chain_option); 
+  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("method")), ID2SYM(rb_intern("approx_simple")));
+  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("parameter")), rb_float_new(0));
+  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("minimal_perimeter")), INT2FIX(0));
+  rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("recursive")), Qfalse);
+
+  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "origin", RUBY_METHOD_FUNC(rb_origin), 0);
+  rb_define_method(rb_klass, "origin=", RUBY_METHOD_FUNC(rb_set_origin), 1);
+  rb_define_method(rb_klass, "codes", RUBY_METHOD_FUNC(rb_codes), 0);
+  rb_define_method(rb_klass, "points", RUBY_METHOD_FUNC(rb_points), 0);
+  rb_define_method(rb_klass, "approx_chains", RUBY_METHOD_FUNC(rb_approx_chains), -1);
+  rb_define_alias(rb_klass, "approx", "approx_chains");
 }
 
 __NAMESPACE_END_CVCHAIN

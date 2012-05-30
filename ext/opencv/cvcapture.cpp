@@ -25,77 +25,6 @@ rb_class()
 }
 
 void
-define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /* 
-   * opencv = rb_define_module("OpenCV");
-   * 
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-  
-  rb_klass = rb_define_class_under(opencv, "CvCapture", rb_cData);
-  
-  VALUE video_interface = rb_hash_new();
-  /*
-   * :any, :mil, :vfw, :v4l, :v4l2, :fireware, :ieee1394, :dc1394, :cmu1394,
-   * :stereo, :tyzx, :tyzx_left, :tyzx_right, :tyzx_color, :tyzx_z, :qt, :qtuicktime
-   */
-  rb_define_const(rb_klass, "INTERFACE", video_interface);
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("any")), INT2FIX(CV_CAP_ANY));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("mil")), INT2FIX(CV_CAP_MIL));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("vfw")), INT2FIX(CV_CAP_VFW));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("v4l")), INT2FIX(CV_CAP_V4L));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("v4l2")), INT2FIX(CV_CAP_V4L2));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("fireware")), INT2FIX(CV_CAP_FIREWARE));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("ieee1394")), INT2FIX(CV_CAP_IEEE1394));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("dc1394")), INT2FIX(CV_CAP_DC1394));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("cmu1394")), INT2FIX(CV_CAP_CMU1394));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("stereo")), INT2FIX(CV_CAP_STEREO));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx")), INT2FIX(CV_CAP_TYZX));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_left")), INT2FIX(CV_TYZX_LEFT));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_right")), INT2FIX(CV_TYZX_RIGHT));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_color")), INT2FIX(CV_TYZX_COLOR));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_z")), INT2FIX(CV_TYZX_Z));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("qt")), INT2FIX(CV_CAP_QT));
-  rb_hash_aset(video_interface, ID2SYM(rb_intern("quicktime")), INT2FIX(CV_CAP_QT));
-  
-  rb_define_singleton_method(rb_klass, "open", RUBY_METHOD_FUNC(rb_open), -1);
-  
-  rb_define_method(rb_klass, "grab", RUBY_METHOD_FUNC(rb_grab), 0);
-  rb_define_method(rb_klass, "retrieve", RUBY_METHOD_FUNC(rb_retrieve), 0);
-  rb_define_method(rb_klass, "query", RUBY_METHOD_FUNC(rb_query), 0);
-  rb_define_method(rb_klass, "millisecond", RUBY_METHOD_FUNC(rb_get_millisecond), 0);
-  rb_define_method(rb_klass, "millisecond=", RUBY_METHOD_FUNC(rb_set_millisecond), 1);
-  rb_define_method(rb_klass, "frames", RUBY_METHOD_FUNC(rb_get_frames), 0);
-  rb_define_method(rb_klass, "frames=", RUBY_METHOD_FUNC(rb_set_frames), 1);
-  rb_define_method(rb_klass, "avi_ratio", RUBY_METHOD_FUNC(rb_get_avi_ratio), 0);
-  rb_define_method(rb_klass, "avi_ratio=", RUBY_METHOD_FUNC(rb_set_avi_ratio), 1);
-  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_get_size), 0);
-  rb_define_method(rb_klass, "size=", RUBY_METHOD_FUNC(rb_set_size), 1);
-  rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_get_width), 0);
-  rb_define_method(rb_klass, "width=", RUBY_METHOD_FUNC(rb_set_width), 1);
-  rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_get_height), 0);
-  rb_define_method(rb_klass, "height=", RUBY_METHOD_FUNC(rb_set_height), 1);
-  rb_define_method(rb_klass, "fps", RUBY_METHOD_FUNC(rb_get_fps), 0);
-  rb_define_method(rb_klass, "fps=", RUBY_METHOD_FUNC(rb_set_fps), 1);
-  rb_define_method(rb_klass, "fourcc", RUBY_METHOD_FUNC(rb_get_fourcc), 0);
-  rb_define_method(rb_klass, "frame_count", RUBY_METHOD_FUNC(rb_get_frame_count), 0);
-  rb_define_method(rb_klass, "format", RUBY_METHOD_FUNC(rb_get_format), 0);
-  rb_define_method(rb_klass, "mode", RUBY_METHOD_FUNC(rb_get_mode), 0);
-  rb_define_method(rb_klass, "brightness", RUBY_METHOD_FUNC(rb_get_brightness), 0);
-  rb_define_method(rb_klass, "contrast", RUBY_METHOD_FUNC(rb_get_contrast), 0);
-  rb_define_method(rb_klass, "saturation", RUBY_METHOD_FUNC(rb_get_saturation), 0);
-  rb_define_method(rb_klass, "hue", RUBY_METHOD_FUNC(rb_get_hue), 0);
-  rb_define_method(rb_klass, "gain", RUBY_METHOD_FUNC(rb_get_gain), 0);
-  rb_define_method(rb_klass, "exposure", RUBY_METHOD_FUNC(rb_get_exposure), 0);
-  rb_define_method(rb_klass, "convert_rgb", RUBY_METHOD_FUNC(rb_get_convert_rgb), 0);
-  rb_define_method(rb_klass, "rectification", RUBY_METHOD_FUNC(rb_get_rectification), 0);
-}
-
-void
 cvcapture_free(void *ptr)
 { 
   if (ptr)
@@ -592,6 +521,78 @@ VALUE
 rb_get_rectification(VALUE self)
 {
   return rb_get_capture_property(self, CV_CAP_PROP_RECTIFICATION);
+}
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+#endif
+
+  if (rb_klass)
+    return;
+
+  VALUE opencv = rb_module_opencv();
+  
+  rb_klass = rb_define_class_under(opencv, "CvCapture", rb_cData);
+  
+  VALUE video_interface = rb_hash_new();
+  /*
+   * :any, :mil, :vfw, :v4l, :v4l2, :fireware, :ieee1394, :dc1394, :cmu1394,
+   * :stereo, :tyzx, :tyzx_left, :tyzx_right, :tyzx_color, :tyzx_z, :qt, :qtuicktime
+   */
+  rb_define_const(rb_klass, "INTERFACE", video_interface);
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("any")), INT2FIX(CV_CAP_ANY));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("mil")), INT2FIX(CV_CAP_MIL));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("vfw")), INT2FIX(CV_CAP_VFW));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("v4l")), INT2FIX(CV_CAP_V4L));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("v4l2")), INT2FIX(CV_CAP_V4L2));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("fireware")), INT2FIX(CV_CAP_FIREWARE));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("ieee1394")), INT2FIX(CV_CAP_IEEE1394));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("dc1394")), INT2FIX(CV_CAP_DC1394));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("cmu1394")), INT2FIX(CV_CAP_CMU1394));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("stereo")), INT2FIX(CV_CAP_STEREO));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx")), INT2FIX(CV_CAP_TYZX));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_left")), INT2FIX(CV_TYZX_LEFT));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_right")), INT2FIX(CV_TYZX_RIGHT));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_color")), INT2FIX(CV_TYZX_COLOR));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("tyzx_z")), INT2FIX(CV_TYZX_Z));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("qt")), INT2FIX(CV_CAP_QT));
+  rb_hash_aset(video_interface, ID2SYM(rb_intern("quicktime")), INT2FIX(CV_CAP_QT));
+  
+  rb_define_singleton_method(rb_klass, "open", RUBY_METHOD_FUNC(rb_open), -1);
+  
+  rb_define_method(rb_klass, "grab", RUBY_METHOD_FUNC(rb_grab), 0);
+  rb_define_method(rb_klass, "retrieve", RUBY_METHOD_FUNC(rb_retrieve), 0);
+  rb_define_method(rb_klass, "query", RUBY_METHOD_FUNC(rb_query), 0);
+  rb_define_method(rb_klass, "millisecond", RUBY_METHOD_FUNC(rb_get_millisecond), 0);
+  rb_define_method(rb_klass, "millisecond=", RUBY_METHOD_FUNC(rb_set_millisecond), 1);
+  rb_define_method(rb_klass, "frames", RUBY_METHOD_FUNC(rb_get_frames), 0);
+  rb_define_method(rb_klass, "frames=", RUBY_METHOD_FUNC(rb_set_frames), 1);
+  rb_define_method(rb_klass, "avi_ratio", RUBY_METHOD_FUNC(rb_get_avi_ratio), 0);
+  rb_define_method(rb_klass, "avi_ratio=", RUBY_METHOD_FUNC(rb_set_avi_ratio), 1);
+  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_get_size), 0);
+  rb_define_method(rb_klass, "size=", RUBY_METHOD_FUNC(rb_set_size), 1);
+  rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_get_width), 0);
+  rb_define_method(rb_klass, "width=", RUBY_METHOD_FUNC(rb_set_width), 1);
+  rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_get_height), 0);
+  rb_define_method(rb_klass, "height=", RUBY_METHOD_FUNC(rb_set_height), 1);
+  rb_define_method(rb_klass, "fps", RUBY_METHOD_FUNC(rb_get_fps), 0);
+  rb_define_method(rb_klass, "fps=", RUBY_METHOD_FUNC(rb_set_fps), 1);
+  rb_define_method(rb_klass, "fourcc", RUBY_METHOD_FUNC(rb_get_fourcc), 0);
+  rb_define_method(rb_klass, "frame_count", RUBY_METHOD_FUNC(rb_get_frame_count), 0);
+  rb_define_method(rb_klass, "format", RUBY_METHOD_FUNC(rb_get_format), 0);
+  rb_define_method(rb_klass, "mode", RUBY_METHOD_FUNC(rb_get_mode), 0);
+  rb_define_method(rb_klass, "brightness", RUBY_METHOD_FUNC(rb_get_brightness), 0);
+  rb_define_method(rb_klass, "contrast", RUBY_METHOD_FUNC(rb_get_contrast), 0);
+  rb_define_method(rb_klass, "saturation", RUBY_METHOD_FUNC(rb_get_saturation), 0);
+  rb_define_method(rb_klass, "hue", RUBY_METHOD_FUNC(rb_get_hue), 0);
+  rb_define_method(rb_klass, "gain", RUBY_METHOD_FUNC(rb_get_gain), 0);
+  rb_define_method(rb_klass, "exposure", RUBY_METHOD_FUNC(rb_get_exposure), 0);
+  rb_define_method(rb_klass, "convert_rgb", RUBY_METHOD_FUNC(rb_get_convert_rgb), 0);
+  rb_define_method(rb_klass, "rectification", RUBY_METHOD_FUNC(rb_get_rectification), 0);
 }
 
 __NAMESPACE_END_CVCAPTURE

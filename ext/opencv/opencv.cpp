@@ -657,7 +657,7 @@ extern "C" {
     mOpenCV::cCvScalar::define_ruby_class();
     mOpenCV::cCvSlice::define_ruby_class();
     mOpenCV::cCvTermCriteria::define_ruby_class();
-    mOpenCV::cCvBox2D::define_ruby_class();
+    mOpenCV::cCvBox2D::init_ruby_class();
     mOpenCV::cCvFont::define_ruby_class();
     mOpenCV::cIplConvKernel::define_ruby_class();
     mOpenCV::cCvMoments::define_ruby_class();
@@ -670,10 +670,10 @@ extern "C" {
     mOpenCV::cCvMemStorage::define_ruby_class();
 
     mOpenCV::cCvSeq::define_ruby_class();
-    mOpenCV::mCurve::define_ruby_module();
+    mOpenCV::mCurve::init_ruby_module();
     mOpenCV::mPointSet::define_ruby_module();
-    mOpenCV::cCvChain::define_ruby_class();
-    mOpenCV::cCvContour::define_ruby_class();
+    mOpenCV::cCvChain::init_ruby_class();
+    mOpenCV::cCvContour::init_ruby_class();
     mOpenCV::cCvContourTree::init_ruby_class();
 
     mOpenCV::cCvMat::define_ruby_class();
@@ -681,18 +681,18 @@ extern "C" {
     mOpenCV::cCvMatND::define_ruby_class();
     mOpenCV::cCvSparseMat::define_ruby_class();
     mOpenCV::cCvHistogram::define_ruby_class();
-    mOpenCV::cCvCapture::define_ruby_class();
+    mOpenCV::cCvCapture::init_ruby_class();
     mOpenCV::cCvVideoWriter::define_ruby_class();
 
     mOpenCV::cCvLine::define_ruby_class();
     mOpenCV::cCvTwoPoints::define_ruby_class();
-    mOpenCV::cCvCircle32f::define_ruby_class();
+    mOpenCV::cCvCircle32f::init_ruby_class();
 
     mOpenCV::cCvConDensation::define_ruby_class();
     mOpenCV::cCvFeatureTree::define_ruby_class();
 
-    mOpenCV::cCvConnectedComp::define_ruby_class();
-    mOpenCV::cCvAvgComp::define_ruby_class();
+    mOpenCV::cCvConnectedComp::init_ruby_class();
+    mOpenCV::cCvAvgComp::init_ruby_class();
     mOpenCV::cCvHaarClassifierCascade::define_ruby_class();
     mOpenCV::mGUI::define_ruby_module();
     mOpenCV::mGUI::cWindow::define_ruby_class();
