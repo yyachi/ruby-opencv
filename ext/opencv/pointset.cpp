@@ -145,17 +145,14 @@ rb_convexity_defects(VALUE self, VALUE hull)
 {
   CvSeq *defects = NULL;
   CvSeq *hull_seq = CVSEQ_WITH_CHECK(hull);
-  CvMemStorage *stg = hull_seq->storage;
+  VALUE storage = cCvMemStorage::new_object();
+  CvMemStorage *storage_ptr = CVMEMSTORAGE(storage);
   try {
-    defects = cvConvexityDefects(CVSEQ(self), hull_seq, stg);
+    defects = cvConvexityDefects(CVSEQ(self), hull_seq, storage_ptr);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  // FIXME: This storage is shared with the argument "hull".
-  // This causes a severe problem that when "hull"'s memory is collected by GC, "defects"'s storage is
-  // also collected.
-  VALUE storage = Data_Wrap_Struct(cCvMemStorage::rb_class(), 0, cCvMemStorage::cvmemstorage_free, stg);
   return cCvSeq::new_sequence(cCvSeq::rb_class(), defects, cCvConvexityDefect::rb_class(), storage);
 }
 
