@@ -1,41 +1,47 @@
 #!/usr/bin/env ruby
 # convexhull.rb
+# Draw contours and convexity defect points to captured image
 require "rubygems"
 require "opencv"
-require "pp"
 include OpenCV
 
 window = GUI::Window.new("convexhull")
-pp CvCapture::INTERFACE
 capture = CvCapture::open
 
-accuracy = 0.1
-t = window.set_trackbar("accuracy", 100, 1){|v|
-  accuracy = 0.1 * v
+accuracy = 1
+t = window.set_trackbar("accuracy", 10, 1) { |v|
+  accuracy = v
 }
 
-while true
-  key = GUI::wait_key(1)
-  image = capture.query
-  gray = image.BGR2GRAY
-  bin = gray.threshold_binary(0x44, 0xFF)
-  contours = bin.find_contours  
-  while contours    
-    image.poly_line! contours.approx(:accuracy => accuracy), :color => CvScalar::Red
-    contours.convexity_defects.each{|cd|
-      image.circle! cd.start, 1, :color => CvScalar::Blue
-      image.circle! cd.end, 1, :color => CvScalar::Blue
-      image.circle! cd.depth_point, 1, :color => CvScalar::Blue
-    }
+circle_options = { :color => CvColor::Blue, :line_type => :aa, :thickness => -1 }
 
+loop do
+  image = capture.query
+
+  # Calculate contours from a binary image
+  gray = image.BGR2GRAY
+  bin = gray.threshold(0x44, 0xFF, :binary)
+  contours = bin.find_contours
+
+  while contours
+    # Draw contours
+    poly = contours.approx(:accuracy => accuracy)
+    begin
+      image.draw_contours!(poly, CvColor::Red, CvColor::Black, 2,
+                           :thickness => 2, :line_type => :aa)
+    end while (poly = poly.h_next)
+
+    # Draw convexity defects
+    hull = contours.convex_hull2(true, false)
+    contours.convexity_defects(hull).each { |cd|
+      image.circle!(cd.start, 3, circle_options)
+      image.circle!(cd.depth_point, 3, circle_options)
+      image.circle!(cd.end, 3, circle_options)
+    }
     contours = contours.h_next
   end
-  #pts = gray.good_features_to_track(0.01, 10)
-  #puts pts.length
-  window.show image  
-  next unless key
-  case key.chr
-  when "\e"
-    exit
-  end
+
+  window.show image
+  exit if GUI::wait_key(1)
 end
+
