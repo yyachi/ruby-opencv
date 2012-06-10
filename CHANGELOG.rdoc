@@ -1,0 +1,14 @@
+=== 0.0.6 / 2012-01-19 00:15
+
+* Improved gem layout
+
+  * moved extconf.rb to ext/opencv/extconf.rb
+  * moved ext/opencv/lib to root dir
+
+* Cleaned Rakefile
+
+=== 0.0.6 / 2008-06-27
+
+* First gem release.
+
+  * Some OpenCV function wrapped.

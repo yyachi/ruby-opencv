@@ -14,16 +14,17 @@ require "mkmf"
 dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 dir_config("libxml2", "/usr/include", "/usr/lib")
 
-opencv_headers = ["opencv2/core/core_c.h", "opencv2/core/core.hpp", "opencv2/imgproc/imgproc_c.h",
-                  "opencv2/imgproc/imgproc.hpp", "opencv2/video/tracking.hpp", "opencv2/features2d/features2d.hpp",
-                  "opencv2/flann/flann.hpp", "opencv2/calib3d/calib3d.hpp", "opencv2/objdetect/objdetect.hpp",
-                  "opencv2/legacy/compat.hpp", "opencv2/legacy/legacy.hpp", "opencv2/highgui/highgui_c.h",
-                  "opencv2/highgui/highgui.hpp", "opencv2/photo/photo.hpp", "opencv2/nonfree/nonfree.hpp"]
+opencv_headers = %w(opencv2/core/core_c.h       opencv2/core/core.hpp       opencv2/imgproc/imgproc_c.h
+                    opencv2/imgproc/imgproc.hpp opencv2/video/tracking.hpp  opencv2/features2d/features2d.hpp
+                    opencv2/flann/flann.hpp     opencv2/calib3d/calib3d.hpp opencv2/objdetect/objdetect.hpp
+                    opencv2/legacy/compat.hpp   opencv2/legacy/legacy.hpp   opencv2/highgui/highgui_c.h
+                    opencv2/highgui/highgui.hpp opencv2/photo/photo.hpp     opencv2/nonfree/nonfree.hpp)
 
-opencv_libraries = ["opencv_calib3d", "opencv_contrib", "opencv_core", "opencv_features2d",
-                    "opencv_flann", "opencv_gpu", "opencv_highgui", "opencv_imgproc",
-                    "opencv_legacy", "opencv_ml", "opencv_objdetect", "opencv_video",
-                    "opencv_photo", "opencv_nonfree"]
+
+opencv_libraries = %w(opencv_calib3d  opencv_contrib  opencv_core       opencv_features2d
+                      opencv_flann    opencv_gpu      opencv_highgui    opencv_imgproc
+                      opencv_legacy   opencv_ml       opencv_objdetect  opencv_video
+                      opencv_photo    opencv_nonfree)
 
 
 puts ">> Check the required libraries..."
@@ -61,5 +62,5 @@ have_header("stdarg.h")
 $CFLAGS << " -I#{File.dirname(__FILE__)}/ext/opencv"
 
 # Create Makefile
-create_makefile("opencv", "./ext/opencv")
+create_makefile("opencv/opencv")
 
