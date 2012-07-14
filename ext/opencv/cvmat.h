@@ -244,6 +244,8 @@ VALUE new_object(CvSize size, int type);
 VALUE new_mat_kind_object(CvSize size, VALUE ref_obj);
 VALUE new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel);
 
+CvMat* prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release);
+
 __NAMESPACE_END_CVMAT
 
 inline CvMat*

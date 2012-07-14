@@ -537,31 +537,21 @@ rb_encode_imageM(int argc, VALUE *argv, VALUE self)
   return array;
 }
 
-/*
- * call-seq:
- *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
- *
- * Reads an image from a buffer in memory.
- *
- * Parameters:
- *   buf <CvMat, Array> - Input array
- *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
- */
-VALUE
-rb_decode_imageM(int argc, VALUE *argv, VALUE self)
+CvMat*
+prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release)
 {
   VALUE _buff, _iscolor;
   rb_scan_args(argc, argv, "11", &_buff, &_iscolor);
-  int iscolor = NIL_P(_iscolor) ? CV_LOAD_IMAGE_COLOR : NUM2INT(_iscolor);
+  *iscolor = NIL_P(_iscolor) ? CV_LOAD_IMAGE_COLOR : NUM2INT(_iscolor);
 
   CvMat* buff = NULL;
-  int need_release = 0;
+  *need_release = 0;
   switch (TYPE(_buff)) {
   case T_STRING:
     _buff = rb_funcall(_buff, rb_intern("unpack"), 1, rb_str_new("c*", 2));
   case T_ARRAY: {
     int cols = RARRAY_LEN(_buff);
-    need_release = 1;
+    *need_release = 1;
     try {
       buff = rb_cvCreateMat(1, cols, CV_8UC1);
       VALUE *ary_ptr = RARRAY_PTR(_buff);
@@ -583,6 +573,24 @@ rb_decode_imageM(int argc, VALUE *argv, VALUE self)
     raise_typeerror(_buff, "CvMat, Array or String");
   }
 
+  return buff;
+}
+
+/*
+ * call-seq:
+ *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
+ *
+ * Reads an image from a buffer in memory.
+ *
+ * Parameters:
+ *   buf <CvMat, Array> - Input array
+ *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ */
+VALUE
+rb_decode_imageM(int argc, VALUE *argv, VALUE self)
+{
+  int iscolor, need_release;
+  CvMat* buff = prepare_decoding(argc, argv, &iscolor, &need_release);
   CvMat* mat_ptr = NULL;
   try {
     mat_ptr = cvDecodeImageM(buff, iscolor);

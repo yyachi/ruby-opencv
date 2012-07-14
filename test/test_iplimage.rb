@@ -68,6 +68,56 @@ class TestIplImage < OpenCVTestCase
     }
   end
 
+  def test_decode
+    data = nil
+    open(FILENAME_CAT, 'rb') { |f|
+      data = f.read
+    }
+    data_ary = data.unpack("c*")
+    data_mat = CvMat.new(1, data_ary.size).set_data(data_ary)
+    expected = IplImage.load(FILENAME_CAT)
+
+    img1 = IplImage.decode(data)
+    img2 = IplImage.decode(data_ary)
+    img3 = IplImage.decode(data_mat)
+    img4 = IplImage.decode(data, CV_LOAD_IMAGE_COLOR)
+    img5 = IplImage.decode(data_ary, CV_LOAD_IMAGE_COLOR)
+    img6 = IplImage.decode(data_mat, CV_LOAD_IMAGE_COLOR)
+    expected_hash = hash_img(expected)
+
+    [img1, img2, img3, img4, img5, img6].each { |img|
+      assert_equal(IplImage, img.class)
+      assert_equal(expected.rows, img.rows)
+      assert_equal(expected.cols, img.cols)
+      assert_equal(expected.channel, img.channel)
+      assert_equal(expected_hash, hash_img(img))
+    }
+
+    expected_c1 = IplImage.load(FILENAME_CAT, CV_LOAD_IMAGE_GRAYSCALE)
+    img1c1 = IplImage.decode(data, CV_LOAD_IMAGE_GRAYSCALE)
+    img2c1 = IplImage.decode(data_ary, CV_LOAD_IMAGE_GRAYSCALE)
+    img3c1 = IplImage.decode(data_mat, CV_LOAD_IMAGE_GRAYSCALE)
+    expected_hash_c1 = hash_img(expected_c1)
+
+    [img1c1, img2c1, img3c1].each { |img|
+      assert_equal(IplImage, img.class)
+      assert_equal(expected_c1.rows, img.rows)
+      assert_equal(expected_c1.cols, img.cols)
+      assert_equal(expected_c1.channel, img.channel)
+      assert_equal(expected_hash_c1, hash_img(img))
+    }
+
+    assert_raise(TypeError) {
+      IplImage.decode(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      IplImage.decode(data, DUMMY_OBJ)
+    }
+
+    # Uncomment the following line to show the result images
+    # snap img1, img2, img3
+  end
+
   def test_roi
     img = IplImage.new(20, 30)
     rect = img.roi
