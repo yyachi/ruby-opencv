@@ -564,8 +564,9 @@ rb_decode_imageM(int argc, VALUE *argv, VALUE self)
     need_release = 1;
     try {
       buff = rb_cvCreateMat(1, cols, CV_8UC1);
+      VALUE *ary_ptr = RARRAY_PTR(_buff);
       for (int i = 0; i < cols; i++) {
-	CV_MAT_ELEM(*buff, char, 0, i) = NUM2CHR(RARRAY_PTR(_buff)[i]);
+	CV_MAT_ELEM(*buff, char, 0, i) = NUM2CHR(ary_ptr[i]);
       }
     }
     catch (cv::Exception& e) {
@@ -585,7 +586,6 @@ rb_decode_imageM(int argc, VALUE *argv, VALUE self)
   CvMat* mat_ptr = NULL;
   try {
     mat_ptr = cvDecodeImageM(buff, iscolor);
-    // mat = cvDecodeImage();
     if (need_release) {
       cvReleaseMat(&buff);
     }
