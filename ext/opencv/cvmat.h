@@ -27,6 +27,7 @@ VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_load_imageM(int argc, VALUE *argv, VALUE self);
 VALUE rb_encode_imageM(int argc, VALUE *argv, VALUE self);
+VALUE rb_decode_imageM(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_method_missing(int argc, VALUE *argv, VALUE self);
 VALUE rb_to_s(VALUE self);

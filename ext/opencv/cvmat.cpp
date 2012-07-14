@@ -386,6 +386,8 @@ void define_ruby_class()
 
   rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
   rb_define_alias(rb_klass, "encode", "encode_image");
+  rb_define_singleton_method(rb_klass, "decode_image", RUBY_METHOD_FUNC(rb_decode_imageM), -1);
+  rb_define_alias(rb_singleton_class(rb_klass), "decode", "decode_image");
 }
 
 
@@ -533,6 +535,66 @@ rb_encode_imageM(int argc, VALUE *argv, VALUE self)
   }
 
   return array;
+}
+
+/*
+ * call-seq:
+ *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
+ *
+ * Reads an image from a buffer in memory.
+ *
+ * Parameters:
+ *   buf <CvMat, Array> - Input array
+ *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ */
+VALUE
+rb_decode_imageM(int argc, VALUE *argv, VALUE self)
+{
+  VALUE _buff, _iscolor;
+  rb_scan_args(argc, argv, "11", &_buff, &_iscolor);
+  int iscolor = NIL_P(_iscolor) ? CV_LOAD_IMAGE_COLOR : NUM2INT(_iscolor);
+
+  CvMat* buff = NULL;
+  int need_release = 0;
+  switch (TYPE(_buff)) {
+  case T_STRING:
+    _buff = rb_funcall(_buff, rb_intern("unpack"), 1, rb_str_new("c*", 2));
+  case T_ARRAY: {
+    int cols = RARRAY_LEN(_buff);
+    need_release = 1;
+    try {
+      buff = rb_cvCreateMat(1, cols, CV_8UC1);
+      for (int i = 0; i < cols; i++) {
+	CV_MAT_ELEM(*buff, char, 0, i) = NUM2CHR(RARRAY_PTR(_buff)[i]);
+      }
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
+    break;
+  }
+  case T_DATA:
+    if (rb_obj_is_kind_of(_buff, cCvMat::rb_class()) == Qtrue) {
+      buff = CVMAT(_buff);
+      break;
+    }
+  default:
+    raise_typeerror(_buff, "CvMat, Array or String");
+  }
+
+  CvMat* mat_ptr = NULL;
+  try {
+    mat_ptr = cvDecodeImageM(buff, iscolor);
+    // mat = cvDecodeImage();
+    if (need_release) {
+      cvReleaseMat(&buff);
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return OPENCV_OBJECT(rb_klass, mat_ptr);
 }
 
 /*
