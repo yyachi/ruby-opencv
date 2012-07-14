@@ -513,7 +513,7 @@ rb_encode_imageM(int argc, VALUE *argv, VALUE self)
   }
 
   try {
-    buff = cvEncodeImage(ext, CVMAT(self), params);
+    buff = cvEncodeImage(ext, CVARR(self), params);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
