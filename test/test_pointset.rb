@@ -71,13 +71,24 @@ class TestPointSet < OpenCVTestCase
   end
 
   def test_convexity_defects
-    flunk('FIXME: Currently PointSet#convexity_defects does not work well.')
     hull = @contour1.convex_hull2(true, false)
     defects = @contour1.convexity_defects(hull)
-    puts defects.class
-    puts defects[0].start.to_a.join(', ')
     assert_equal(CvSeq, defects.class)
     assert_equal(CvConvexityDefect, defects[0].class)
+    assert_equal(32, defects.size)
+
+    d = defects[0]
+    assert_equal(33, d.start.x)
+    assert_equal(57, d.start.y)
+    assert_equal(33, d.depth_point.x)
+    assert_equal(63, d.depth_point.y)
+    assert_equal(32, d.end.x)
+    assert_equal(64, d.end.y)
+    assert_in_delta(0.8485, d.depth, 0.001)
+
+    assert_raise(TypeError) {
+      @contour1.convexity_defects(DUMMY_OBJ)
+    }
   end
 
   def test_min_area_rect2

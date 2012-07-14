@@ -103,6 +103,88 @@ class TestCvMat < OpenCVTestCase
     File.delete filename
   end
 
+  def test_encode
+    mat = CvMat.load(FILENAME_CAT);
+
+    jpg = mat.encode('.jpg')
+    assert_equal('JFIF', jpg[6, 4].map(&:chr).join) # Is jpeg format?
+
+    jpg = mat.encode('.jpg', CV_IMWRITE_JPEG_QUALITY => 10)
+    assert_equal('JFIF', jpg[6, 4].map(&:chr).join)
+
+    png = mat.encode('.png')
+    assert_equal('PNG', png[1, 3].map(&:chr).join) # Is png format?
+
+    png = mat.encode('.png', CV_IMWRITE_PNG_COMPRESSION => 9)
+    assert_equal('PNG', png[1, 3].map(&:chr).join)
+
+    assert_raise(TypeError) {
+      mat.encode(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat.encode('.jpg', DUMMY_OBJ)
+    }
+
+    # Uncomment the following lines to see the result images
+    #
+    # open('test-jpeg.jpg', 'wb') { |f|
+    #   f.write jpg.pack("c*")
+    # }
+    # open('test-png.png', 'wb') { |f|
+    #   f.write png.pack("c*")
+    # }
+  end
+
+  def test_decode
+    data = nil
+    open(FILENAME_CAT, 'rb') { |f|
+      data = f.read
+    }
+    data_ary = data.unpack("c*")
+    data_mat = CvMat.new(1, data_ary.size).set_data(data_ary)
+    expected = CvMat.load(FILENAME_CAT)
+
+    mat1 = CvMat.decode(data)
+    mat2 = CvMat.decode(data_ary)
+    mat3 = CvMat.decode(data_mat)
+    mat4 = CvMat.decode(data, CV_LOAD_IMAGE_COLOR)
+    mat5 = CvMat.decode(data_ary, CV_LOAD_IMAGE_COLOR)
+    mat6 = CvMat.decode(data_mat, CV_LOAD_IMAGE_COLOR)
+    expected_hash = hash_img(expected)
+
+    [mat1, mat2, mat3, mat4, mat5, mat6].each { |mat|
+      assert_equal(CvMat, mat.class)
+      assert_equal(expected.rows, mat.rows)
+      assert_equal(expected.cols, mat.cols)
+      assert_equal(expected.channel, mat.channel)
+      assert_equal(expected_hash, hash_img(mat))
+    }
+
+    expected_c1 = CvMat.load(FILENAME_CAT, CV_LOAD_IMAGE_GRAYSCALE)
+    mat1c1 = CvMat.decode(data, CV_LOAD_IMAGE_GRAYSCALE)
+    mat2c1 = CvMat.decode(data_ary, CV_LOAD_IMAGE_GRAYSCALE)
+    mat3c1 = CvMat.decode(data_mat, CV_LOAD_IMAGE_GRAYSCALE)
+    expected_hash_c1 = hash_img(expected_c1)
+
+    [mat1c1, mat2c1, mat3c1].each { |mat|
+      assert_equal(CvMat, mat.class)
+      assert_equal(expected_c1.rows, mat.rows)
+      assert_equal(expected_c1.cols, mat.cols)
+      assert_equal(expected_c1.channel, mat.channel)
+      assert_equal(expected_hash_c1, hash_img(mat))
+    }
+
+    assert_raise(TypeError) {
+      CvMat.decode(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      CvMat.decode(data, DUMMY_OBJ)
+    }
+
+    # Uncomment the following line to show the result images
+    # snap mat1, mat2, mat3
+  end
+
   def test_GOOD_FEATURES_TO_TRACK_OPTION
     assert_equal(0xff, CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:max])
     assert_nil(CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:mask])

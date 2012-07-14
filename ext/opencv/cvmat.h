@@ -26,6 +26,8 @@ void define_ruby_class();
 VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 VALUE rb_load_imageM(int argc, VALUE *argv, VALUE self);
+VALUE rb_encode_imageM(int argc, VALUE *argv, VALUE self);
+VALUE rb_decode_imageM(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_method_missing(int argc, VALUE *argv, VALUE self);
 VALUE rb_to_s(VALUE self);
@@ -241,6 +243,8 @@ VALUE new_object(int rows, int cols, int type);
 VALUE new_object(CvSize size, int type);
 VALUE new_mat_kind_object(CvSize size, VALUE ref_obj);
 VALUE new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel);
+
+CvMat* prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release);
 
 __NAMESPACE_END_CVMAT
 

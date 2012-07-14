@@ -383,6 +383,11 @@ void define_ruby_class()
 
   rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
   rb_define_alias(rb_klass, "save", "save_image");
+
+  rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
+  rb_define_alias(rb_klass, "encode", "encode_image");
+  rb_define_singleton_method(rb_klass, "decode_image", RUBY_METHOD_FUNC(rb_decode_imageM), -1);
+  rb_define_alias(rb_singleton_class(rb_klass), "decode", "decode_image");
 }
 
 
@@ -461,6 +466,143 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eStandardError, "file does not exist or invalid format image.");
   }
   return OPENCV_OBJECT(rb_klass, mat);
+}
+
+/*
+ * call-seq:
+ *   encode_image(ext [,params]) -> Array<Integer>
+ *
+ * Encodes an image into a memory buffer.
+ *
+ * Parameters:
+ *   ext <String> - File extension that defines the output format ('.jpg', '.png', ...)
+ *   params <Hash> - Format-specific parameters.
+ */
+VALUE
+rb_encode_imageM(int argc, VALUE *argv, VALUE self)
+{
+  VALUE _ext, _params;
+  rb_scan_args(argc, argv, "11", &_ext, &_params);
+  Check_Type(_ext, T_STRING);
+  const char* ext = RSTRING_PTR(_ext);
+  CvMat* buff = NULL;
+  int* params = NULL;
+
+  if (!NIL_P(_params)) {
+    Check_Type(_params, T_HASH);
+    const int flags[] = {
+      CV_IMWRITE_JPEG_QUALITY,
+      CV_IMWRITE_PNG_COMPRESSION,
+      CV_IMWRITE_PNG_STRATEGY,
+      CV_IMWRITE_PNG_STRATEGY_DEFAULT,
+      CV_IMWRITE_PNG_STRATEGY_FILTERED,
+      CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
+      CV_IMWRITE_PNG_STRATEGY_RLE,
+      CV_IMWRITE_PNG_STRATEGY_FIXED,
+      CV_IMWRITE_PXM_BINARY
+    };
+    const int flag_size = sizeof(flags) / sizeof(int);
+
+    params = ALLOCA_N(int, RHASH_SIZE(_params) * 2);
+    for (int i = 0, n = 0; i < flag_size; i++) {
+      VALUE val = rb_hash_lookup(_params, INT2FIX(flags[i]));
+      if (!NIL_P(val)) {
+	params[n] = flags[i];
+	params[n + 1] = NUM2INT(val);
+	n += 2;
+      }
+    }
+  }
+
+  try {
+    buff = cvEncodeImage(ext, CVARR(self), params);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  const int size = buff->rows * buff->cols;
+  VALUE array = rb_ary_new2(size);
+  for (int i = 0; i < size; i++) {
+    rb_ary_store(array, i, CHR2FIX(CV_MAT_ELEM(*buff, char, 0, i)));
+  }
+
+  try {
+    cvReleaseMat(&buff);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return array;
+}
+
+CvMat*
+prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release)
+{
+  VALUE _buff, _iscolor;
+  rb_scan_args(argc, argv, "11", &_buff, &_iscolor);
+  *iscolor = NIL_P(_iscolor) ? CV_LOAD_IMAGE_COLOR : NUM2INT(_iscolor);
+
+  CvMat* buff = NULL;
+  *need_release = 0;
+  switch (TYPE(_buff)) {
+  case T_STRING:
+    _buff = rb_funcall(_buff, rb_intern("unpack"), 1, rb_str_new("c*", 2));
+  case T_ARRAY: {
+    int cols = RARRAY_LEN(_buff);
+    *need_release = 1;
+    try {
+      buff = rb_cvCreateMat(1, cols, CV_8UC1);
+      VALUE *ary_ptr = RARRAY_PTR(_buff);
+      for (int i = 0; i < cols; i++) {
+	CV_MAT_ELEM(*buff, char, 0, i) = NUM2CHR(ary_ptr[i]);
+      }
+    }
+    catch (cv::Exception& e) {
+      raise_cverror(e);
+    }
+    break;
+  }
+  case T_DATA:
+    if (rb_obj_is_kind_of(_buff, cCvMat::rb_class()) == Qtrue) {
+      buff = CVMAT(_buff);
+      break;
+    }
+  default:
+    raise_typeerror(_buff, "CvMat, Array or String");
+  }
+
+  return buff;
+}
+
+/*
+ * call-seq:
+ *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
+ *
+ * Reads an image from a buffer in memory.
+ *
+ * Parameters:
+ *   buf <CvMat, Array, String> - Input array
+ *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ */
+VALUE
+rb_decode_imageM(int argc, VALUE *argv, VALUE self)
+{
+  int iscolor, need_release;
+  CvMat* buff = prepare_decoding(argc, argv, &iscolor, &need_release);
+  CvMat* mat_ptr = NULL;
+  try {
+    mat_ptr = cvDecodeImageM(buff, iscolor);
+    if (need_release) {
+      cvReleaseMat(&buff);
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return OPENCV_OBJECT(rb_klass, mat_ptr);
 }
 
 /*

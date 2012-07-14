@@ -188,6 +188,17 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_LOAD_IMAGE_ANYDEPTH", INT2FIX(CV_LOAD_IMAGE_ANYDEPTH));
   rb_define_const(rb_module, "CV_LOAD_IMAGE_ANYCOLOR", INT2FIX(CV_LOAD_IMAGE_ANYCOLOR));
 
+  /* Format-specific save parameters */
+  rb_define_const(rb_module, "CV_IMWRITE_JPEG_QUALITY", INT2FIX(CV_IMWRITE_JPEG_QUALITY));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_COMPRESSION", INT2FIX(CV_IMWRITE_PNG_COMPRESSION));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY", INT2FIX(CV_IMWRITE_PNG_STRATEGY));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY_DEFAULT", INT2FIX(CV_IMWRITE_PNG_STRATEGY_DEFAULT));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY_FILTERED", INT2FIX(CV_IMWRITE_PNG_STRATEGY_FILTERED));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY", INT2FIX(CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY_RLE", INT2FIX(CV_IMWRITE_PNG_STRATEGY_RLE));
+  rb_define_const(rb_module, "CV_IMWRITE_PNG_STRATEGY_FIXED", INT2FIX(CV_IMWRITE_PNG_STRATEGY_FIXED));
+  rb_define_const(rb_module, "CV_IMWRITE_PXM_BINARY", INT2FIX(CV_IMWRITE_PXM_BINARY));
+
   /* Types of morphological operations */
   rb_define_const(rb_module, "CV_MOP_OPEN", INT2FIX(CV_MOP_OPEN));
   rb_define_const(rb_module, "CV_MOP_CLOSE", INT2FIX(CV_MOP_CLOSE));
@@ -625,7 +636,8 @@ CREATE_CVTCOLOR_FUNC(rb_HLS2RGB, CV_HLS2RGB, 3, 3);
 VALUE
 rb_build_information(VALUE klass)
 {
-  return rb_str_new_cstr(cv::getBuildInformation().c_str());
+  const char* ptr = cv::getBuildInformation().c_str();
+  return rb_str_new(ptr, strlen(ptr));
 }
 
 

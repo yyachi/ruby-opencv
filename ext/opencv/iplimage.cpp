@@ -62,6 +62,9 @@ define_ruby_class()
   rb_define_method(rb_klass, "reset_coi", RUBY_METHOD_FUNC(rb_reset_coi), 0); 
 
   rb_define_method(rb_klass, "smoothness", RUBY_METHOD_FUNC(rb_smoothness), -1);
+
+  rb_define_singleton_method(rb_klass, "decode_image", RUBY_METHOD_FUNC(rb_decode_image), -1);
+  rb_define_alias(rb_singleton_class(rb_klass), "decode", "decode_image");
 }
 
 VALUE
@@ -131,6 +134,35 @@ rb_load_image(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eStandardError, "file does not exist or invalid format image.");
   }
   return OPENCV_OBJECT(rb_klass, image);
+}
+
+/*
+ * call-seq:
+ *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> IplImage
+ *
+ * Reads an image from a buffer in memory.
+ *
+ * Parameters:
+ *   buf <CvMat, Array, String> - Input array
+ *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ */
+VALUE
+rb_decode_image(int argc, VALUE *argv, VALUE self)
+{
+  int iscolor, need_release;
+  CvMat* buff = cCvMat::prepare_decoding(argc, argv, &iscolor, &need_release);
+  IplImage* img_ptr = NULL;
+  try {
+    img_ptr = cvDecodeImage(buff, iscolor);
+    if (need_release) {
+      cvReleaseMat(&buff);
+    }
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return OPENCV_OBJECT(rb_klass, img_ptr);
 }
 
 /*

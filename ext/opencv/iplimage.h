@@ -26,6 +26,7 @@ VALUE rb_allocate(VALUE klass);
 VALUE rb_initialize(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_load_image(int argc, VALUE *argv, VALUE self);
+VALUE rb_decode_image(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_color_model(VALUE self);
 
