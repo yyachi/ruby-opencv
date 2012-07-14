@@ -103,6 +103,38 @@ class TestCvMat < OpenCVTestCase
     File.delete filename
   end
 
+  def test_encode
+    mat = CvMat.load(FILENAME_CAT);
+
+    jpg = mat.encode('.jpg')
+    assert_equal('JFIF', jpg[6, 4].map(&:chr).join) # Is jpeg format?
+
+    jpg = mat.encode('.jpg', CV_IMWRITE_JPEG_QUALITY => 10)
+    assert_equal('JFIF', jpg[6, 4].map(&:chr).join)
+
+    png = mat.encode('.png')
+    assert_equal('PNG', png[1, 3].map(&:chr).join) # Is png format?
+
+    png = mat.encode('.png', CV_IMWRITE_PNG_COMPRESSION => 9)
+    assert_equal('PNG', png[1, 3].map(&:chr).join)
+
+    assert_raise(TypeError) {
+      mat.encode(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat.encode('.jpg', DUMMY_OBJ)
+    }
+
+    # Uncomment the following lines to see the result images
+    #
+    # open('test-jpeg.jpg', 'wb') { |f|
+    #   f.write jpg.pack("c*")
+    # }
+    # open('test-png.png', 'wb') { |f|
+    #   f.write png.pack("c*")
+    # }
+  end
+
   def test_GOOD_FEATURES_TO_TRACK_OPTION
     assert_equal(0xff, CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:max])
     assert_nil(CvMat::GOOD_FEATURES_TO_TRACK_OPTION[:mask])
