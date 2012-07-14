@@ -28,7 +28,7 @@ opencv_libraries = ["opencv_calib3d", "opencv_contrib", "opencv_core", "opencv_f
 
 puts ">> Check the required libraries..."
 
-OPENCV_VERSION_SUFFIX = '240'
+OPENCV_VERSION_SUFFIX = '242'
 case CONFIG["arch"]
 when /mswin32/
   opencv_libraries.map! {|lib| lib + OPENCV_VERSION_SUFFIX }

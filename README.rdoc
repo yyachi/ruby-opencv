@@ -14,7 +14,7 @@ OpenCV wrapper for Ruby
 == FEATURES/PROBLEMS:
 
 * Some OpenCV functions are wrapped.
-* Ruby 1.8.7, 1.9.3 and OpenCV 2.4.0 are supported.
+* Ruby 1.8.7, 1.9.3 and OpenCV 2.4.2 are supported.
 
 == DEPENDENCIES:
 
@@ -78,7 +78,7 @@ To use pre-built OpenCV libraries, set the following option to extconf.rb.
 
 For example, if you install OpenCV library to */opt/local/* like:
 
-  $ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/opt/local/ ./OpenCV-2.4.0
+  $ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/opt/local/ ./OpenCV-2.4.2
   $ make
   $ make install
 
