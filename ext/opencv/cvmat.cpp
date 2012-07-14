@@ -583,7 +583,7 @@ prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release)
  * Reads an image from a buffer in memory.
  *
  * Parameters:
- *   buf <CvMat, Array> - Input array
+ *   buf <CvMat, Array, String> - Input array
  *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
  */
 VALUE

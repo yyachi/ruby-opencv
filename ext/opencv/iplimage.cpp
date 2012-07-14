@@ -138,7 +138,7 @@ rb_load_image(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
+ *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> IplImage
  *
  * Reads an image from a buffer in memory.
  *
