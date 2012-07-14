@@ -636,7 +636,8 @@ CREATE_CVTCOLOR_FUNC(rb_HLS2RGB, CV_HLS2RGB, 3, 3);
 VALUE
 rb_build_information(VALUE klass)
 {
-  return rb_str_new_cstr(cv::getBuildInformation().c_str());
+  const char* ptr = cv::getBuildInformation().c_str();
+  return rb_str_new(ptr, strlen(ptr));
 }
 
 
