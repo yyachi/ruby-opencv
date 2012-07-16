@@ -11,7 +11,7 @@ VC : ruby extconf.rb
 =end
 require "mkmf"
 
-dir_config("opencv", "/usr/local/include", "/usr/local/lib")
+incdir, libdir = dir_config("opencv", "/usr/local/include", "/usr/local/lib")
 dir_config("libxml2", "/usr/include", "/usr/lib")
 
 opencv_headers = ["opencv2/core/core_c.h", "opencv2/core/core.hpp", "opencv2/imgproc/imgproc_c.h",
@@ -53,7 +53,15 @@ end
 # Check the required headers
 puts ">> Check the required headers..."
 opencv_headers.each {|header|
-  raise "#{header} not found." unless have_header(header)
+  unless have_header(header)
+    if CONFIG["arch"] =~ /mswin32/ and File.exists? "#{incdir}/#{header}"
+      # In mswin32, have_header('opencv2/nonfree/nonfree.hpp') fails because of a syntax problem.
+      warn "warning: #{header} found but `have_header` failed."
+      $defs << "-DHAVE_#{header.tr_cpp}"
+    else
+      raise "#{header} not found."
+    end
+  end
 }
 have_header("stdarg.h")
 
