@@ -1,14 +1,4 @@
 #!/usr/bin/env ruby
-=begin
-create Makefile script for Ruby/OpenCV
-
-usage : ruby extconf.rb
-        make && make install
-
-VC : ruby extconf.rb
-     nmake
-	 nmake install
-=end
 require "mkmf"
 
 incdir, libdir = dir_config("opencv", "/usr/local/include", "/usr/local/lib")
