@@ -676,7 +676,7 @@ extern "C" {
     mOpenCV::cCvSlice::define_ruby_class();
     mOpenCV::cCvTermCriteria::define_ruby_class();
     mOpenCV::cCvBox2D::init_ruby_class();
-    mOpenCV::cCvFont::define_ruby_class();
+    mOpenCV::cCvFont::init_ruby_class();
     mOpenCV::cIplConvKernel::define_ruby_class();
     mOpenCV::cCvMoments::define_ruby_class();
     mOpenCV::cCvHuMoments::define_ruby_class();
