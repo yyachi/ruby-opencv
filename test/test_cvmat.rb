@@ -1968,6 +1968,52 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
+  def test_normalize
+    mat = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
+      CvScalar.new(c, 0, 0, 0)
+    }
+
+    m = mat.normalize
+    expected = [0.0, 0.267, 0.534, 0.801]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, m[i][0], 0.001)
+    }
+
+    minf = mat.normalize(1, 0, CV_NORM_INF)
+    expected = [0.0, 0.333, 0.666, 1.0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, minf[i][0], 0.001)
+    }
+
+    ml1 = mat.normalize(1, 0, CV_NORM_L1)
+    expected = [0.0, 0.166, 0.333, 0.5]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, ml1[i][0], 0.001)
+    }
+
+    ml2 = mat.normalize(1, 0, CV_NORM_L2)
+    expected = [0.0, 0.267, 0.534, 0.801]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, ml2[i][0], 0.001)
+    }
+
+    mminmax = mat.normalize(10, 5, CV_NORM_MINMAX)
+    expected = [5.0, 6.666, 8.333, 10.0]
+    expected.each_with_index { |x, i|
+      assert_in_delta(x, mminmax[i][0], 0.001)
+    }
+
+    assert_raise(TypeError) {
+      mat.normalize(DUMMY_OBJ, 0, CV_NORM_INF)
+    }
+    assert_raise(TypeError) {
+      mat.normalize(1, DUMMY_OBJ, CV_NORM_INF)
+    }
+    assert_raise(TypeError) {
+      mat.normalize(1, 0, DUMMY_OBJ)
+    }
+  end
+
   def test_count_non_zero
     m0 = create_cvmat(6, 4, :cv32f, 1) { |j, i, c|
       n = 0
