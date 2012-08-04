@@ -665,7 +665,7 @@ extern "C" {
 
     mOpenCV::define_ruby_module();
     
-    mOpenCV::cCvError::define_ruby_class();
+    mOpenCV::cCvError::init_ruby_class();
     mOpenCV::cCvPoint::define_ruby_class();
     mOpenCV::cCvPoint2D32f::define_ruby_class();
     mOpenCV::cCvPoint3D32f::define_ruby_class();
