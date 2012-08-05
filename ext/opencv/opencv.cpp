@@ -698,7 +698,7 @@ extern "C" {
     mOpenCV::cIplImage::define_ruby_class();
     mOpenCV::cCvMatND::define_ruby_class();
     mOpenCV::cCvSparseMat::define_ruby_class();
-    mOpenCV::cCvHistogram::define_ruby_class();
+    mOpenCV::cCvHistogram::init_ruby_class();
     mOpenCV::cCvCapture::init_ruby_class();
     mOpenCV::cCvVideoWriter::define_ruby_class();
 
