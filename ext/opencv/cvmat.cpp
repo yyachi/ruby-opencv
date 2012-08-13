@@ -5336,7 +5336,7 @@ rb_match_shapes(int argc, VALUE *argv, VALUE self)
  *   match_descriptors(<i>detector_type, descriptor_type, matcher_type, images</i>) -> Hash
  *
  * Matching descriptors detected on one image to descriptors detected in image set.
- * Returns a Hash contains match count of each image.
+ * Returns a Hash contains match count of each image index.
  *
  * <i>detector_type</i> is a string, options: "SURF"
  * <i>descriptor_type</i> is a string, options: "SURF"
@@ -5377,7 +5377,7 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
 
   VALUE _matches = rb_hash_new();
   for (size_t i=0; i<matches.size(); i++) {
-    VALUE match = RARRAY_PTR(images)[matches[i].imgIdx];
+    VALUE match = INT2FIX(matches[i].imgIdx);
     VALUE count = rb_hash_aref(_matches, match);
     if (NIL_P(count)) {
       count = INT2FIX(1);

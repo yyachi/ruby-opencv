@@ -11,6 +11,6 @@ images = image_files.map{|f| IplImage.load f, CV_LOAD_IMAGE_GRAYSCALE}
 
 matchs = query.match_descriptors("SURF", "SURF", "FlannBased", images)
 
-match, count = matchs.max_by {|image, count| count}
+match_index, count = matchs.max_by {|image_index, count| count}
 
-puts "max match: #{image_files[images.index(match)]}"
+puts "max match: #{image_files[match_index]}"
