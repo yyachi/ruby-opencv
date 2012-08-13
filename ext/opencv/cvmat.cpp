@@ -366,6 +366,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
   rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
   rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
+  rb_define_method(rb_klass, "match_descriptors", RUBY_METHOD_FUNC(rb_match_descriptors), -1);
 
   rb_define_method(rb_klass, "mean_shift", RUBY_METHOD_FUNC(rb_mean_shift), 2);
   rb_define_method(rb_klass, "cam_shift", RUBY_METHOD_FUNC(rb_cam_shift), 2);
@@ -5096,7 +5097,8 @@ rb_moments(int argc, VALUE *argv, VALUE self)
  *   hough_lines(<i>method, rho, theta, threshold, param1, param2</i>) -> cvseq(include CvLine or CvTwoPoints)
  *
  * Finds lines in binary image using a Hough transform.
- * * method –
+ * * method –
+
  * *   The Hough transform variant, one of the following:
  * *   - CV_HOUGH_STANDARD - classical or standard Hough transform.
  * *   - CV_HOUGH_PROBABILISTIC - probabilistic Hough transform (more efficient in case if picture contains a few long linear segments).
@@ -5104,12 +5106,14 @@ rb_moments(int argc, VALUE *argv, VALUE self)
  * * rho - Distance resolution in pixel-related units.
  * * theta - Angle resolution measured in radians.
  * * threshold - Threshold parameter. A line is returned by the function if the corresponding accumulator value is greater than threshold.
- * * param1 –
+ * * param1 –
+
  * *   The first method-dependent parameter:
  * *     For the classical Hough transform it is not used (0).
  * *     For the probabilistic Hough transform it is the minimum line length.
  * *     For the multi-scale Hough transform it is the divisor for the distance resolution . (The coarse distance resolution will be rho and the accurate resolution will be (rho / param1)).
- * * param2 –
+ * * param2 –
+
  * *   The second method-dependent parameter:
  * *     For the classical Hough transform it is not used (0).
  * *     For the probabilistic Hough transform it is the maximum gap between line segments lying on the same line to treat them as a single line segment (i.e. to join them).
@@ -5323,6 +5327,66 @@ rb_match_shapes(int argc, VALUE *argv, VALUE self)
     raise_cverror(e);
   }
   return rb_float_new(result);
+}
+
+
+/**
+ * Port from OpenCV sample: matching_to_many_images.cpp
+ * call-seq:
+ *   match_descriptors(<i>detector_type, descriptor_type, matcher_type, images</i>) -> Hash
+ *
+ * Matching descriptors detected on one image to descriptors detected in image set.
+ * Returns a Hash contains match count of each image.
+ *
+ * <i>detector_type</i> is a string, options: "SURF"
+ * <i>descriptor_type</i> is a string, options: "SURF"
+ * <i>matcher_type</i> is a string, options: "FlannBased"
+ * <i>images</i> is an array of CvMat objects.
+ */
+VALUE
+rb_match_descriptors(int argc, VALUE *argv, VALUE self)
+{
+  VALUE detectorType, descriptorType, matcherType, images;
+  rb_scan_args(argc, argv, "40", &detectorType, &descriptorType, &matcherType, &images);
+
+  cv::Mat queryImage = CVMAT(self);
+  std::vector<cv::Mat> trainImages;
+  for(int i=0; i < RARRAY_LEN(images); i++) {
+    trainImages.push_back(CVMAT(RARRAY_PTR(images)[i]));
+  }
+
+  // todo: validation
+  cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detectorType));
+  cv::Ptr<cv::DescriptorExtractor> descriptorExtractor = cv::DescriptorExtractor::create(RSTRING_PTR(descriptorType));
+  cv::Ptr<cv::DescriptorMatcher> descriptorMatcher = cv::DescriptorMatcher::create(RSTRING_PTR(matcherType));
+
+  std::vector<cv::KeyPoint> queryKeypoints;
+  std::vector<std::vector<cv::KeyPoint> > trainKeypoints;
+  featureDetector->detect(queryImage, queryKeypoints);
+  featureDetector->detect(trainImages, trainKeypoints);
+
+  cv::Mat queryDescriptors;
+  std::vector<cv::Mat> trainDescriptors;
+  descriptorExtractor->compute(queryImage, queryKeypoints, queryDescriptors);
+  descriptorExtractor->compute(trainImages, trainKeypoints, trainDescriptors);
+
+  std::vector<cv::DMatch> matches;
+  descriptorMatcher->add(trainDescriptors);
+  descriptorMatcher->train();
+  descriptorMatcher->match(queryDescriptors, matches);
+
+  VALUE _matches = rb_hash_new();
+  for (size_t i=0; i<matches.size(); i++) {
+    VALUE match = RARRAY_PTR(images)[matches[i].imgIdx];
+    VALUE count = rb_hash_aref(_matches, match);
+    if (NIL_P(count)) {
+      count = INT2FIX(1);
+    } else {
+      count = INT2FIX(FIX2INT(count) + 1);
+    }
+    rb_hash_aset(_matches, match, count);
+  }
+  return _matches;
 }
 
 /*
