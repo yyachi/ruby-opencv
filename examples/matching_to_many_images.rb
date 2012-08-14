@@ -9,7 +9,7 @@ image_files = ['1.png', '2.png', '3.png'].map{|f| File.join(data, 'train', f)}
 images = image_files.map{|f| IplImage.load f, CV_LOAD_IMAGE_GRAYSCALE}
 
 
-matchs = query.match_descriptors("SURF", "SURF", "FlannBased", images)
+matchs = query.match_descriptors(images)
 
 match_index, count = matchs.max_by {|image_index, count| count}
 

@@ -5333,21 +5333,34 @@ rb_match_shapes(int argc, VALUE *argv, VALUE self)
 /**
  * Port from OpenCV sample: matching_to_many_images.cpp
  * call-seq:
- *   match_descriptors(<i>detector_type, descriptor_type, matcher_type, images</i>) -> Hash
+ *   match_descriptors(<i>images[, detector_type="SURF"][, descriptor_type="SURF"][, matcher_type="FlannBased"]</i>) -> Hash
  *
- * Matching descriptors detected on one image to descriptors detected in image set.
+ * Matching descriptors detected on one image to descriptors detected in image array.
  * Returns a Hash contains match count of each image index.
+ * For example, a Hash {0 => 5, 2 => 10} means the images[0] has 5 key points matched, images[2] has 10 key points matched, 
+ * and all of other images in the images array have no key point matched.
+ * Hence images[2] is the best match in general.
  *
- * <i>detector_type</i> is a string, options: "SURF"
- * <i>descriptor_type</i> is a string, options: "SURF"
- * <i>matcher_type</i> is a string, options: "FlannBased"
  * <i>images</i> is an array of CvMat objects.
+ * <i>detector_type</i> is a string, default is "SURF", options: "SURF", "FAST", "SIFT", "STAR"
+ * <i>descriptor_type</i> is a string, default is "SURF", options: "SURF", "SIFT", "BRIEF"
+ * <i>matcher_type</i> is a string, default is "FlannBased", options: "FlannBased", "BruteForce"
  */
 VALUE
 rb_match_descriptors(int argc, VALUE *argv, VALUE self)
 {
-  VALUE detectorType, descriptorType, matcherType, images;
-  rb_scan_args(argc, argv, "40", &detectorType, &descriptorType, &matcherType, &images);
+  VALUE images, detector_type, descriptor_type, matcher_type;
+  rb_scan_args(argc, argv, "13", &images, &detector_type, &descriptor_type, &matcher_type);
+
+  if (NIL_P(detector_type)) {
+    detector_type = rb_str_new2("SURF");
+  }
+  if (NIL_P(descriptor_type)) {
+    descriptor_type = rb_str_new2("SURF");
+  }
+  if (NIL_P(matcher_type)) {
+    matcher_type = rb_str_new2("FlannBased");
+  }
 
   cv::Mat queryImage = CVMAT(self);
   std::vector<cv::Mat> trainImages;
@@ -5356,9 +5369,9 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
   }
 
   // todo: validation
-  cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detectorType));
-  cv::Ptr<cv::DescriptorExtractor> descriptorExtractor = cv::DescriptorExtractor::create(RSTRING_PTR(descriptorType));
-  cv::Ptr<cv::DescriptorMatcher> descriptorMatcher = cv::DescriptorMatcher::create(RSTRING_PTR(matcherType));
+  cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detector_type));
+  cv::Ptr<cv::DescriptorExtractor> descriptorExtractor = cv::DescriptorExtractor::create(RSTRING_PTR(descriptor_type));
+  cv::Ptr<cv::DescriptorMatcher> descriptorMatcher = cv::DescriptorMatcher::create(RSTRING_PTR(matcher_type));
 
   std::vector<cv::KeyPoint> queryKeypoints;
   std::vector<std::vector<cv::KeyPoint> > trainKeypoints;
