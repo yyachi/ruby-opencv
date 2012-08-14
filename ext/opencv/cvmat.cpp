@@ -5370,8 +5370,20 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
 
   // todo: validation
   cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detector_type));
+  if (featureDetector.empty()) {
+    rb_raise(rb_eArgError, "Could not create feature detector by given detector type: %s", RSTRING_PTR(detector_type));
+  }
   cv::Ptr<cv::DescriptorExtractor> descriptorExtractor = cv::DescriptorExtractor::create(RSTRING_PTR(descriptor_type));
-  cv::Ptr<cv::DescriptorMatcher> descriptorMatcher = cv::DescriptorMatcher::create(RSTRING_PTR(matcher_type));
+  if (descriptorExtractor.empty()) {
+    rb_raise(rb_eArgError, "Could not create descriptor extractor by given descriptor type: %s", RSTRING_PTR(descriptor_type));
+  }
+  cv::Ptr<cv::DescriptorMatcher> descriptorMatcher;
+  try {
+    descriptorMatcher = cv::DescriptorMatcher::create(RSTRING_PTR(matcher_type));
+  }
+  catch(cv::Exception& e) {
+    rb_raise(rb_eArgError, "Could not create descriptor matcher by given matcher type: %s", RSTRING_PTR(matcher_type));
+  }
 
   std::vector<cv::KeyPoint> queryKeypoints;
   std::vector<std::vector<cv::KeyPoint> > trainKeypoints;
