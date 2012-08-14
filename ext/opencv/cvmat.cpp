@@ -5371,7 +5371,6 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
     trainImages.push_back(CVMAT(RARRAY_PTR(images)[i]));
   }
 
-  // todo: validation
   cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detector_type));
   if (featureDetector.empty()) {
     rb_raise(rb_eArgError, "Could not create feature detector by given detector type: %s", RSTRING_PTR(detector_type));
