@@ -5352,6 +5352,9 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
   VALUE images, detector_type, descriptor_type, matcher_type;
   rb_scan_args(argc, argv, "13", &images, &detector_type, &descriptor_type, &matcher_type);
 
+  if (RARRAY_LEN(images) == 0) {
+    return rb_hash_new();
+  }
   if (NIL_P(detector_type)) {
     detector_type = rb_str_new2("SURF");
   }
