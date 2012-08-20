@@ -44,7 +44,7 @@ define_ruby_class()
   
   rb_klass = rb_define_class_under(opencv, "CvMoments", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "spatial", RUBY_METHOD_FUNC(rb_spatial), 2);
   rb_define_method(rb_klass, "central", RUBY_METHOD_FUNC(rb_central), 2);
   rb_define_method(rb_klass, "normalized_central", RUBY_METHOD_FUNC(rb_normalized_central), 2);

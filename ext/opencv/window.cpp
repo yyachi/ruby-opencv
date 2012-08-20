@@ -46,7 +46,7 @@ define_ruby_class()
   VALUE GUI = rb_module_GUI();
   rb_klass = rb_define_class_under(GUI, "Window", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "alive?", RUBY_METHOD_FUNC(rb_alive_q), 0);
   rb_define_method(rb_klass, "destroy", RUBY_METHOD_FUNC(rb_destroy), 0);
   rb_define_singleton_method(rb_klass, "destroy_all", RUBY_METHOD_FUNC(rb_destroy_all), 0);

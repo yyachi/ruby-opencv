@@ -58,7 +58,7 @@ define_ruby_class()
   /* CvScalar: class */
   rb_define_const(opencv, "CvColor", rb_klass);
   rb_define_alloc_func(rb_klass, rb_allocate);      
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "[]", RUBY_METHOD_FUNC(rb_aref), 1);
   rb_define_method(rb_klass, "[]=", RUBY_METHOD_FUNC(rb_aset), 2);
   rb_define_method(rb_klass, "sub", RUBY_METHOD_FUNC(rb_sub), -1);

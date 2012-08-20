@@ -41,7 +41,7 @@ define_ruby_class()
   VALUE opencv = rb_module_opencv();
   rb_klass = rb_define_class_under(opencv, "CvSlice", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), 2);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), 2);
   rb_define_method(rb_klass, "start_index", RUBY_METHOD_FUNC(rb_start_index_aref), 0);
   rb_define_method(rb_klass, "end_index", RUBY_METHOD_FUNC(rb_end_index_aref), 0);
   rb_define_method(rb_klass, "start_index=", RUBY_METHOD_FUNC(rb_start_index_aset), 1);

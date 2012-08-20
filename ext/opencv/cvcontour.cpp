@@ -313,7 +313,7 @@ init_ruby_class()
   rb_hash_aset(approx_option, ID2SYM(rb_intern("accuracy")), rb_float_new(1.0));
   rb_hash_aset(approx_option, ID2SYM(rb_intern("recursive")), Qfalse);
   
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);
   rb_define_method(rb_klass, "color", RUBY_METHOD_FUNC(rb_color), 0);
   rb_define_method(rb_klass, "color=", RUBY_METHOD_FUNC(rb_set_color), 1);

@@ -38,7 +38,6 @@ rb_allocate(VALUE klass)
 
 /*
  * Create a new chain code
- * @scope class
  * @overload new(storage=nil)
  *   @param storage [CvMemStorage,nil] Sequence location (If storage is nil, allocates a new storage automatically)
  * @return [CvChain] New CvChain instance
@@ -221,7 +220,7 @@ init_ruby_class()
   rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("minimal_perimeter")), INT2FIX(0));
   rb_hash_aset(approx_chain_option, ID2SYM(rb_intern("recursive")), Qfalse);
 
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "origin", RUBY_METHOD_FUNC(rb_origin), 0);
   rb_define_method(rb_klass, "origin=", RUBY_METHOD_FUNC(rb_set_origin), 1);
   rb_define_method(rb_klass, "codes", RUBY_METHOD_FUNC(rb_codes), 0);

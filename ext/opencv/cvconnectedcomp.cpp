@@ -144,7 +144,7 @@ init_ruby_class()
   
   rb_klass = rb_define_class_under(opencv, "CvConnectedComp", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "area", RUBY_METHOD_FUNC(rb_area), 0);
   rb_define_method(rb_klass, "value", RUBY_METHOD_FUNC(rb_value), 0);
   rb_define_method(rb_klass, "rect", RUBY_METHOD_FUNC(rb_rect), 0);

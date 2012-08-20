@@ -45,7 +45,7 @@ define_ruby_class()
   /* CvTermCriteria: class */
   rb_define_const(opencv, "CvTerm", rb_klass);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "type", RUBY_METHOD_FUNC(rb_type), 0);
   rb_define_method(rb_klass, "max", RUBY_METHOD_FUNC(rb_max), 0);
   rb_define_method(rb_klass, "max=", RUBY_METHOD_FUNC(rb_set_max), 1);

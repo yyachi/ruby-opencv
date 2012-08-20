@@ -87,7 +87,7 @@ define_ruby_class()
   rb_klass = rb_define_class_under(opencv, "CvSeq", rb_cObject);
   rb_include_module(rb_klass, rb_mEnumerable);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "total", RUBY_METHOD_FUNC(rb_total), 0);
   rb_define_alias(rb_klass, "length", "total");
   rb_define_alias(rb_klass, "size", "total");

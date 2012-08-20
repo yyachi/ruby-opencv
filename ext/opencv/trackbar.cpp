@@ -37,7 +37,7 @@ void define_ruby_class() {
   VALUE GUI = rb_module_GUI();
   rb_klass = rb_define_class_under(GUI, "Trackbar", rb_cObject);
   rb_define_alloc_func(rb_klass, rb_allocate);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
   rb_define_method(rb_klass, "name", RUBY_METHOD_FUNC(rb_name), 0);
   rb_define_method(rb_klass, "max", RUBY_METHOD_FUNC(rb_max), 0);
   rb_define_method(rb_klass, "value", RUBY_METHOD_FUNC(rb_value), 0);

@@ -49,7 +49,7 @@ define_ruby_class()
   rb_klass = rb_define_class_under(opencv, "IplImage", cvmat);
   rb_define_alloc_func(rb_klass, rb_allocate);
   rb_define_singleton_method(rb_klass, "load", RUBY_METHOD_FUNC(rb_load_image), -1);
-  rb_define_private_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1); 
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1); 
   rb_define_method(rb_klass, "get_roi", RUBY_METHOD_FUNC(rb_get_roi), 0);
   rb_define_alias(rb_klass, "roi", "get_roi");
   rb_define_method(rb_klass, "set_roi", RUBY_METHOD_FUNC(rb_set_roi), 1);
