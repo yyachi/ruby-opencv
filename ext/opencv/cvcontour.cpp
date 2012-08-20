@@ -37,8 +37,7 @@ rb_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvContour *ptr;
-  return Data_Make_Struct(klass, CvContour, mark_root_object, unregister_object, ptr);
+  return Data_Wrap_Struct(klass, mark_root_object, unregister_object, NULL);
 }
 
 /*
@@ -59,15 +58,15 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
   else
     storage = CHECK_CVMEMSTORAGE(storage);
 
-  CvContour* contour = (CvContour*)DATA_PTR(self);
   try {
-    contour = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
-				      sizeof(CvPoint), CVMEMSTORAGE(storage));
+    DATA_PTR(self) = (CvContour*)cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvContour),
+					     sizeof(CvPoint), CVMEMSTORAGE(storage));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
-  register_root_object((CvSeq*)contour, storage);
+  cCvSeq::register_elem_class(CVSEQ(self), cCvPoint::rb_class());
+  register_root_object(CVSEQ(self), storage);
 
   return self;
 }

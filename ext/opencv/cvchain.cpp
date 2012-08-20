@@ -33,8 +33,7 @@ rb_class()
 VALUE
 rb_allocate(VALUE klass)
 {
-  CvChain *ptr;
-  return Data_Make_Struct(klass, CvChain, 0, 0, ptr);
+  return Data_Wrap_Struct(klass, mark_root_object, unregister_object, NULL);
 }
 
 /*
@@ -58,11 +57,15 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
     storage = rb_cvCreateMemStorage(0);
   try {
     DATA_PTR(self) = (CvChain*)cvCreateSeq(CV_SEQ_ELTYPE_CODE, sizeof(CvChain),
-					   sizeof(char), storage);
+					   sizeof(int), storage);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
+  CvSeq* self_ptr = CVSEQ(self);
+  cCvSeq::register_elem_class(self_ptr, rb_cFixnum);
+  register_root_object(self_ptr, storage_value);
+
   return self;
 }
 
@@ -108,7 +111,7 @@ rb_codes(VALUE self)
     cvStartReadChainPoints(chain, &reader);
     for (int i = 0; i < total; ++i) {
       CV_READ_SEQ_ELEM(reader.code, (*((CvSeqReader*)&(reader))));
-      rb_ary_store(ary, i, CHR2FIX(reader.code));
+      rb_ary_store(ary, i, INT2FIX(reader.code));
     }
   }
   catch (cv::Exception& e) {
@@ -184,7 +187,7 @@ new_object()
   VALUE storage = cCvMemStorage::new_object();
   CvSeq *seq = NULL;
   try {
-    seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(char), CVMEMSTORAGE(storage));
+    seq = cvCreateSeq(CV_SEQ_CHAIN_CONTOUR, sizeof(CvChain), sizeof(int), CVMEMSTORAGE(storage));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
