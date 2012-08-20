@@ -22,6 +22,8 @@ VALUE rb_class();
 void define_ruby_class();
 
 VALUE seqblock_class(void *ptr);
+void register_elem_class(CvSeq *seq, VALUE klass);
+void unregister_elem_class(void *ptr);
 
 VALUE rb_allocate(VALUE klass);
 
