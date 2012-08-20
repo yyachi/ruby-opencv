@@ -679,7 +679,7 @@ extern "C" {
     mOpenCV::cCvFont::init_ruby_class();
     mOpenCV::cIplConvKernel::define_ruby_class();
     mOpenCV::cCvMoments::define_ruby_class();
-    mOpenCV::cCvHuMoments::define_ruby_class();
+    mOpenCV::cCvHuMoments::init_ruby_class();
     mOpenCV::cCvConvexityDefect::init_ruby_class();
 
     mOpenCV::cCvSURFPoint::define_ruby_class();
