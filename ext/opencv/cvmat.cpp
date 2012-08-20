@@ -5368,7 +5368,7 @@ rb_match_descriptors(int argc, VALUE *argv, VALUE self)
   cv::Mat queryImage = CVMAT(self);
   std::vector<cv::Mat> trainImages;
   for(int i=0; i < RARRAY_LEN(images); i++) {
-    trainImages.push_back(CVMAT(RARRAY_PTR(images)[i]));
+    trainImages.push_back(CVMAT_WITH_CHECK(RARRAY_PTR(images)[i]));
   }
 
   cv::Ptr<cv::FeatureDetector> featureDetector = cv::FeatureDetector::create(RSTRING_PTR(detector_type));

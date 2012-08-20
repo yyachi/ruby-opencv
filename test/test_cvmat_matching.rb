@@ -48,4 +48,10 @@ class TestCvMat_matching < OpenCVTestCase
       @query.match_descriptors(@images, "SURF", "SURF", "wrong")
     end
   end
+
+  def test_match_descriptors_with_invalid_image_array
+    assert_raise TypeError do
+      @query.match_descriptors([DUMMY_OBJ, DUMMY_OBJ])
+    end
+  end
 end
