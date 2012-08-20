@@ -702,7 +702,7 @@ extern "C" {
     mOpenCV::cCvCapture::init_ruby_class();
     mOpenCV::cCvVideoWriter::define_ruby_class();
 
-    mOpenCV::cCvLine::define_ruby_class();
+    mOpenCV::cCvLine::init_ruby_class();
     mOpenCV::cCvTwoPoints::define_ruby_class();
     mOpenCV::cCvCircle32f::init_ruby_class();
 
