@@ -889,12 +889,13 @@ rb_each_col(VALUE self)
 }
 
 /*
- * call-seq:
- *   diag(<i>[val = 0]</i>) -> cvmat
- *
- * Return one of array diagonals.
- * <i>val</i> is zero corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
- *
+ * Returns a specified diagonal of the matrix
+ * @overload diag(val = 0)
+ * @param val [Integer] Index of the array diagonal. Zero value corresponds to the main diagonal,
+ *   -1 corresponds to the diagonal above the main, 1 corresponds to the diagonal below the main,
+ *   and so forth.
+ * @return [CvMat] Specified diagonal
+ * @opencv_func cvGetDiag
  */
 VALUE
 rb_diag(int argc, VALUE *argv, VALUE self)
