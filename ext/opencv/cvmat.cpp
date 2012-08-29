@@ -835,12 +835,12 @@ rb_get_cols(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   each_row {|row| ... } -> self
- *
- * Calls block once for each row in self, passing that element as a parameter.
- *
- * see also CvMat#each_col
+ * Calls <i>block</i> once for each row in the matrix, passing that
+ * row as a parameter.
+ * @yield [row] Each row in the matrix
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvGetRow
+ * @todo To return an enumerator if no block is given
  */
 VALUE
 rb_each_row(VALUE self)
@@ -862,12 +862,12 @@ rb_each_row(VALUE self)
 }
 
 /*
- * call-seq:
- *   each_col {|col| ... } -> self
- *
- * Calls block once for each column in self, passing that element as a parameter.
- *
- * see also CvMat#each_row
+ * Calls <i>block</i> once for each column in the matrix, passing that
+ * column as a parameter.
+ * @yield [col] Each column in the matrix
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvGetCol
+ * @todo To return an enumerator if no block is given
  */
 VALUE
 rb_each_col(VALUE self)
