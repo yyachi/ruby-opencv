@@ -694,7 +694,7 @@ extern "C" {
     mOpenCV::cCvContour::init_ruby_class();
     mOpenCV::cCvContourTree::init_ruby_class();
 
-    mOpenCV::cCvMat::define_ruby_class();
+    mOpenCV::cCvMat::init_ruby_class();
     mOpenCV::cIplImage::define_ruby_class();
     mOpenCV::cCvMatND::define_ruby_class();
     mOpenCV::cCvSparseMat::define_ruby_class();

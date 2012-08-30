@@ -11,36 +11,6 @@
 /*
  * Document-class: OpenCV::CvMat
  *
- * CvMat is basic 2D matrix class in OpenCV.
- *
- * C structure is here.
- *  typedef struct CvMat {
- *    int type;
- *    int step;
- *    int *refcount;
- *    union
- *    {
- *      uchar  *ptr;
- *      short  *s;
- *      int    *i;
- *      float  *fl;
- *      double *db;
- *    } data;
- *  #ifdef __cplusplus
- *    union
- *    {
- *      int rows;
- *      int height;
- *    };
- *    union
- *    {
- *      int cols;
- *      int width;
- *    };
- *  #else
- *    int rows; // number of row
- *    int cols; // number of columns
- *  } CvMat;
  */
 __NAMESPACE_BEGIN_OPENCV
 __NAMESPACE_BEGIN_CVMAT
@@ -134,295 +104,6 @@ rb_class()
   return rb_klass;
 }
 
-void define_ruby_class()
-{
-  if (rb_klass)
-    return;
-  /*
-   * opencv = rb_define_module("OpenCV");
-   *
-   * note: this comment is used by rdoc.
-   */
-  VALUE opencv = rb_module_opencv();
-
-  rb_klass = rb_define_class_under(opencv, "CvMat", rb_cObject);
-  rb_define_alloc_func(rb_klass, rb_allocate);
-
-  VALUE drawing_option = rb_hash_new();
-  rb_define_const(rb_klass, "DRAWING_OPTION", drawing_option);
-  rb_hash_aset(drawing_option, ID2SYM(rb_intern("color")), cCvScalar::new_object(cvScalarAll(0)));
-  rb_hash_aset(drawing_option, ID2SYM(rb_intern("thickness")), INT2FIX(1));
-  rb_hash_aset(drawing_option, ID2SYM(rb_intern("line_type")), INT2FIX(8));
-  rb_hash_aset(drawing_option, ID2SYM(rb_intern("shift")), INT2FIX(0));
-
-  VALUE good_features_to_track_option = rb_hash_new();
-  rb_define_const(rb_klass, "GOOD_FEATURES_TO_TRACK_OPTION", good_features_to_track_option);
-  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("max")), INT2FIX(0xFF));
-  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("mask")), Qnil);
-  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("block_size")), INT2FIX(3));
-  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("use_harris")), Qfalse);
-  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("k")), rb_float_new(0.04));
-
-  VALUE flood_fill_option = rb_hash_new();
-  rb_define_const(rb_klass, "FLOOD_FILL_OPTION", flood_fill_option);
-  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("connectivity")), INT2FIX(4));
-  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("fixed_range")), Qfalse);
-  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("mask_only")), Qfalse);
-
-  VALUE find_contours_option = rb_hash_new();
-  rb_define_const(rb_klass, "FIND_CONTOURS_OPTION", find_contours_option);
-  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("mode")), INT2FIX(CV_RETR_LIST));
-  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("method")), INT2FIX(CV_CHAIN_APPROX_SIMPLE));
-  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("offset")), cCvPoint::new_object(cvPoint(0,0)));
-
-  VALUE optical_flow_hs_option = rb_hash_new();
-  rb_define_const(rb_klass, "OPTICAL_FLOW_HS_OPTION", optical_flow_hs_option);
-  rb_hash_aset(optical_flow_hs_option, ID2SYM(rb_intern("lambda")), rb_float_new(0.0005));
-  rb_hash_aset(optical_flow_hs_option, ID2SYM(rb_intern("criteria")), cCvTermCriteria::new_object(cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 1, 0.001)));
-
-  VALUE optical_flow_bm_option = rb_hash_new();
-  rb_define_const(rb_klass, "OPTICAL_FLOW_BM_OPTION", optical_flow_bm_option);
-  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("block_size")), cCvSize::new_object(cvSize(4, 4)));
-  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("shift_size")), cCvSize::new_object(cvSize(1, 1)));
-  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("max_range")),  cCvSize::new_object(cvSize(4, 4)));
-
-  VALUE find_fundamental_matrix_option = rb_hash_new();
-  rb_define_const(rb_klass, "FIND_FUNDAMENTAL_MAT_OPTION", find_fundamental_matrix_option);
-  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("with_status")), Qfalse);
-  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("maximum_distance")), rb_float_new(1.0));
-  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("desirable_level")), rb_float_new(0.99));
-
-  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
-  rb_define_singleton_method(rb_klass, "load", RUBY_METHOD_FUNC(rb_load_imageM), -1);
-  // Ruby/OpenCV original functions
-  rb_define_method(rb_klass, "method_missing", RUBY_METHOD_FUNC(rb_method_missing), -1);
-  rb_define_method(rb_klass, "to_s", RUBY_METHOD_FUNC(rb_to_s), 0);
-  rb_define_method(rb_klass, "inside?", RUBY_METHOD_FUNC(rb_inside_q), 1);
-  rb_define_method(rb_klass, "to_IplConvKernel", RUBY_METHOD_FUNC(rb_to_IplConvKernel), 1);
-  rb_define_method(rb_klass, "create_mask", RUBY_METHOD_FUNC(rb_create_mask), 0);
-
-  rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_width), 0);
-  rb_define_alias(rb_klass, "columns", "width");
-  rb_define_alias(rb_klass, "cols", "width");
-  rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_height), 0);
-  rb_define_alias(rb_klass, "rows", "height");
-  rb_define_method(rb_klass, "depth", RUBY_METHOD_FUNC(rb_depth), 0);
-  rb_define_method(rb_klass, "channel", RUBY_METHOD_FUNC(rb_channel), 0);
-  rb_define_method(rb_klass, "data", RUBY_METHOD_FUNC(rb_data), 0);
-
-  rb_define_method(rb_klass, "clone", RUBY_METHOD_FUNC(rb_clone), 0);
-  rb_define_method(rb_klass, "copy", RUBY_METHOD_FUNC(rb_copy), -1);
-  rb_define_method(rb_klass, "to_8u", RUBY_METHOD_FUNC(rb_to_8u), 0);
-  rb_define_method(rb_klass, "to_8s", RUBY_METHOD_FUNC(rb_to_8s), 0);
-  rb_define_method(rb_klass, "to_16u", RUBY_METHOD_FUNC(rb_to_16u), 0);
-  rb_define_method(rb_klass, "to_16s", RUBY_METHOD_FUNC(rb_to_16s), 0);
-  rb_define_method(rb_klass, "to_32s", RUBY_METHOD_FUNC(rb_to_32s), 0);
-  rb_define_method(rb_klass, "to_32f", RUBY_METHOD_FUNC(rb_to_32f), 0);
-  rb_define_method(rb_klass, "to_64f", RUBY_METHOD_FUNC(rb_to_64f), 0);
-  rb_define_method(rb_klass, "vector?", RUBY_METHOD_FUNC(rb_vector_q), 0);
-  rb_define_method(rb_klass, "square?", RUBY_METHOD_FUNC(rb_square_q), 0);
-
-  rb_define_method(rb_klass, "to_CvMat", RUBY_METHOD_FUNC(rb_to_CvMat), 0);
-  rb_define_method(rb_klass, "sub_rect", RUBY_METHOD_FUNC(rb_sub_rect), -2);
-  rb_define_alias(rb_klass, "subrect", "sub_rect");
-  rb_define_method(rb_klass, "get_rows", RUBY_METHOD_FUNC(rb_get_rows), -2);
-  rb_define_method(rb_klass, "get_cols", RUBY_METHOD_FUNC(rb_get_cols), -2);
-  rb_define_method(rb_klass, "each_row", RUBY_METHOD_FUNC(rb_each_row), 0);
-  rb_define_method(rb_klass, "each_col", RUBY_METHOD_FUNC(rb_each_col), 0);
-  rb_define_alias(rb_klass, "each_column", "each_col");
-  rb_define_method(rb_klass, "diag", RUBY_METHOD_FUNC(rb_diag), -1);
-  rb_define_alias(rb_klass, "diagonal", "diag");
-  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_size), 0);
-  rb_define_method(rb_klass, "dims", RUBY_METHOD_FUNC(rb_dims), 0);
-  rb_define_method(rb_klass, "dim_size", RUBY_METHOD_FUNC(rb_dim_size), 1);
-  rb_define_method(rb_klass, "[]", RUBY_METHOD_FUNC(rb_aref), -2);
-  rb_define_alias(rb_klass, "at", "[]");
-  rb_define_method(rb_klass, "[]=", RUBY_METHOD_FUNC(rb_aset), -2);
-  rb_define_method(rb_klass, "set_data", RUBY_METHOD_FUNC(rb_set_data), 1);
-  rb_define_method(rb_klass, "set", RUBY_METHOD_FUNC(rb_set), -1);
-  rb_define_alias(rb_klass, "fill", "set");
-  rb_define_method(rb_klass, "set!", RUBY_METHOD_FUNC(rb_set_bang), -1);
-  rb_define_alias(rb_klass, "fill!", "set!");
-  rb_define_method(rb_klass, "set_zero", RUBY_METHOD_FUNC(rb_set_zero), 0);
-  rb_define_alias(rb_klass, "clear", "set_zero");
-  rb_define_alias(rb_klass, "zero", "set_zero");
-  rb_define_method(rb_klass, "set_zero!", RUBY_METHOD_FUNC(rb_set_zero_bang), 0);
-  rb_define_alias(rb_klass, "clear!", "set_zero!");
-  rb_define_alias(rb_klass, "zero!", "set_zero!");
-  rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
-  rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
-  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);
-  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), 2);
-
-  rb_define_method(rb_klass, "reshape", RUBY_METHOD_FUNC(rb_reshape), 1);
-  rb_define_method(rb_klass, "repeat", RUBY_METHOD_FUNC(rb_repeat), 1);
-  rb_define_method(rb_klass, "flip", RUBY_METHOD_FUNC(rb_flip), -1);
-  rb_define_method(rb_klass, "flip!", RUBY_METHOD_FUNC(rb_flip_bang), -1);
-  rb_define_method(rb_klass, "split", RUBY_METHOD_FUNC(rb_split), 0);
-  rb_define_singleton_method(rb_klass, "merge", RUBY_METHOD_FUNC(rb_merge), -2);
-  rb_define_method(rb_klass, "rand_shuffle", RUBY_METHOD_FUNC(rb_rand_shuffle), -1);
-  rb_define_method(rb_klass, "rand_shuffle!", RUBY_METHOD_FUNC(rb_rand_shuffle_bang), -1);
-  rb_define_method(rb_klass, "lut", RUBY_METHOD_FUNC(rb_lut), 1);
-  rb_define_method(rb_klass, "convert_scale", RUBY_METHOD_FUNC(rb_convert_scale), 1);
-  rb_define_method(rb_klass, "convert_scale_abs", RUBY_METHOD_FUNC(rb_convert_scale_abs), 1);
-  rb_define_method(rb_klass, "add", RUBY_METHOD_FUNC(rb_add), -1);
-  rb_define_alias(rb_klass, "+", "add");
-  rb_define_method(rb_klass, "sub", RUBY_METHOD_FUNC(rb_sub), -1);
-  rb_define_alias(rb_klass, "-", "sub");
-  rb_define_method(rb_klass, "mul", RUBY_METHOD_FUNC(rb_mul), -1);
-  rb_define_method(rb_klass, "mat_mul", RUBY_METHOD_FUNC(rb_mat_mul), -1);
-  rb_define_alias(rb_klass, "*", "mat_mul");
-  rb_define_method(rb_klass, "div", RUBY_METHOD_FUNC(rb_div), -1);
-  rb_define_alias(rb_klass, "/", "div");
-  rb_define_singleton_method(rb_klass, "add_weighted", RUBY_METHOD_FUNC(rb_add_weighted), 5);
-  rb_define_method(rb_klass, "and", RUBY_METHOD_FUNC(rb_and), -1);
-  rb_define_alias(rb_klass, "&", "and");
-  rb_define_method(rb_klass, "or", RUBY_METHOD_FUNC(rb_or), -1);
-  rb_define_alias(rb_klass, "|", "or");
-  rb_define_method(rb_klass, "xor", RUBY_METHOD_FUNC(rb_xor), -1);
-  rb_define_alias(rb_klass, "^", "xor");
-  rb_define_method(rb_klass, "not", RUBY_METHOD_FUNC(rb_not), 0);
-  rb_define_method(rb_klass, "not!", RUBY_METHOD_FUNC(rb_not_bang), 0);
-  rb_define_method(rb_klass, "eq", RUBY_METHOD_FUNC(rb_eq), 1);
-  rb_define_method(rb_klass, "gt", RUBY_METHOD_FUNC(rb_gt), 1);
-  rb_define_method(rb_klass, "ge", RUBY_METHOD_FUNC(rb_ge), 1);
-  rb_define_method(rb_klass, "lt", RUBY_METHOD_FUNC(rb_lt), 1);
-  rb_define_method(rb_klass, "le", RUBY_METHOD_FUNC(rb_le), 1);
-  rb_define_method(rb_klass, "ne", RUBY_METHOD_FUNC(rb_ne), 1);
-  rb_define_method(rb_klass, "in_range", RUBY_METHOD_FUNC(rb_in_range), 2);
-  rb_define_method(rb_klass, "abs_diff", RUBY_METHOD_FUNC(rb_abs_diff), 1);
-  rb_define_method(rb_klass, "normalize", RUBY_METHOD_FUNC(rb_normalize), -1);
-  rb_define_method(rb_klass, "count_non_zero", RUBY_METHOD_FUNC(rb_count_non_zero), 0);
-  rb_define_method(rb_klass, "sum", RUBY_METHOD_FUNC(rb_sum), 0);
-  rb_define_method(rb_klass, "avg", RUBY_METHOD_FUNC(rb_avg), -1);
-  rb_define_method(rb_klass, "avg_sdv", RUBY_METHOD_FUNC(rb_avg_sdv), -1);
-  rb_define_method(rb_klass, "sdv", RUBY_METHOD_FUNC(rb_sdv), -1);
-  rb_define_method(rb_klass, "min_max_loc", RUBY_METHOD_FUNC(rb_min_max_loc), -1);
-  rb_define_method(rb_klass, "dot_product", RUBY_METHOD_FUNC(rb_dot_product), 1);
-  rb_define_method(rb_klass, "cross_product", RUBY_METHOD_FUNC(rb_cross_product), 1);
-  rb_define_method(rb_klass, "transform", RUBY_METHOD_FUNC(rb_transform), -1);
-  rb_define_method(rb_klass, "perspective_transform", RUBY_METHOD_FUNC(rb_perspective_transform), 1);
-  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -1);
-  rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
-  rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
-  rb_define_alias(rb_klass, "t", "transpose");
-  rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
-  rb_define_alias(rb_klass, "determinant", "det");
-  rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
-  rb_define_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
-  rb_define_method(rb_klass, "svd", RUBY_METHOD_FUNC(rb_svd), -1);
-  rb_define_method(rb_klass, "svbksb", RUBY_METHOD_FUNC(rb_svbksb), -1);
-  rb_define_method(rb_klass, "eigenvv", RUBY_METHOD_FUNC(rb_eigenvv), -1);
-  rb_define_method(rb_klass, "calc_covar_matrix", RUBY_METHOD_FUNC(rb_calc_covar_matrix), -1);
-  rb_define_method(rb_klass, "mahalonobis", RUBY_METHOD_FUNC(rb_mahalonobis), -1);
-
-  /* drawing function */
-  rb_define_method(rb_klass, "line", RUBY_METHOD_FUNC(rb_line), -1);
-  rb_define_method(rb_klass, "line!", RUBY_METHOD_FUNC(rb_line_bang), -1);
-  rb_define_method(rb_klass, "rectangle", RUBY_METHOD_FUNC(rb_rectangle), -1);
-  rb_define_method(rb_klass, "rectangle!", RUBY_METHOD_FUNC(rb_rectangle_bang), -1);
-  rb_define_method(rb_klass, "circle", RUBY_METHOD_FUNC(rb_circle), -1);
-  rb_define_method(rb_klass, "circle!", RUBY_METHOD_FUNC(rb_circle_bang), -1);
-  rb_define_method(rb_klass, "ellipse", RUBY_METHOD_FUNC(rb_ellipse), -1);
-  rb_define_method(rb_klass, "ellipse!", RUBY_METHOD_FUNC(rb_ellipse_bang), -1);
-  rb_define_method(rb_klass, "ellipse_box", RUBY_METHOD_FUNC(rb_ellipse_box), -1);
-  rb_define_method(rb_klass, "ellipse_box!", RUBY_METHOD_FUNC(rb_ellipse_box_bang), -1);
-  rb_define_method(rb_klass, "fill_poly", RUBY_METHOD_FUNC(rb_fill_poly), -1);
-  rb_define_method(rb_klass, "fill_poly!", RUBY_METHOD_FUNC(rb_fill_poly_bang), -1);
-  rb_define_method(rb_klass, "fill_convex_poly", RUBY_METHOD_FUNC(rb_fill_convex_poly), -1);
-  rb_define_method(rb_klass, "fill_convex_poly!", RUBY_METHOD_FUNC(rb_fill_convex_poly_bang), -1);
-  rb_define_method(rb_klass, "poly_line", RUBY_METHOD_FUNC(rb_poly_line), -1);
-  rb_define_method(rb_klass, "poly_line!", RUBY_METHOD_FUNC(rb_poly_line_bang), -1);
-  rb_define_method(rb_klass, "put_text", RUBY_METHOD_FUNC(rb_put_text), -1);
-  rb_define_method(rb_klass, "put_text!", RUBY_METHOD_FUNC(rb_put_text_bang), -1);
-
-  rb_define_method(rb_klass, "dft", RUBY_METHOD_FUNC(rb_dft), -1);
-  rb_define_method(rb_klass, "dct", RUBY_METHOD_FUNC(rb_dct), -1);
-
-  rb_define_method(rb_klass, "sobel", RUBY_METHOD_FUNC(rb_sobel), -1);
-  rb_define_method(rb_klass, "laplace", RUBY_METHOD_FUNC(rb_laplace), -1);
-  rb_define_method(rb_klass, "canny", RUBY_METHOD_FUNC(rb_canny), -1);
-  rb_define_method(rb_klass, "pre_corner_detect", RUBY_METHOD_FUNC(rb_pre_corner_detect), -1);
-  rb_define_method(rb_klass, "corner_eigenvv", RUBY_METHOD_FUNC(rb_corner_eigenvv), -1);
-  rb_define_method(rb_klass, "corner_min_eigen_val", RUBY_METHOD_FUNC(rb_corner_min_eigen_val), -1);
-  rb_define_method(rb_klass, "corner_harris", RUBY_METHOD_FUNC(rb_corner_harris), -1);
-  rb_define_private_method(rb_klass, "__find_corner_sub_pix", RUBY_METHOD_FUNC(rbi_find_corner_sub_pix), -1);
-  rb_define_method(rb_klass, "good_features_to_track", RUBY_METHOD_FUNC(rb_good_features_to_track), -1);
-
-  rb_define_method(rb_klass, "sample_line", RUBY_METHOD_FUNC(rb_sample_line), 2);
-  rb_define_method(rb_klass, "rect_sub_pix", RUBY_METHOD_FUNC(rb_rect_sub_pix), -1);
-  rb_define_method(rb_klass, "quadrangle_sub_pix", RUBY_METHOD_FUNC(rb_quadrangle_sub_pix), -1);
-  rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
-  rb_define_method(rb_klass, "warp_affine", RUBY_METHOD_FUNC(rb_warp_affine), -1);
-  rb_define_singleton_method(rb_klass, "rotation_matrix2D", RUBY_METHOD_FUNC(rb_rotation_matrix2D), 3);
-  rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
-  rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
-  rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
-  rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
-
-  rb_define_method(rb_klass, "erode", RUBY_METHOD_FUNC(rb_erode), -1);
-  rb_define_method(rb_klass, "erode!", RUBY_METHOD_FUNC(rb_erode_bang), -1);
-  rb_define_method(rb_klass, "dilate", RUBY_METHOD_FUNC(rb_dilate), -1);
-  rb_define_method(rb_klass, "dilate!", RUBY_METHOD_FUNC(rb_dilate_bang), -1);
-  rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
-
-  rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
-  rb_define_method(rb_klass, "copy_make_border", RUBY_METHOD_FUNC(rb_copy_make_border), -1);
-  rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
-  rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
-  rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
-  rb_define_method(rb_klass, "adaptive_threshold", RUBY_METHOD_FUNC(rb_adaptive_threshold), -1);
-
-  rb_define_method(rb_klass, "pyr_down", RUBY_METHOD_FUNC(rb_pyr_down), -1);
-  rb_define_method(rb_klass, "pyr_up", RUBY_METHOD_FUNC(rb_pyr_up), -1);
-
-  rb_define_method(rb_klass, "flood_fill", RUBY_METHOD_FUNC(rb_flood_fill), -1);
-  rb_define_method(rb_klass, "flood_fill!", RUBY_METHOD_FUNC(rb_flood_fill_bang), -1);
-  rb_define_method(rb_klass, "find_contours", RUBY_METHOD_FUNC(rb_find_contours), -1);
-  rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
-  rb_define_method(rb_klass, "draw_contours", RUBY_METHOD_FUNC(rb_draw_contours), -1);
-  rb_define_method(rb_klass, "draw_contours!", RUBY_METHOD_FUNC(rb_draw_contours_bang), -1);
-  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), 3);
-  rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
-  rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
-
-  rb_define_method(rb_klass, "moments", RUBY_METHOD_FUNC(rb_moments), -1);
-
-  rb_define_method(rb_klass, "hough_lines", RUBY_METHOD_FUNC(rb_hough_lines), -1);
-  rb_define_method(rb_klass, "hough_circles", RUBY_METHOD_FUNC(rb_hough_circles), -1);
-
-  rb_define_method(rb_klass, "inpaint", RUBY_METHOD_FUNC(rb_inpaint), 3);
-
-  rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
-  rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
-  rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
-  rb_define_method(rb_klass, "match_descriptors", RUBY_METHOD_FUNC(rb_match_descriptors), -1);
-
-  rb_define_method(rb_klass, "mean_shift", RUBY_METHOD_FUNC(rb_mean_shift), 2);
-  rb_define_method(rb_klass, "cam_shift", RUBY_METHOD_FUNC(rb_cam_shift), 2);
-  rb_define_method(rb_klass, "snake_image", RUBY_METHOD_FUNC(rb_snake_image), -1);
-
-  rb_define_method(rb_klass, "optical_flow_hs", RUBY_METHOD_FUNC(rb_optical_flow_hs), -1);
-  rb_define_method(rb_klass, "optical_flow_lk", RUBY_METHOD_FUNC(rb_optical_flow_lk), 2);
-  rb_define_method(rb_klass, "optical_flow_bm", RUBY_METHOD_FUNC(rb_optical_flow_bm), -1);
-
-  rb_define_singleton_method(rb_klass, "find_fundamental_mat",
-			     RUBY_METHOD_FUNC(rb_find_fundamental_mat), -1);
-  rb_define_singleton_method(rb_klass, "compute_correspond_epilines",
-			     RUBY_METHOD_FUNC(rb_compute_correspond_epilines), 3);
-
-  rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
-
-  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), -1);
-  rb_define_alias(rb_klass, "save", "save_image");
-
-  rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
-  rb_define_alias(rb_klass, "encode", "encode_image");
-  rb_define_singleton_method(rb_klass, "decode_image", RUBY_METHOD_FUNC(rb_decode_imageM), -1);
-  rb_define_alias(rb_singleton_class(rb_klass), "decode", "decode_image");
-}
-
-
 VALUE
 rb_allocate(VALUE klass)
 {
@@ -430,15 +111,20 @@ rb_allocate(VALUE klass)
 }
 
 /*
- * call-seq:
- *   CvMat.new(<i>row, col[, depth = CV_8U][, channel = 3]</i>) -> cvmat
- *
- * Create col * row matrix. Each element set 0.
- *
- * Each element possigle range is set by <i>depth</i>. Default is unsigned 8bit.
- *
- * Number of channel is set by <i>channel</i>. <i>channel</i> should be 1..4.
- *
+ * Creates a matrix
+ * @overload new(rows, cols, depth = CV_8U, channels = 3)
+ * @param row [Integer] Number of rows in the matrix
+ * @param col [Integer] Number of columns in the matrix
+ * @param depth [Integer, Symbol] Depth type in the matrix.
+ *   The type of the matrix elements in the form of constant <b><tt>CV_<bit depth><S|U|F></tt></b>
+ *   or symbol <b><tt>:cv<bit depth><s|u|f></tt></b>, where S=signed, U=unsigned, F=float.
+ * @param channels [Integer] Number of channels in the matrix
+ * @return [CvMat] Created matrix
+ * @opencv_func cvCreateMat
+ * @example
+ *   mat1 = CvMat.new(3, 4) # Creates a 3-channels 3x4 matrix whose elements are 8bit unsigned.
+ *   mat2 = CvMat.new(5, 6, CV_32F, 1) # Creates a 1-channel 5x6 matrix whose elements are 32bit float.
+ *   mat3 = CvMat.new(5, 6, :cv32f, 1) # Same as CvMat.new(5, 6, CV_32F, 1)
  */
 VALUE
 rb_initialize(int argc, VALUE *argv, VALUE self)
@@ -456,20 +142,16 @@ rb_initialize(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   CvMat::load(<i>filename[,iscolor = CV_LOAD_IMAGE_COLOR]</i>)
- *
- * Load an image from file.
- *  iscolor = CV_LOAD_IMAGE_COLOR, the loaded image is forced to be a 3-channel color image
- *  iscolor = CV_LOAD_IMAGE_GRAYSCALE, the loaded image is forced to be grayscale
- *  iscolor = CV_LOAD_IMAGE_UNCHANGED, the loaded image will be loaded as is.
- * Currently the following file format are supported.
- * * Windows bitmaps - BMP,DIB
- * * JPEG files - JPEG,JPG,JPE
- * * Portable Network Graphics - PNG
- * * Portable image format - PBM,PGM,PPM
- * * Sun rasters - SR,RAS
- * * TIFF files - TIFF,TIF
+ * Load an image from the specified file
+ * @overload load(filename, iscolor = 1)
+ * @param filename [String] Name of file to be loaded
+ * @param iscolor [Integer] Flags specifying the color type of a loaded image:
+ *   - <b>> 0</b> Return a 3-channel color image.
+ *   - <b>= 0</b> Return a grayscale image.
+ *   - <b>< 0</b> Return the loaded image as is.
+ * @return [CvMat] Loaded image
+ * @opencv_func cvLoadImageM
+ * @scope class
  */
 VALUE
 rb_load_imageM(int argc, VALUE *argv, VALUE self)
@@ -501,14 +183,26 @@ rb_load_imageM(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   encode_image(ext [,params]) -> Array<Integer>
- *
  * Encodes an image into a memory buffer.
+ * @overload encode_image(ext, params = nil)
+ *   @param ext [String] File extension that defines the output format ('.jpg', '.png', ...)
+ *   @param params [Hash] - Format-specific parameters.
+ *   @option params [Integer] CV_IMWRITE_JPEG_QUALITY (95) For JPEG, it can be a quality
+ *     ( CV_IMWRITE_JPEG_QUALITY ) from 0 to 100 (the higher is the better).
+ *   @option params [Integer] CV_IMWRITE_PNG_COMPRESSION (3) For PNG, it can be the compression
+ *     level ( CV_IMWRITE_PNG_COMPRESSION ) from 0 to 9. A higher value means a smaller size
+ *     and longer compression time.
+ *   @option params [Integer] CV_IMWRITE_PXM_BINARY (1) For PPM, PGM, or PBM, it can be a binary
+ *     format flag ( CV_IMWRITE_PXM_BINARY ), 0 or 1.
+ * @return [Array<Integer>] Encoded image as array of bytes.
+ * @opencv_func cvEncodeImage
+ * @example
+ *   jpg = CvMat.load('image.jpg')
+ *   bytes1 = jpg.encode_image('.jpg') # Encodes a JPEG image which quality is 95
+ *   bytes2 = jpg.encode_image('.jpg', CV_IMWRITE_JPEG_QUALITY => 10) # Encodes a JPEG image which quality is 10
  *
- * Parameters:
- *   ext <String> - File extension that defines the output format ('.jpg', '.png', ...)
- *   params <Hash> - Format-specific parameters.
+ *   png = CvMat.load('image.png')
+ *   bytes3 = mat.encode_image('.png', CV_IMWRITE_PNG_COMPRESSION => 1)  # Encodes a PNG image which compression level is 1
  */
 VALUE
 rb_encode_imageM(int argc, VALUE *argv, VALUE self)
@@ -595,14 +289,12 @@ prepare_decoding(int argc, VALUE *argv, int* iscolor, int* need_release)
 }
 
 /*
- * call-seq:
- *   decode_image(buf[, iscolor=CV_LOAD_IMAGE_COLOR]) -> CvMat
- *
  * Reads an image from a buffer in memory.
- *
- * Parameters:
- *   buf <CvMat, Array, String> - Input array
- *   iscolor <Integer> - Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ * @overload decode_image(buf, iscolor = 1)
+ * @param buf [CvMat, Array, String] Input array of bytes
+ * @param iscolor [Integer] Flags specifying the color type of a decoded image (the same flags as CvMat#load)
+ * @return [CvMat] Loaded matrix
+ * @opencv_func cvDecodeImageM
  */
 VALUE
 rb_decode_imageM(int argc, VALUE *argv, VALUE self)
@@ -638,12 +330,8 @@ rb_method_missing(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   to_s -> string
- *
- * Return following string.
- *   m = CvMat.new(100, 100, :cv8u, 3)
- *   m.to_s # => <CvMat:100x100,depth=cv8u,channel=3>
+ * @overload to_s
+ * @return [String] String representation of the matrix
  */
 VALUE
 rb_to_s(VALUE self)
@@ -660,10 +348,13 @@ rb_to_s(VALUE self)
 }
 
 /*
- * call-seq:
- *   inside?(obj) -> true or false
- *
- *
+ * Tests whether a coordinate or rectangle is inside of the matrix
+ * @overload inside?(point)
+ *   @param obj [#x, #y] Tested coordinate
+ * @overload inside?(rect)
+ *   @param obj [#x, #y, #width, #height] Tested rectangle
+ * @return [Boolean] If the point or rectangle is inside of the matrix, return <tt>true</tt>.
+ *   If not, return <tt>false</tt>.
  */
 VALUE
 rb_inside_q(VALUE self, VALUE object)
@@ -687,10 +378,11 @@ rb_inside_q(VALUE self, VALUE object)
 }
 
 /*
- * call-seq:
- *    to_IplConvKernel -> iplconvkernel
- *
- * Create IplConvKernel from this matrix.
+ * Creates a structuring element from the matrix for morphological operations.
+ * @overload to_IplConvKernel(anchor)
+ * @param anchor [CvPoint] Anchor position within the element
+ * @return [IplConvKernel] Created IplConvKernel
+ * @opencv_func cvCreateStructuringElementEx
  */
 VALUE
 rb_to_IplConvKernel(VALUE self, VALUE anchor)
@@ -703,10 +395,10 @@ rb_to_IplConvKernel(VALUE self, VALUE anchor)
 }
 
 /*
- * call-seq:
- *   create_mask -> cvmat(single-channel 8bit unsinged image)
- *
- * Create single-channel 8bit unsinged image that filled 0.
+ * Creates a mask (1-channel 8bit unsinged image whose elements are 0) from the matrix.
+ * The size of the mask is the same as source matrix.
+ * @overload create_mask
+ * @return [CvMat] Created mask
  */
 VALUE
 rb_create_mask(VALUE self)
@@ -722,10 +414,9 @@ rb_create_mask(VALUE self)
 }
 
 /*
- * call-seq:
- *   width -> int
- *
- * Return number of columns.
+ * Returns number of columns of the matrix.
+ * @overload width
+ * @return [Integer] Number of columns of the matrix
  */
 VALUE
 rb_width(VALUE self)
@@ -734,10 +425,9 @@ rb_width(VALUE self)
 }
 
 /*
- * call-seq:
- *   height -> int
- *
- * Return number of rows.
+ * Returns number of rows of the matrix.
+ * @overload rows
+ * @return [Integer] Number of rows of the matrix
  */
 VALUE
 rb_height(VALUE self)
@@ -746,10 +436,10 @@ rb_height(VALUE self)
 }
 
 /*
- * call-seq:
- *   depth -> symbol
- *
- * Return depth symbol. (see OpenCV::DEPTH)
+ * Returns depth type of the matrix
+ * @overload depth
+ * @return [Symbol] Depth type in the form of symbol <b><tt>:cv<bit depth><s|u|f></tt></b>,
+ *   where s=signed, u=unsigned, f=float.
  */
 VALUE
 rb_depth(VALUE self)
@@ -759,10 +449,9 @@ rb_depth(VALUE self)
 }
 
 /*
- * call-seq:
- *   channel -> int (1 < channel < 4)
- *
- * Return number of channel.
+ * Returns number of channels of the matrix
+ * @overload channel
+ * @return [Integer] Number of channels of the matrix
  */
 VALUE
 rb_channel(VALUE self)
@@ -771,10 +460,8 @@ rb_channel(VALUE self)
 }
 
 /*
- * call-seq:
- *   data -> binary (by String class)
- *
- * Return raw data of matrix.
+ * @overload data
+ * @deprecated This method will be removed.
  */
 VALUE
 rb_data(VALUE self)
@@ -784,24 +471,10 @@ rb_data(VALUE self)
 }
 
 /*
- * call-seq:
- *   clone -> cvmat
- *
- * Clone matrix.
- * Instance-specific method is succeeded.
- *
- *   module M
- *     def example
- *       true
- *     end
- *   end
- *
- *   mat.extend M
- *   mat.example   #=> true
- *   clone = mat.clone
- *   clone.example #=> true
- *   copy = mat.copy
- *   copy.example  #=> raise NoMethodError
+ * Makes a clone of an object.
+ * @overload clone
+ * @return [CvMat] Clone of the object
+ * @opencv_func cvClone
  */
 VALUE
 rb_clone(VALUE self)
@@ -817,30 +490,12 @@ rb_clone(VALUE self)
 }
 
 /*
- * call-seq:
- *   copy() -> cvmat
- *   copy(<i>mat</i>) -> mat
- *   copy(<i>val</i>) -> array(include cvmat)
- *
- * Copy matrix.
- * Instance-specific method is *NOT* succeeded. see also #clone.
- *
- * There are 3 kind behavior depending on the argument.
- *
- *   copy()
- *     Return one copied matrix.
- *   copy(mat)
- *     Copy own elements to target matrix. Return nil.
- *     Size (or ROI) and channel and depth should be match.
- *     If own width or height does not match target matrix, raise CvUnmatchedSizes
- *     If own channel or depth does not match target matrix, raise CvUnmatchedFormats
- *   copy(val)
- *     The amounts of the specified number are copied. Return Array with copies.
- *     If you give the 0 or negative value. Return nil.
- *       mat.copy(3)  #=> [mat1, mat2, mat3]
- *       mat.copy(-1) #=> nil
- *
- * When not apply to any, raise ArgumentError
+ * Copies one matrix to another.
+ * @overload copy(mat)
+ * @param mat [CvMat]
+ * @return [nil]
+ * @opencv_func cvCopy
+ * @deprecated This method will be removed.
  */
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
@@ -915,10 +570,11 @@ rb_to_X_internal(VALUE self, int depth)
 }
 
 /*
- * call-seq:
- *   to_8u -> cvmat(depth = CV_8U)
- *
- * Return the new matrix that elements is converted to unsigned 8bit.
+ * Converts the matrix to 8bit unsigned.
+ * @overload to_8u
+ * @return [CvMat] Converted matrix which depth is 8bit unsigned.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_8u(VALUE self)
@@ -927,10 +583,11 @@ rb_to_8u(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_8s -> cvmat(depth = CV_8S)
- *
- * Return the new matrix that elements is converted to signed 8bit.
+ * Converts the matrix to 8bit signed.
+ * @overload to_8s
+ * @return [CvMat] Converted matrix which depth is 8bit signed.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_8s(VALUE self)
@@ -939,10 +596,11 @@ rb_to_8s(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_16u -> cvmat(depth = CV_16U)
- *
- * Return the new matrix that elements is converted to unsigned 16bit.
+ * Converts the matrix to 16bit unsigned.
+ * @overload to_16u
+ * @return [CvMat] Converted matrix which depth is 16bit unsigned.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE rb_to_16u(VALUE self)
 {
@@ -950,10 +608,11 @@ VALUE rb_to_16u(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_16s -> cvmat(depth = CV_16s)
- *
- * Return the new matrix that elements is converted to signed 16bit.
+ * Converts the matrix to 16bit signed.
+ * @overload to_16s
+ * @return [CvMat] Converted matrix which depth is 16bit signed.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_16s(VALUE self)
@@ -962,10 +621,11 @@ rb_to_16s(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_32s -> cvmat(depth = CV_32S)
- *
- * Return the new matrix that elements is converted to signed 32bit.
+ * Converts the matrix to 32bit signed.
+ * @overload to_32s
+ * @return [CvMat] Converted matrix which depth is 32bit signed.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_32s(VALUE self)
@@ -974,10 +634,11 @@ rb_to_32s(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_32f -> cvmat(depth = CV_32F)
- *
- * Return the new matrix that elements is converted to 32bit floating-point.
+ * Converts the matrix to 32bit float.
+ * @overload to_32f
+ * @return [CvMat] Converted matrix which depth is 32bit float.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_32f(VALUE self)
@@ -986,10 +647,11 @@ rb_to_32f(VALUE self)
 }
 
 /*
- * call-seq:
- *   to_64F -> cvmat(depth = CV_64F)
- *
- * Return the new matrix that elements is converted to 64bit floating-point.
+ * Converts the matrix to 64bit float.
+ * @overload to_64f
+ * @return [CvMat] Converted matrix which depth is 64bit float.
+ *   The size and channels of the new matrix are same as the source.
+ * @opencv_func cvConvert
  */
 VALUE
 rb_to_64f(VALUE self)
@@ -998,10 +660,10 @@ rb_to_64f(VALUE self)
 }
 
 /*
- * call-seq:
- *   vector? -> true or false
- *
- * If #width or #height is 1, return true. Otherwise return false.
+ * Returns whether the matrix is a vector.
+ * @overload vector?
+ * @return [Boolean] If width or height of the matrix is 1, returns <tt>true</tt>.
+ *   if not, returns <tt>false</tt>.
  */
 VALUE
 rb_vector_q(VALUE self)
@@ -1011,10 +673,10 @@ rb_vector_q(VALUE self)
 }
 
 /*
- * call-seq:
- *   square? -> true or false
- *
- * If #width == #height return true. Otherwise return false.
+ * Returns whether the matrix is a square.
+ * @overload square?
+ * @return [Boolean] If width = height, returns <tt>true</tt>.
+ *   if not, returns <tt>false</tt>.
  */
 VALUE
 rb_square_q(VALUE self)
@@ -1027,12 +689,9 @@ rb_square_q(VALUE self)
        cxcore function
 ************************************************************/
 /*
- * Return CvMat object with reference to caller-object.
- *
- *   src = CvMat.new(10, 10)
- *   mat = src.to_CvMat
- *
- * In C, src->data and mat->data are common. Therefore, they cause changes with each other.
+ * Converts an object to CvMat
+ * @overload to_CvMat
+ * @return [CvMat] Converted matrix
  */
 VALUE
 rb_to_CvMat(VALUE self)
@@ -1052,17 +711,21 @@ rb_to_CvMat(VALUE self)
 }
 
 /*
- * call-seq:
- *   sub_rect(<i>rect</i>) -> cvmat
- *   sub_rect(<i>topleft</i>, <i>size</i>) -> cvmat
- *   sub_rect(<i>x, y, width, height</i>) -> cvmat
- *
- * Return parts of self as CvMat.
- *
- * <i>p</i> or <i>x</i>,<i>y</i> mean top-left coordinate.
- * <i>size</i> or <i>width</i>,<i>height</i> is size.
- *
- * link:../images/CvMat_sub_rect.png
+ * Returns matrix corresponding to the rectangular sub-array of input image or matrix
+ * @overload sub_rect(rect)
+ *   @param rect [CvRect] Zero-based coordinates of the rectangle of interest.
+ * @overload sub_rect(topleft, size)
+ *   @param topleft [CvPoint] Top-left coordinates of the rectangle of interest
+ *   @param size [CvSize] Size of the rectangle of interest
+ * @overload sub_rect(x, y, width, height)
+ *   @param x [Integer] X-coordinate of the rectangle of interest
+ *   @param y [Integer] Y-coordinate of the rectangle of interest
+ *   @param width [Integer] Width of the rectangle of interest
+ *   @param height [Integer] Height of the rectangle of interest
+ * @return [CvMat] Sub-array of matrix
+ * @opencv_func cvGetSubRect
+ * 
+ * link:../../images/CvMat_sub_rect.png
  */
 VALUE
 rb_sub_rect(VALUE self, VALUE args)
@@ -1103,12 +766,15 @@ rb_sub_rect(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   get_rows(<i>n</i>)            -> Return row
- *   get_rows(<i>n1, n2, ...</i>)  -> Return Array of row
- *
- * Return row(or rows) of matrix.
- * argument should be Fixnum or CvSlice compatible object.
+ * Returns array of row or row span.
+ * @overload get_rows(index)
+ *   @param index [Integer] Zero-based index of the selected row
+ *   @return [CvMat] Selected row
+ * @overload get_rows(range)
+ *   @param range [Range] Zero-based index range of the selected row
+ *   @return [Array<CvMat>]Array of selected row
+ * @opencv_func cvGetRow
+ * @opencv_func cvGetRows
  */
 VALUE
 rb_get_rows(VALUE self, VALUE args)
@@ -1140,12 +806,15 @@ rb_get_rows(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   get_cols(<i>n</i>)            -> Return column
- *   get_cols(<i>n1, n2, ...</i>)  -> Return Array of columns
- *
- * Return column(or columns) of matrix.
- * argument should be Fixnum or CvSlice compatible object.
+ * Returns array of column or column span.
+ * @overload get_cols(index)
+ *   @param index [Integer] Zero-based index of the selected column
+ *   @return [CvMat] Selected column
+ * @overload get_cols(range)
+ *   @param range [Range] Zero-based index range of the selected column
+ *   @return [Array<CvMat>]Array of selected column
+ * @opencv_func cvGetCol
+ * @opencv_func cvGetCols
  */
 VALUE
 rb_get_cols(VALUE self, VALUE args)
@@ -1176,12 +845,12 @@ rb_get_cols(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   each_row {|row| ... } -> self
- *
- * Calls block once for each row in self, passing that element as a parameter.
- *
- * see also CvMat#each_col
+ * Calls <i>block</i> once for each row in the matrix, passing that
+ * row as a parameter.
+ * @yield [row] Each row in the matrix
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvGetRow
+ * @todo To return an enumerator if no block is given
  */
 VALUE
 rb_each_row(VALUE self)
@@ -1203,12 +872,12 @@ rb_each_row(VALUE self)
 }
 
 /*
- * call-seq:
- *   each_col {|col| ... } -> self
- *
- * Calls block once for each column in self, passing that element as a parameter.
- *
- * see also CvMat#each_row
+ * Calls <i>block</i> once for each column in the matrix, passing that
+ * column as a parameter.
+ * @yield [col] Each column in the matrix
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvGetCol
+ * @todo To return an enumerator if no block is given
  */
 VALUE
 rb_each_col(VALUE self)
@@ -1230,12 +899,13 @@ rb_each_col(VALUE self)
 }
 
 /*
- * call-seq:
- *   diag(<i>[val = 0]</i>) -> cvmat
- *
- * Return one of array diagonals.
- * <i>val</i> is zero corresponds to the main diagonal, -1 corresponds to the diagonal above the main etc, 1 corresponds to the diagonal below the main etc.
- *
+ * Returns a specified diagonal of the matrix
+ * @overload diag(val = 0)
+ * @param val [Integer] Index of the array diagonal. Zero value corresponds to the main diagonal,
+ *   -1 corresponds to the diagonal above the main, 1 corresponds to the diagonal below the main,
+ *   and so forth.
+ * @return [CvMat] Specified diagonal
+ * @opencv_func cvGetDiag
  */
 VALUE
 rb_diag(int argc, VALUE *argv, VALUE self)
@@ -1255,10 +925,10 @@ rb_diag(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   size -> cvsize
- *
- * Return size by CvSize
+ * Returns size of the matrix
+ * @overload size
+ * @return [CvSize] Size of the matrix
+ * @opencv_func cvGetSize
  */
 VALUE
 rb_size(VALUE self)
@@ -1274,11 +944,11 @@ rb_size(VALUE self)
 }
 
 /*
- * call-seq:
- *   dims -> array(int, int, ...)
- *
- * Return number of array dimensions and their sizes or the size of particular dimension.
- * In case of CvMat it always returns 2 regardless of number of matrix rows.
+ * Returns array dimensions sizes
+ * @overload dims
+ * @return [Array<Integer>] Array dimensions sizes.
+ *   For 2d arrays the number of rows (height) goes first, number of columns (width) next.
+ * @opencv_func cvGetDims
  */
 VALUE
 rb_dims(VALUE self)
@@ -1299,12 +969,13 @@ rb_dims(VALUE self)
 }
 
 /*
- * call-seq:
- *   dim_size(<i>index</i>) -> int
- *
- * Return number of dimension.
- * almost same as CvMat#dims[<i>index</i>].
- * If the dimension specified with index doesn't exist, CvStatusOutOfRange raise.
+ * Returns array size along the specified dimension.
+ * @overload dim_size(index)
+ * @param index [Intger] Zero-based dimension index
+ *   (for matrices 0 means number of rows, 1 means number of columns;
+ *   for images 0 means height, 1 means width)
+ * @return [Integer] Array size
+ * @opencv_func cvGetDimSize
  */
 VALUE
 rb_dim_size(VALUE self, VALUE index)
@@ -1320,10 +991,17 @@ rb_dim_size(VALUE self, VALUE index)
 }
 
 /*
- * call-seq:
- *   [<i>idx1[,idx2]...</i>]
- *
- * Return value of the particular array element as CvScalar.
+ * Returns a specific array element.
+ * @overload [](idx0)
+ * @overload [](idx0, idx1)
+ * @overload [](idx0, idx1, idx2)
+ * @overload [](idx0, idx1, idx2, ...)
+ * @param idx-n [Integer] Zero-based component of the element index
+ * @return [CvScalar] Array element
+ * @opencv_func cvGet1D
+ * @opencv_func cvGet2D
+ * @opencv_func cvGet3D
+ * @opencv_func cvGetND
  */
 VALUE
 rb_aref(VALUE self, VALUE args)
@@ -1353,11 +1031,18 @@ rb_aref(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   [<i>idx1[,idx2]...</i>] = <i>value</i>
- *
- * Set value of the particular array element to <i>value</i>.
- * <i>value</i> should be CvScalar.
+ * Changes the particular array element
+ * @overload []=(idx0, value)
+ * @overload []=(idx0, idx1, value)
+ * @overload []=(idx0, idx1, idx2, value)
+ * @overload []=(idx0, idx1, idx2, ..., value)
+ * @param idx-n [Integer] Zero-based component of the element index
+ * @param value [CvScalar] The assigned value
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSet1D
+ * @opencv_func cvSet2D
+ * @opencv_func cvSet3D
+ * @opencv_func cvSetND
  */
 VALUE
 rb_aset(VALUE self, VALUE args)
@@ -1387,11 +1072,11 @@ rb_aset(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   set_data(<i>data</i>)
- *
- * Assigns user data to the array header.
- * <i>data</i> should be Array which contains numbers.
+ * Assigns user data to the array header
+ * @overload set_data(data)
+ * @param data [Array<Integer>] User data
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSetData
  */
 VALUE
 rb_set_data(VALUE self, VALUE data)
@@ -1454,16 +1139,16 @@ rb_set_data(VALUE self, VALUE data)
 }
 
 /*
- * call-seq:
- *   set(<i>value[, mask]</i>) -> cvmat
+ * Returns a matrix which is set every element to a given value.
+ * The function copies the scalar value to every selected element of the destination array:
+ *   mat[I] = value if mask(I) != 0
  *
- * Return CvMat copied value to every selected element. value should be CvScalar or compatible object.
- *   self[I] = value if mask(I)!=0
- *
- * note: This method support ROI on IplImage class. but COI not support. COI should not be set.
- *   image = IplImage.new(10, 20)         #=> create 3 channel image.
- *   image.coi = 1                        #=> set COI
- *   image.set(CvScalar.new(10, 20, 30)) #=> raise CvBadCOI error.
+ * @overload fill(value, mask = nil) Fill value
+ * @param value [CvScalar]
+ * @param mask [CvMat] Operation mask, 8-bit single channel array;
+ *   specifies elements of the destination array to be changed
+ * @return [CvMat] Matrix which is set every element to a given value.
+ * @opencv_func cvSet
  */
 VALUE
 rb_set(int argc, VALUE *argv, VALUE self)
@@ -1472,13 +1157,14 @@ rb_set(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   set!(<i>value[, mask]</i>) -> self
+ * Sets every element of the matrix to a given value.
+ * The function copies the scalar value to every selected element of the destination array:
+ *   mat[I] = value if mask(I) != 0
  *
- * Copie value to every selected element.
- *  self[I] = value if mask(I)!=0
- *
- * see also #set.
+ * @overload fill!(value, mask = nil)
+ * @param (see #fill)
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSet
  */
 VALUE
 rb_set_bang(int argc, VALUE *argv, VALUE self)
@@ -1495,16 +1181,12 @@ rb_set_bang(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   save_image(<i>filename, params = nil</i>) -> self
- *
- * Saves an image to file. The image format is chosen depending on the filename extension.
- * Only 8bit single-channel or 3-channel(with 'BGR' channel order) image can be saved.
- *
- * e.g.
- *   image = OpenCV::CvMat.new(10, 10, CV_8U, 3)
- *   image.save_image("image.jpg") #=> save as JPEG format
- *   image.save_image("image.png") #=> save as PNG format
+ * Saves an image to a specified file.
+ * The image format is chosen based on the filename extension.
+ * @overload save_image(filename)
+ * @param filename [String] Name of the file
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSaveImage 
  */
 VALUE
 rb_save_image(int argc, VALUE *argv, VALUE self)
@@ -5917,6 +5599,295 @@ new_mat_kind_object(CvSize size, VALUE ref_obj, int cvmat_depth, int channel)
     rb_raise(rb_eNotImpError, "Only CvMat or IplImage are supported");
 
   return Qnil;
+}
+
+void
+init_ruby_class()
+{
+#if 0
+  // For documentation using YARD
+  VALUE opencv = rb_define_module("OpenCV");
+#endif
+
+  if (rb_klass)
+    return;
+  VALUE opencv = rb_module_opencv();
+
+  rb_klass = rb_define_class_under(opencv, "CvMat", rb_cObject);
+  rb_define_alloc_func(rb_klass, rb_allocate);
+
+  VALUE drawing_option = rb_hash_new();
+  rb_define_const(rb_klass, "DRAWING_OPTION", drawing_option);
+  rb_hash_aset(drawing_option, ID2SYM(rb_intern("color")), cCvScalar::new_object(cvScalarAll(0)));
+  rb_hash_aset(drawing_option, ID2SYM(rb_intern("thickness")), INT2FIX(1));
+  rb_hash_aset(drawing_option, ID2SYM(rb_intern("line_type")), INT2FIX(8));
+  rb_hash_aset(drawing_option, ID2SYM(rb_intern("shift")), INT2FIX(0));
+
+  VALUE good_features_to_track_option = rb_hash_new();
+  rb_define_const(rb_klass, "GOOD_FEATURES_TO_TRACK_OPTION", good_features_to_track_option);
+  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("max")), INT2FIX(0xFF));
+  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("mask")), Qnil);
+  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("block_size")), INT2FIX(3));
+  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("use_harris")), Qfalse);
+  rb_hash_aset(good_features_to_track_option, ID2SYM(rb_intern("k")), rb_float_new(0.04));
+
+  VALUE flood_fill_option = rb_hash_new();
+  rb_define_const(rb_klass, "FLOOD_FILL_OPTION", flood_fill_option);
+  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("connectivity")), INT2FIX(4));
+  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("fixed_range")), Qfalse);
+  rb_hash_aset(flood_fill_option, ID2SYM(rb_intern("mask_only")), Qfalse);
+
+  VALUE find_contours_option = rb_hash_new();
+  rb_define_const(rb_klass, "FIND_CONTOURS_OPTION", find_contours_option);
+  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("mode")), INT2FIX(CV_RETR_LIST));
+  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("method")), INT2FIX(CV_CHAIN_APPROX_SIMPLE));
+  rb_hash_aset(find_contours_option, ID2SYM(rb_intern("offset")), cCvPoint::new_object(cvPoint(0,0)));
+
+  VALUE optical_flow_hs_option = rb_hash_new();
+  rb_define_const(rb_klass, "OPTICAL_FLOW_HS_OPTION", optical_flow_hs_option);
+  rb_hash_aset(optical_flow_hs_option, ID2SYM(rb_intern("lambda")), rb_float_new(0.0005));
+  rb_hash_aset(optical_flow_hs_option, ID2SYM(rb_intern("criteria")), cCvTermCriteria::new_object(cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 1, 0.001)));
+
+  VALUE optical_flow_bm_option = rb_hash_new();
+  rb_define_const(rb_klass, "OPTICAL_FLOW_BM_OPTION", optical_flow_bm_option);
+  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("block_size")), cCvSize::new_object(cvSize(4, 4)));
+  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("shift_size")), cCvSize::new_object(cvSize(1, 1)));
+  rb_hash_aset(optical_flow_bm_option, ID2SYM(rb_intern("max_range")),  cCvSize::new_object(cvSize(4, 4)));
+
+  VALUE find_fundamental_matrix_option = rb_hash_new();
+  rb_define_const(rb_klass, "FIND_FUNDAMENTAL_MAT_OPTION", find_fundamental_matrix_option);
+  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("with_status")), Qfalse);
+  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("maximum_distance")), rb_float_new(1.0));
+  rb_hash_aset(find_fundamental_matrix_option, ID2SYM(rb_intern("desirable_level")), rb_float_new(0.99));
+
+  rb_define_method(rb_klass, "initialize", RUBY_METHOD_FUNC(rb_initialize), -1);
+  rb_define_singleton_method(rb_klass, "load", RUBY_METHOD_FUNC(rb_load_imageM), -1);
+  // Ruby/OpenCV original functions
+  rb_define_method(rb_klass, "method_missing", RUBY_METHOD_FUNC(rb_method_missing), -1);
+  rb_define_method(rb_klass, "to_s", RUBY_METHOD_FUNC(rb_to_s), 0);
+  rb_define_method(rb_klass, "inside?", RUBY_METHOD_FUNC(rb_inside_q), 1);
+  rb_define_method(rb_klass, "to_IplConvKernel", RUBY_METHOD_FUNC(rb_to_IplConvKernel), 1);
+  rb_define_method(rb_klass, "create_mask", RUBY_METHOD_FUNC(rb_create_mask), 0);
+
+  rb_define_method(rb_klass, "width", RUBY_METHOD_FUNC(rb_width), 0);
+  rb_define_alias(rb_klass, "columns", "width");
+  rb_define_alias(rb_klass, "cols", "width");
+  rb_define_method(rb_klass, "height", RUBY_METHOD_FUNC(rb_height), 0);
+  rb_define_alias(rb_klass, "rows", "height");
+  rb_define_method(rb_klass, "depth", RUBY_METHOD_FUNC(rb_depth), 0);
+  rb_define_method(rb_klass, "channel", RUBY_METHOD_FUNC(rb_channel), 0);
+  rb_define_method(rb_klass, "data", RUBY_METHOD_FUNC(rb_data), 0);
+
+  rb_define_method(rb_klass, "clone", RUBY_METHOD_FUNC(rb_clone), 0);
+  rb_define_method(rb_klass, "copy", RUBY_METHOD_FUNC(rb_copy), -1);
+  rb_define_method(rb_klass, "to_8u", RUBY_METHOD_FUNC(rb_to_8u), 0);
+  rb_define_method(rb_klass, "to_8s", RUBY_METHOD_FUNC(rb_to_8s), 0);
+  rb_define_method(rb_klass, "to_16u", RUBY_METHOD_FUNC(rb_to_16u), 0);
+  rb_define_method(rb_klass, "to_16s", RUBY_METHOD_FUNC(rb_to_16s), 0);
+  rb_define_method(rb_klass, "to_32s", RUBY_METHOD_FUNC(rb_to_32s), 0);
+  rb_define_method(rb_klass, "to_32f", RUBY_METHOD_FUNC(rb_to_32f), 0);
+  rb_define_method(rb_klass, "to_64f", RUBY_METHOD_FUNC(rb_to_64f), 0);
+  rb_define_method(rb_klass, "vector?", RUBY_METHOD_FUNC(rb_vector_q), 0);
+  rb_define_method(rb_klass, "square?", RUBY_METHOD_FUNC(rb_square_q), 0);
+
+  rb_define_method(rb_klass, "to_CvMat", RUBY_METHOD_FUNC(rb_to_CvMat), 0);
+  rb_define_method(rb_klass, "sub_rect", RUBY_METHOD_FUNC(rb_sub_rect), -2);
+  rb_define_alias(rb_klass, "subrect", "sub_rect");
+  rb_define_method(rb_klass, "get_rows", RUBY_METHOD_FUNC(rb_get_rows), -2);
+  rb_define_method(rb_klass, "get_cols", RUBY_METHOD_FUNC(rb_get_cols), -2);
+  rb_define_method(rb_klass, "each_row", RUBY_METHOD_FUNC(rb_each_row), 0);
+  rb_define_method(rb_klass, "each_col", RUBY_METHOD_FUNC(rb_each_col), 0);
+  rb_define_alias(rb_klass, "each_column", "each_col");
+  rb_define_method(rb_klass, "diag", RUBY_METHOD_FUNC(rb_diag), -1);
+  rb_define_alias(rb_klass, "diagonal", "diag");
+  rb_define_method(rb_klass, "size", RUBY_METHOD_FUNC(rb_size), 0);
+  rb_define_method(rb_klass, "dims", RUBY_METHOD_FUNC(rb_dims), 0);
+  rb_define_method(rb_klass, "dim_size", RUBY_METHOD_FUNC(rb_dim_size), 1);
+  rb_define_method(rb_klass, "[]", RUBY_METHOD_FUNC(rb_aref), -2);
+  rb_define_alias(rb_klass, "at", "[]");
+  rb_define_method(rb_klass, "[]=", RUBY_METHOD_FUNC(rb_aset), -2);
+  rb_define_method(rb_klass, "set_data", RUBY_METHOD_FUNC(rb_set_data), 1);
+  rb_define_method(rb_klass, "set", RUBY_METHOD_FUNC(rb_set), -1);
+  rb_define_alias(rb_klass, "fill", "set");
+  rb_define_method(rb_klass, "set!", RUBY_METHOD_FUNC(rb_set_bang), -1);
+  rb_define_alias(rb_klass, "fill!", "set!");
+  rb_define_method(rb_klass, "set_zero", RUBY_METHOD_FUNC(rb_set_zero), 0);
+  rb_define_alias(rb_klass, "clear", "set_zero");
+  rb_define_alias(rb_klass, "zero", "set_zero");
+  rb_define_method(rb_klass, "set_zero!", RUBY_METHOD_FUNC(rb_set_zero_bang), 0);
+  rb_define_alias(rb_klass, "clear!", "set_zero!");
+  rb_define_alias(rb_klass, "zero!", "set_zero!");
+  rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
+  rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
+  rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);
+  rb_define_method(rb_klass, "range!", RUBY_METHOD_FUNC(rb_range_bang), 2);
+
+  rb_define_method(rb_klass, "reshape", RUBY_METHOD_FUNC(rb_reshape), 1);
+  rb_define_method(rb_klass, "repeat", RUBY_METHOD_FUNC(rb_repeat), 1);
+  rb_define_method(rb_klass, "flip", RUBY_METHOD_FUNC(rb_flip), -1);
+  rb_define_method(rb_klass, "flip!", RUBY_METHOD_FUNC(rb_flip_bang), -1);
+  rb_define_method(rb_klass, "split", RUBY_METHOD_FUNC(rb_split), 0);
+  rb_define_singleton_method(rb_klass, "merge", RUBY_METHOD_FUNC(rb_merge), -2);
+  rb_define_method(rb_klass, "rand_shuffle", RUBY_METHOD_FUNC(rb_rand_shuffle), -1);
+  rb_define_method(rb_klass, "rand_shuffle!", RUBY_METHOD_FUNC(rb_rand_shuffle_bang), -1);
+  rb_define_method(rb_klass, "lut", RUBY_METHOD_FUNC(rb_lut), 1);
+  rb_define_method(rb_klass, "convert_scale", RUBY_METHOD_FUNC(rb_convert_scale), 1);
+  rb_define_method(rb_klass, "convert_scale_abs", RUBY_METHOD_FUNC(rb_convert_scale_abs), 1);
+  rb_define_method(rb_klass, "add", RUBY_METHOD_FUNC(rb_add), -1);
+  rb_define_alias(rb_klass, "+", "add");
+  rb_define_method(rb_klass, "sub", RUBY_METHOD_FUNC(rb_sub), -1);
+  rb_define_alias(rb_klass, "-", "sub");
+  rb_define_method(rb_klass, "mul", RUBY_METHOD_FUNC(rb_mul), -1);
+  rb_define_method(rb_klass, "mat_mul", RUBY_METHOD_FUNC(rb_mat_mul), -1);
+  rb_define_alias(rb_klass, "*", "mat_mul");
+  rb_define_method(rb_klass, "div", RUBY_METHOD_FUNC(rb_div), -1);
+  rb_define_alias(rb_klass, "/", "div");
+  rb_define_singleton_method(rb_klass, "add_weighted", RUBY_METHOD_FUNC(rb_add_weighted), 5);
+  rb_define_method(rb_klass, "and", RUBY_METHOD_FUNC(rb_and), -1);
+  rb_define_alias(rb_klass, "&", "and");
+  rb_define_method(rb_klass, "or", RUBY_METHOD_FUNC(rb_or), -1);
+  rb_define_alias(rb_klass, "|", "or");
+  rb_define_method(rb_klass, "xor", RUBY_METHOD_FUNC(rb_xor), -1);
+  rb_define_alias(rb_klass, "^", "xor");
+  rb_define_method(rb_klass, "not", RUBY_METHOD_FUNC(rb_not), 0);
+  rb_define_method(rb_klass, "not!", RUBY_METHOD_FUNC(rb_not_bang), 0);
+  rb_define_method(rb_klass, "eq", RUBY_METHOD_FUNC(rb_eq), 1);
+  rb_define_method(rb_klass, "gt", RUBY_METHOD_FUNC(rb_gt), 1);
+  rb_define_method(rb_klass, "ge", RUBY_METHOD_FUNC(rb_ge), 1);
+  rb_define_method(rb_klass, "lt", RUBY_METHOD_FUNC(rb_lt), 1);
+  rb_define_method(rb_klass, "le", RUBY_METHOD_FUNC(rb_le), 1);
+  rb_define_method(rb_klass, "ne", RUBY_METHOD_FUNC(rb_ne), 1);
+  rb_define_method(rb_klass, "in_range", RUBY_METHOD_FUNC(rb_in_range), 2);
+  rb_define_method(rb_klass, "abs_diff", RUBY_METHOD_FUNC(rb_abs_diff), 1);
+  rb_define_method(rb_klass, "normalize", RUBY_METHOD_FUNC(rb_normalize), -1);
+  rb_define_method(rb_klass, "count_non_zero", RUBY_METHOD_FUNC(rb_count_non_zero), 0);
+  rb_define_method(rb_klass, "sum", RUBY_METHOD_FUNC(rb_sum), 0);
+  rb_define_method(rb_klass, "avg", RUBY_METHOD_FUNC(rb_avg), -1);
+  rb_define_method(rb_klass, "avg_sdv", RUBY_METHOD_FUNC(rb_avg_sdv), -1);
+  rb_define_method(rb_klass, "sdv", RUBY_METHOD_FUNC(rb_sdv), -1);
+  rb_define_method(rb_klass, "min_max_loc", RUBY_METHOD_FUNC(rb_min_max_loc), -1);
+  rb_define_method(rb_klass, "dot_product", RUBY_METHOD_FUNC(rb_dot_product), 1);
+  rb_define_method(rb_klass, "cross_product", RUBY_METHOD_FUNC(rb_cross_product), 1);
+  rb_define_method(rb_klass, "transform", RUBY_METHOD_FUNC(rb_transform), -1);
+  rb_define_method(rb_klass, "perspective_transform", RUBY_METHOD_FUNC(rb_perspective_transform), 1);
+  rb_define_method(rb_klass, "mul_transposed", RUBY_METHOD_FUNC(rb_mul_transposed), -1);
+  rb_define_method(rb_klass, "trace", RUBY_METHOD_FUNC(rb_trace), 0);
+  rb_define_method(rb_klass, "transpose", RUBY_METHOD_FUNC(rb_transpose), 0);
+  rb_define_alias(rb_klass, "t", "transpose");
+  rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
+  rb_define_alias(rb_klass, "determinant", "det");
+  rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
+  rb_define_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
+  rb_define_method(rb_klass, "svd", RUBY_METHOD_FUNC(rb_svd), -1);
+  rb_define_method(rb_klass, "svbksb", RUBY_METHOD_FUNC(rb_svbksb), -1);
+  rb_define_method(rb_klass, "eigenvv", RUBY_METHOD_FUNC(rb_eigenvv), -1);
+  rb_define_method(rb_klass, "calc_covar_matrix", RUBY_METHOD_FUNC(rb_calc_covar_matrix), -1);
+  rb_define_method(rb_klass, "mahalonobis", RUBY_METHOD_FUNC(rb_mahalonobis), -1);
+
+  /* drawing function */
+  rb_define_method(rb_klass, "line", RUBY_METHOD_FUNC(rb_line), -1);
+  rb_define_method(rb_klass, "line!", RUBY_METHOD_FUNC(rb_line_bang), -1);
+  rb_define_method(rb_klass, "rectangle", RUBY_METHOD_FUNC(rb_rectangle), -1);
+  rb_define_method(rb_klass, "rectangle!", RUBY_METHOD_FUNC(rb_rectangle_bang), -1);
+  rb_define_method(rb_klass, "circle", RUBY_METHOD_FUNC(rb_circle), -1);
+  rb_define_method(rb_klass, "circle!", RUBY_METHOD_FUNC(rb_circle_bang), -1);
+  rb_define_method(rb_klass, "ellipse", RUBY_METHOD_FUNC(rb_ellipse), -1);
+  rb_define_method(rb_klass, "ellipse!", RUBY_METHOD_FUNC(rb_ellipse_bang), -1);
+  rb_define_method(rb_klass, "ellipse_box", RUBY_METHOD_FUNC(rb_ellipse_box), -1);
+  rb_define_method(rb_klass, "ellipse_box!", RUBY_METHOD_FUNC(rb_ellipse_box_bang), -1);
+  rb_define_method(rb_klass, "fill_poly", RUBY_METHOD_FUNC(rb_fill_poly), -1);
+  rb_define_method(rb_klass, "fill_poly!", RUBY_METHOD_FUNC(rb_fill_poly_bang), -1);
+  rb_define_method(rb_klass, "fill_convex_poly", RUBY_METHOD_FUNC(rb_fill_convex_poly), -1);
+  rb_define_method(rb_klass, "fill_convex_poly!", RUBY_METHOD_FUNC(rb_fill_convex_poly_bang), -1);
+  rb_define_method(rb_klass, "poly_line", RUBY_METHOD_FUNC(rb_poly_line), -1);
+  rb_define_method(rb_klass, "poly_line!", RUBY_METHOD_FUNC(rb_poly_line_bang), -1);
+  rb_define_method(rb_klass, "put_text", RUBY_METHOD_FUNC(rb_put_text), -1);
+  rb_define_method(rb_klass, "put_text!", RUBY_METHOD_FUNC(rb_put_text_bang), -1);
+
+  rb_define_method(rb_klass, "dft", RUBY_METHOD_FUNC(rb_dft), -1);
+  rb_define_method(rb_klass, "dct", RUBY_METHOD_FUNC(rb_dct), -1);
+
+  rb_define_method(rb_klass, "sobel", RUBY_METHOD_FUNC(rb_sobel), -1);
+  rb_define_method(rb_klass, "laplace", RUBY_METHOD_FUNC(rb_laplace), -1);
+  rb_define_method(rb_klass, "canny", RUBY_METHOD_FUNC(rb_canny), -1);
+  rb_define_method(rb_klass, "pre_corner_detect", RUBY_METHOD_FUNC(rb_pre_corner_detect), -1);
+  rb_define_method(rb_klass, "corner_eigenvv", RUBY_METHOD_FUNC(rb_corner_eigenvv), -1);
+  rb_define_method(rb_klass, "corner_min_eigen_val", RUBY_METHOD_FUNC(rb_corner_min_eigen_val), -1);
+  rb_define_method(rb_klass, "corner_harris", RUBY_METHOD_FUNC(rb_corner_harris), -1);
+  rb_define_private_method(rb_klass, "__find_corner_sub_pix", RUBY_METHOD_FUNC(rbi_find_corner_sub_pix), -1);
+  rb_define_method(rb_klass, "good_features_to_track", RUBY_METHOD_FUNC(rb_good_features_to_track), -1);
+
+  rb_define_method(rb_klass, "sample_line", RUBY_METHOD_FUNC(rb_sample_line), 2);
+  rb_define_method(rb_klass, "rect_sub_pix", RUBY_METHOD_FUNC(rb_rect_sub_pix), -1);
+  rb_define_method(rb_klass, "quadrangle_sub_pix", RUBY_METHOD_FUNC(rb_quadrangle_sub_pix), -1);
+  rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
+  rb_define_method(rb_klass, "warp_affine", RUBY_METHOD_FUNC(rb_warp_affine), -1);
+  rb_define_singleton_method(rb_klass, "rotation_matrix2D", RUBY_METHOD_FUNC(rb_rotation_matrix2D), 3);
+  rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
+  rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
+  rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
+  rb_define_method(rb_klass, "log_polar", RUBY_METHOD_FUNC(rb_log_polar), -1);
+
+  rb_define_method(rb_klass, "erode", RUBY_METHOD_FUNC(rb_erode), -1);
+  rb_define_method(rb_klass, "erode!", RUBY_METHOD_FUNC(rb_erode_bang), -1);
+  rb_define_method(rb_klass, "dilate", RUBY_METHOD_FUNC(rb_dilate), -1);
+  rb_define_method(rb_klass, "dilate!", RUBY_METHOD_FUNC(rb_dilate_bang), -1);
+  rb_define_method(rb_klass, "morphology", RUBY_METHOD_FUNC(rb_morphology), -1);
+
+  rb_define_method(rb_klass, "smooth", RUBY_METHOD_FUNC(rb_smooth), -1);
+  rb_define_method(rb_klass, "copy_make_border", RUBY_METHOD_FUNC(rb_copy_make_border), -1);
+  rb_define_method(rb_klass, "filter2d", RUBY_METHOD_FUNC(rb_filter2d), -1);
+  rb_define_method(rb_klass, "integral", RUBY_METHOD_FUNC(rb_integral), -1);
+  rb_define_method(rb_klass, "threshold", RUBY_METHOD_FUNC(rb_threshold), -1);
+  rb_define_method(rb_klass, "adaptive_threshold", RUBY_METHOD_FUNC(rb_adaptive_threshold), -1);
+
+  rb_define_method(rb_klass, "pyr_down", RUBY_METHOD_FUNC(rb_pyr_down), -1);
+  rb_define_method(rb_klass, "pyr_up", RUBY_METHOD_FUNC(rb_pyr_up), -1);
+
+  rb_define_method(rb_klass, "flood_fill", RUBY_METHOD_FUNC(rb_flood_fill), -1);
+  rb_define_method(rb_klass, "flood_fill!", RUBY_METHOD_FUNC(rb_flood_fill_bang), -1);
+  rb_define_method(rb_klass, "find_contours", RUBY_METHOD_FUNC(rb_find_contours), -1);
+  rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
+  rb_define_method(rb_klass, "draw_contours", RUBY_METHOD_FUNC(rb_draw_contours), -1);
+  rb_define_method(rb_klass, "draw_contours!", RUBY_METHOD_FUNC(rb_draw_contours_bang), -1);
+  rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), 3);
+  rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
+  rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
+
+  rb_define_method(rb_klass, "moments", RUBY_METHOD_FUNC(rb_moments), -1);
+
+  rb_define_method(rb_klass, "hough_lines", RUBY_METHOD_FUNC(rb_hough_lines), -1);
+  rb_define_method(rb_klass, "hough_circles", RUBY_METHOD_FUNC(rb_hough_circles), -1);
+
+  rb_define_method(rb_klass, "inpaint", RUBY_METHOD_FUNC(rb_inpaint), 3);
+
+  rb_define_method(rb_klass, "equalize_hist", RUBY_METHOD_FUNC(rb_equalize_hist), 0);
+  rb_define_method(rb_klass, "match_template", RUBY_METHOD_FUNC(rb_match_template), -1);
+  rb_define_method(rb_klass, "match_shapes", RUBY_METHOD_FUNC(rb_match_shapes), -1);
+  rb_define_method(rb_klass, "match_descriptors", RUBY_METHOD_FUNC(rb_match_descriptors), -1);
+
+  rb_define_method(rb_klass, "mean_shift", RUBY_METHOD_FUNC(rb_mean_shift), 2);
+  rb_define_method(rb_klass, "cam_shift", RUBY_METHOD_FUNC(rb_cam_shift), 2);
+  rb_define_method(rb_klass, "snake_image", RUBY_METHOD_FUNC(rb_snake_image), -1);
+
+  rb_define_method(rb_klass, "optical_flow_hs", RUBY_METHOD_FUNC(rb_optical_flow_hs), -1);
+  rb_define_method(rb_klass, "optical_flow_lk", RUBY_METHOD_FUNC(rb_optical_flow_lk), 2);
+  rb_define_method(rb_klass, "optical_flow_bm", RUBY_METHOD_FUNC(rb_optical_flow_bm), -1);
+
+  rb_define_singleton_method(rb_klass, "find_fundamental_mat",
+			     RUBY_METHOD_FUNC(rb_find_fundamental_mat), -1);
+  rb_define_singleton_method(rb_klass, "compute_correspond_epilines",
+			     RUBY_METHOD_FUNC(rb_compute_correspond_epilines), 3);
+
+  rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
+
+  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), -1);
+  rb_define_alias(rb_klass, "save", "save_image");
+
+  rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
+  rb_define_alias(rb_klass, "encode", "encode_image");
+  rb_define_singleton_method(rb_klass, "decode_image", RUBY_METHOD_FUNC(rb_decode_imageM), -1);
+  rb_define_alias(rb_singleton_class(rb_klass), "decode", "decode_image");
 }
 
 __NAMESPACE_END_OPENCV
