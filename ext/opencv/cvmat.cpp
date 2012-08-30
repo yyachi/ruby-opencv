@@ -115,7 +115,7 @@ hash_to_format_specific_param(VALUE hash)
   };
   const int flag_size = sizeof(flags) / sizeof(int);
 
-  int* params = (int*)malloc(sizeof(int) * RHASH_SIZE(hash) * 2);
+  int* params = (int*)ALLOC_N(int, RHASH_SIZE(hash) * 2);
   for (int i = 0, n = 0; i < flag_size; i++) {
     VALUE val = rb_hash_lookup(hash, INT2FIX(flags[i]));
     if (!NIL_P(val)) {
