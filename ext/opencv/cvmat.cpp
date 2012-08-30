@@ -98,6 +98,36 @@ rb_drawing_option_line_type(VALUE drawing_option)
   return 0;
 }
 
+int*
+hash_to_format_specific_param(VALUE hash)
+{
+  Check_Type(hash, T_HASH);
+  const int flags[] = {
+    CV_IMWRITE_JPEG_QUALITY,
+    CV_IMWRITE_PNG_COMPRESSION,
+    CV_IMWRITE_PNG_STRATEGY,
+    CV_IMWRITE_PNG_STRATEGY_DEFAULT,
+    CV_IMWRITE_PNG_STRATEGY_FILTERED,
+    CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
+    CV_IMWRITE_PNG_STRATEGY_RLE,
+    CV_IMWRITE_PNG_STRATEGY_FIXED,
+    CV_IMWRITE_PXM_BINARY
+  };
+  const int flag_size = sizeof(flags) / sizeof(int);
+
+  int* params = (int*)ALLOC_N(int, RHASH_SIZE(hash) * 2);
+  for (int i = 0, n = 0; i < flag_size; i++) {
+    VALUE val = rb_hash_lookup(hash, INT2FIX(flags[i]));
+    if (!NIL_P(val)) {
+      params[n] = flags[i];
+      params[n + 1] = NUM2INT(val);
+      n += 2;
+    }
+  }
+
+  return params;
+}
+
 VALUE
 rb_class()
 {
@@ -209,16 +239,16 @@ void define_ruby_class()
   rb_define_alias(rb_klass, "at", "[]");
   rb_define_method(rb_klass, "[]=", RUBY_METHOD_FUNC(rb_aset), -2);
   rb_define_method(rb_klass, "set_data", RUBY_METHOD_FUNC(rb_set_data), 1);
-  rb_define_method(rb_klass, "fill", RUBY_METHOD_FUNC(rb_fill), -1);
-  rb_define_alias(rb_klass, "set", "fill");
-  rb_define_method(rb_klass, "fill!", RUBY_METHOD_FUNC(rb_fill_bang), -1);
-  rb_define_alias(rb_klass, "set!", "fill!");
-  rb_define_method(rb_klass, "clear", RUBY_METHOD_FUNC(rb_clear), 0);
-  rb_define_alias(rb_klass, "set_zero", "clear");
-  rb_define_alias(rb_klass, "zero", "clear");
-  rb_define_method(rb_klass, "clear!", RUBY_METHOD_FUNC(rb_clear_bang), 0);
-  rb_define_alias(rb_klass, "set_zero!", "clear!");
-  rb_define_alias(rb_klass, "zero!", "clear!");
+  rb_define_method(rb_klass, "set", RUBY_METHOD_FUNC(rb_set), -1);
+  rb_define_alias(rb_klass, "fill", "set");
+  rb_define_method(rb_klass, "set!", RUBY_METHOD_FUNC(rb_set_bang), -1);
+  rb_define_alias(rb_klass, "fill!", "set!");
+  rb_define_method(rb_klass, "set_zero", RUBY_METHOD_FUNC(rb_set_zero), 0);
+  rb_define_alias(rb_klass, "clear", "set_zero");
+  rb_define_alias(rb_klass, "zero", "set_zero");
+  rb_define_method(rb_klass, "set_zero!", RUBY_METHOD_FUNC(rb_set_zero_bang), 0);
+  rb_define_alias(rb_klass, "clear!", "set_zero!");
+  rb_define_alias(rb_klass, "zero!", "set_zero!");
   rb_define_method(rb_klass, "identity", RUBY_METHOD_FUNC(rb_set_identity), -1);
   rb_define_method(rb_klass, "identity!", RUBY_METHOD_FUNC(rb_set_identity_bang), -1);
   rb_define_method(rb_klass, "range", RUBY_METHOD_FUNC(rb_range), 2);
@@ -383,7 +413,7 @@ void define_ruby_class()
 
   rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
 
-  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
+  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), -1);
   rb_define_alias(rb_klass, "save", "save_image");
 
   rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
@@ -491,36 +521,22 @@ rb_encode_imageM(int argc, VALUE *argv, VALUE self)
   int* params = NULL;
 
   if (!NIL_P(_params)) {
-    Check_Type(_params, T_HASH);
-    const int flags[] = {
-      CV_IMWRITE_JPEG_QUALITY,
-      CV_IMWRITE_PNG_COMPRESSION,
-      CV_IMWRITE_PNG_STRATEGY,
-      CV_IMWRITE_PNG_STRATEGY_DEFAULT,
-      CV_IMWRITE_PNG_STRATEGY_FILTERED,
-      CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
-      CV_IMWRITE_PNG_STRATEGY_RLE,
-      CV_IMWRITE_PNG_STRATEGY_FIXED,
-      CV_IMWRITE_PXM_BINARY
-    };
-    const int flag_size = sizeof(flags) / sizeof(int);
-
-    params = ALLOCA_N(int, RHASH_SIZE(_params) * 2);
-    for (int i = 0, n = 0; i < flag_size; i++) {
-      VALUE val = rb_hash_lookup(_params, INT2FIX(flags[i]));
-      if (!NIL_P(val)) {
-	params[n] = flags[i];
-	params[n + 1] = NUM2INT(val);
-	n += 2;
-      }
-    }
+    params = hash_to_format_specific_param(_params);
   }
 
   try {
     buff = cvEncodeImage(ext, CVARR(self), params);
   }
   catch (cv::Exception& e) {
+    if (params != NULL) {
+      free(params);
+      params = NULL;
+    }
     raise_cverror(e);
+  }
+  if (params != NULL) {
+    free(params);
+    params = NULL;
   }
 
   const int size = buff->rows * buff->cols;
@@ -667,6 +683,7 @@ rb_inside_q(VALUE self, VALUE object)
     }
   }
   rb_raise(rb_eArgError, "argument 1 should have method \"x\", \"y\"");
+  return Qnil;
 }
 
 /*
@@ -1438,7 +1455,7 @@ rb_set_data(VALUE self, VALUE data)
 
 /*
  * call-seq:
- *   fill(<i>value[, mask]</i>) -> cvmat
+ *   set(<i>value[, mask]</i>) -> cvmat
  *
  * Return CvMat copied value to every selected element. value should be CvScalar or compatible object.
  *   self[I] = value if mask(I)!=0
@@ -1446,25 +1463,25 @@ rb_set_data(VALUE self, VALUE data)
  * note: This method support ROI on IplImage class. but COI not support. COI should not be set.
  *   image = IplImage.new(10, 20)         #=> create 3 channel image.
  *   image.coi = 1                        #=> set COI
- *   image.fill(CvScalar.new(10, 20, 30)) #=> raise CvBadCOI error.
+ *   image.set(CvScalar.new(10, 20, 30)) #=> raise CvBadCOI error.
  */
 VALUE
-rb_fill(int argc, VALUE *argv, VALUE self)
+rb_set(int argc, VALUE *argv, VALUE self)
 {
-  return rb_fill_bang(argc, argv, copy(self));
+  return rb_set_bang(argc, argv, copy(self));
 }
 
 /*
  * call-seq:
- *   fill!(<i>value[, mask]</i>) -> self
+ *   set!(<i>value[, mask]</i>) -> self
  *
  * Copie value to every selected element.
  *  self[I] = value if mask(I)!=0
  *
- * see also #fill.
+ * see also #set.
  */
 VALUE
-rb_fill_bang(int argc, VALUE *argv, VALUE self)
+rb_set_bang(int argc, VALUE *argv, VALUE self)
 {
   VALUE value, mask;
   rb_scan_args(argc, argv, "11", &value, &mask);
@@ -1479,7 +1496,7 @@ rb_fill_bang(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   save_image(<i>filename</i>) -> self
+ *   save_image(<i>filename, params = nil</i>) -> self
  *
  * Saves an image to file. The image format is chosen depending on the filename extension.
  * Only 8bit single-channel or 3-channel(with 'BGR' channel order) image can be saved.
@@ -1490,38 +1507,54 @@ rb_fill_bang(int argc, VALUE *argv, VALUE self)
  *   image.save_image("image.png") #=> save as PNG format
  */
 VALUE
-rb_save_image(VALUE self, VALUE filename)
+rb_save_image(int argc, VALUE *argv, VALUE self)
 {
-  Check_Type(filename, T_STRING);
+  VALUE _filename, _params;
+  rb_scan_args(argc, argv, "11", &_filename, &_params);
+  Check_Type(_filename, T_STRING);
+  int *params = NULL;
+  if (!NIL_P(_params)) {
+    params = hash_to_format_specific_param(_params);
+  }
+
   try {
-    cvSaveImage(StringValueCStr(filename), CVARR(self));
+    cvSaveImage(StringValueCStr(_filename), CVARR(self), params);
   }
   catch (cv::Exception& e) {
+    if (params != NULL) {
+      free(params);
+      params = NULL;
+    }
     raise_cverror(e);
   }
+  if (params != NULL) {
+    free(params);
+    params = NULL;
+  }
+
   return self;
 }
 
 /*
  * call-seq:
- *   clear -> cvmat
+ *   set_zero -> cvmat
  *
  * Return new matrix all element-value cleared.
  */
 VALUE
-rb_clear(VALUE self)
+rb_set_zero(VALUE self)
 {
-  return rb_clear_bang(copy(self));
+  return rb_set_zero_bang(copy(self));
 }
 
 /*
  * call-seq:
- *  clear! -> self
+ *  set_zero! -> self
  *
  * Clear all element-value. Return self.
  */
 VALUE
-rb_clear_bang(VALUE self)
+rb_set_zero_bang(VALUE self)
 {
   try {
     cvSetZero(CVARR(self));

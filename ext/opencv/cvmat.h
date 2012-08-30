@@ -69,10 +69,10 @@ VALUE rb_dim_size(VALUE self, VALUE index);
 VALUE rb_aref(VALUE self, VALUE args);
 VALUE rb_aset(VALUE self, VALUE args);
 VALUE rb_set_data(VALUE self, VALUE data);
-VALUE rb_fill(int argc, VALUE *argv, VALUE self);
-VALUE rb_fill_bang(int argc, VALUE *argv, VALUE self);
-VALUE rb_clear(VALUE self);
-VALUE rb_clear_bang(VALUE self);
+VALUE rb_set(int argc, VALUE *argv, VALUE self);
+VALUE rb_set_bang(int argc, VALUE *argv, VALUE self);
+VALUE rb_set_zero(VALUE self);
+VALUE rb_set_zero_bang(VALUE self);
 VALUE rb_set_identity(int argc, VALUE *argv, VALUE self);
 VALUE rb_set_identity_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_range(VALUE self, VALUE start, VALUE end);
@@ -240,7 +240,7 @@ VALUE rb_compute_correspond_epilines(VALUE klass, VALUE points, VALUE which_imag
 VALUE rb_extract_surf(int argc, VALUE *argv, VALUE self);
 
 // HighGUI function
-VALUE rb_save_image(VALUE self, VALUE filename);
+VALUE rb_save_image(int argc, VALUE *argv, VALUE self);
 
 VALUE new_object(int rows, int cols, int type);
 VALUE new_object(CvSize size, int type);
