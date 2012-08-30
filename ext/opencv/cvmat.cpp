@@ -397,13 +397,6 @@ rb_create_mask(VALUE self)
 }
 
 /*
- * call-seq:
- *   width -> int
- *
- * Return number of columns.
- */
-
-/*
  * Returns number of columns of the matrix.
  * @overload width
  * @return [Integer] Number of columns of the matrix
