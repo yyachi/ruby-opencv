@@ -908,10 +908,10 @@ rb_diag(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   size -> cvsize
- *
- * Return size by CvSize
+ * Returns size of the matrix
+ * @overload size
+ * @return [CvSize] Size of the matrix
+ * @opencv_func cvGetSize
  */
 VALUE
 rb_size(VALUE self)
@@ -927,11 +927,11 @@ rb_size(VALUE self)
 }
 
 /*
- * call-seq:
- *   dims -> array(int, int, ...)
- *
- * Return number of array dimensions and their sizes or the size of particular dimension.
- * In case of CvMat it always returns 2 regardless of number of matrix rows.
+ * Returns array dimensions sizes
+ * @overload dims
+ * @return [Array<Integer>] Array dimensions sizes.
+ *   For 2d arrays the number of rows (height) goes first, number of columns (width) next.
+ * @opencv_func cvGetDims
  */
 VALUE
 rb_dims(VALUE self)
@@ -952,12 +952,13 @@ rb_dims(VALUE self)
 }
 
 /*
- * call-seq:
- *   dim_size(<i>index</i>) -> int
- *
- * Return number of dimension.
- * almost same as CvMat#dims[<i>index</i>].
- * If the dimension specified with index doesn't exist, CvStatusOutOfRange raise.
+ * Returns array size along the specified dimension.
+ * @overload dim_size(index)
+ * @param index [Intger] Zero-based dimension index
+ *   (for matrices 0 means number of rows, 1 means number of columns;
+ *   for images 0 means height, 1 means width)
+ * @return [Integer] Array size
+ * @opencv_func cvGetDimSize
  */
 VALUE
 rb_dim_size(VALUE self, VALUE index)
@@ -973,10 +974,17 @@ rb_dim_size(VALUE self, VALUE index)
 }
 
 /*
- * call-seq:
- *   [<i>idx1[,idx2]...</i>]
- *
- * Return value of the particular array element as CvScalar.
+ * Returns a specific array element.
+ * @overload [](idx0)
+ * @overload [](idx0, idx1)
+ * @overload [](idx0, idx1, idx2)
+ * @overload [](idx0, idx1, idx2, ...)
+ * @param idx-n [Integer] Zero-based component of the element index
+ * @return [CvScalar] Array element
+ * @opencv_func cvGet1D
+ * @opencv_func cvGet2D
+ * @opencv_func cvGet3D
+ * @opencv_func cvGetND
  */
 VALUE
 rb_aref(VALUE self, VALUE args)
@@ -1006,11 +1014,18 @@ rb_aref(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   [<i>idx1[,idx2]...</i>] = <i>value</i>
- *
- * Set value of the particular array element to <i>value</i>.
- * <i>value</i> should be CvScalar.
+ * Changes the particular array element
+ * @overload []=(idx0, value)
+ * @overload []=(idx0, idx1, value)
+ * @overload []=(idx0, idx1, idx2, value)
+ * @overload []=(idx0, idx1, idx2, ..., value)
+ * @param idx-n [Integer] Zero-based component of the element index
+ * @param value [CvScalar] The assigned value
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSet1D
+ * @opencv_func cvSet2D
+ * @opencv_func cvSet3D
+ * @opencv_func cvSetND
  */
 VALUE
 rb_aset(VALUE self, VALUE args)
@@ -1040,11 +1055,11 @@ rb_aset(VALUE self, VALUE args)
 }
 
 /*
- * call-seq:
- *   set_data(<i>data</i>)
- *
- * Assigns user data to the array header.
- * <i>data</i> should be Array which contains numbers.
+ * Assigns user data to the array header
+ * @overload set_data(data)
+ * @param data [Array<Integer>] User data
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSetData
  */
 VALUE
 rb_set_data(VALUE self, VALUE data)
@@ -1107,16 +1122,16 @@ rb_set_data(VALUE self, VALUE data)
 }
 
 /*
- * call-seq:
- *   fill(<i>value[, mask]</i>) -> cvmat
+ * Returns a matrix which is set every element to a given value.
+ * The function copies the scalar value to every selected element of the destination array:
+ *   mat[I] = value if mask(I) != 0
  *
- * Return CvMat copied value to every selected element. value should be CvScalar or compatible object.
- *   self[I] = value if mask(I)!=0
- *
- * note: This method support ROI on IplImage class. but COI not support. COI should not be set.
- *   image = IplImage.new(10, 20)         #=> create 3 channel image.
- *   image.coi = 1                        #=> set COI
- *   image.fill(CvScalar.new(10, 20, 30)) #=> raise CvBadCOI error.
+ * @overload fill(value, mask = nil) Fill value
+ * @param value [CvScalar]
+ * @param mask [CvMat] Operation mask, 8-bit single channel array;
+ *   specifies elements of the destination array to be changed
+ * @return [CvMat] Matrix which is set every element to a given value.
+ * @opencv_func cvSet
  */
 VALUE
 rb_fill(int argc, VALUE *argv, VALUE self)
@@ -1125,13 +1140,14 @@ rb_fill(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   fill!(<i>value[, mask]</i>) -> self
+ * Sets every element of the matrix to a given value.
+ * The function copies the scalar value to every selected element of the destination array:
+ *   mat[I] = value if mask(I) != 0
  *
- * Copie value to every selected element.
- *  self[I] = value if mask(I)!=0
- *
- * see also #fill.
+ * @overload fill!(value, mask = nil)
+ * @param (see #fill)
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSet
  */
 VALUE
 rb_fill_bang(int argc, VALUE *argv, VALUE self)
@@ -1148,16 +1164,12 @@ rb_fill_bang(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   save_image(<i>filename</i>) -> self
- *
- * Saves an image to file. The image format is chosen depending on the filename extension.
- * Only 8bit single-channel or 3-channel(with 'BGR' channel order) image can be saved.
- *
- * e.g.
- *   image = OpenCV::CvMat.new(10, 10, CV_8U, 3)
- *   image.save_image("image.jpg") #=> save as JPEG format
- *   image.save_image("image.png") #=> save as PNG format
+ * Saves an image to a specified file.
+ * The image format is chosen based on the filename extension.
+ * @overload save_image(filename)
+ * @param filename [String] Name of the file
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSaveImage 
  */
 VALUE
 rb_save_image(VALUE self, VALUE filename)
