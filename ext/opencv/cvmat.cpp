@@ -98,6 +98,36 @@ rb_drawing_option_line_type(VALUE drawing_option)
   return 0;
 }
 
+int*
+hash_to_format_specific_param(VALUE hash)
+{
+  Check_Type(hash, T_HASH);
+  const int flags[] = {
+    CV_IMWRITE_JPEG_QUALITY,
+    CV_IMWRITE_PNG_COMPRESSION,
+    CV_IMWRITE_PNG_STRATEGY,
+    CV_IMWRITE_PNG_STRATEGY_DEFAULT,
+    CV_IMWRITE_PNG_STRATEGY_FILTERED,
+    CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
+    CV_IMWRITE_PNG_STRATEGY_RLE,
+    CV_IMWRITE_PNG_STRATEGY_FIXED,
+    CV_IMWRITE_PXM_BINARY
+  };
+  const int flag_size = sizeof(flags) / sizeof(int);
+
+  int* params = (int*)malloc(sizeof(int) * RHASH_SIZE(hash) * 2);
+  for (int i = 0, n = 0; i < flag_size; i++) {
+    VALUE val = rb_hash_lookup(hash, INT2FIX(flags[i]));
+    if (!NIL_P(val)) {
+      params[n] = flags[i];
+      params[n + 1] = NUM2INT(val);
+      n += 2;
+    }
+  }
+
+  return params;
+}
+
 VALUE
 rb_class()
 {
@@ -491,36 +521,22 @@ rb_encode_imageM(int argc, VALUE *argv, VALUE self)
   int* params = NULL;
 
   if (!NIL_P(_params)) {
-    Check_Type(_params, T_HASH);
-    const int flags[] = {
-      CV_IMWRITE_JPEG_QUALITY,
-      CV_IMWRITE_PNG_COMPRESSION,
-      CV_IMWRITE_PNG_STRATEGY,
-      CV_IMWRITE_PNG_STRATEGY_DEFAULT,
-      CV_IMWRITE_PNG_STRATEGY_FILTERED,
-      CV_IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY,
-      CV_IMWRITE_PNG_STRATEGY_RLE,
-      CV_IMWRITE_PNG_STRATEGY_FIXED,
-      CV_IMWRITE_PXM_BINARY
-    };
-    const int flag_size = sizeof(flags) / sizeof(int);
-
-    params = ALLOCA_N(int, RHASH_SIZE(_params) * 2);
-    for (int i = 0, n = 0; i < flag_size; i++) {
-      VALUE val = rb_hash_lookup(_params, INT2FIX(flags[i]));
-      if (!NIL_P(val)) {
-	params[n] = flags[i];
-	params[n + 1] = NUM2INT(val);
-	n += 2;
-      }
-    }
+    params = hash_to_format_specific_param(_params);
   }
 
   try {
     buff = cvEncodeImage(ext, CVARR(self), params);
   }
   catch (cv::Exception& e) {
+    if (params != NULL) {
+      free(params);
+      params = NULL;
+    }
     raise_cverror(e);
+  }
+  if (params != NULL) {
+    free(params);
+    params = NULL;
   }
 
   const int size = buff->rows * buff->cols;
