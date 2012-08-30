@@ -667,6 +667,7 @@ rb_inside_q(VALUE self, VALUE object)
     }
   }
   rb_raise(rb_eArgError, "argument 1 should have method \"x\", \"y\"");
+  return Qnil;
 }
 
 /*
