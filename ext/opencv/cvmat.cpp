@@ -413,7 +413,7 @@ void define_ruby_class()
 
   rb_define_method(rb_klass, "extract_surf", RUBY_METHOD_FUNC(rb_extract_surf), -1);
 
-  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), 1);
+  rb_define_method(rb_klass, "save_image", RUBY_METHOD_FUNC(rb_save_image), -1);
   rb_define_alias(rb_klass, "save", "save_image");
 
   rb_define_method(rb_klass, "encode_image", RUBY_METHOD_FUNC(rb_encode_imageM), -1);
@@ -1496,7 +1496,7 @@ rb_set_bang(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   save_image(<i>filename</i>) -> self
+ *   save_image(<i>filename, params = nil</i>) -> self
  *
  * Saves an image to file. The image format is chosen depending on the filename extension.
  * Only 8bit single-channel or 3-channel(with 'BGR' channel order) image can be saved.
@@ -1507,15 +1507,31 @@ rb_set_bang(int argc, VALUE *argv, VALUE self)
  *   image.save_image("image.png") #=> save as PNG format
  */
 VALUE
-rb_save_image(VALUE self, VALUE filename)
+rb_save_image(int argc, VALUE *argv, VALUE self)
 {
-  Check_Type(filename, T_STRING);
+  VALUE _filename, _params;
+  rb_scan_args(argc, argv, "11", &_filename, &_params);
+  Check_Type(_filename, T_STRING);
+  int *params = NULL;
+  if (!NIL_P(_params)) {
+    params = hash_to_format_specific_param(_params);
+  }
+
   try {
-    cvSaveImage(StringValueCStr(filename), CVARR(self));
+    cvSaveImage(StringValueCStr(_filename), CVARR(self), params);
   }
   catch (cv::Exception& e) {
+    if (params != NULL) {
+      free(params);
+      params = NULL;
+    }
     raise_cverror(e);
   }
+  if (params != NULL) {
+    free(params);
+    params = NULL;
+  }
+
   return self;
 }
 

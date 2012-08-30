@@ -88,19 +88,36 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_save_image
-    filename = 'save_image_test.jpg'
+    filename_jpg = 'save_image_test.jpg'
+    filename_png = 'save_image_test.png'
     m = CvMat.new(20, 20, :cv8u, 1)
     
-    File.delete filename if File.exists? filename
-    m.save_image filename
-    assert(File.exists? filename)
+    File.delete filename_jpg if File.exists? filename_jpg
+    m.save_image filename_jpg
+    assert(File.exists? filename_jpg)
+
+    File.delete filename_jpg if File.exists? filename_jpg
+    m.save_image(filename_jpg, CV_IMWRITE_JPEG_QUALITY => 10)
+    assert(File.exists? filename_jpg)
+
+    File.delete filename_png if File.exists? filename_png
+    m.save_image(filename_png, CV_IMWRITE_PNG_COMPRESSION => 9)
+    assert(File.exists? filename_png)
 
     # Alias
-    File.delete filename if File.exists? filename
-    m.save filename
-    assert(File.exists? filename)
+    File.delete filename_jpg if File.exists? filename_jpg
+    m.save filename_jpg
+    assert(File.exists? filename_jpg)
     
-    File.delete filename
+    assert_raise(TypeError) {
+      m.save_image(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      m.save_image(filename_jpg, DUMMY_OBJ)
+    }
+
+    File.delete filename_jpg if File.exists? filename_jpg
+    File.delete filename_png if File.exists? filename_png
   end
 
   def test_encode
