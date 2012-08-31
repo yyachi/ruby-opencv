@@ -1143,7 +1143,7 @@ rb_set_data(VALUE self, VALUE data)
  * The function copies the scalar value to every selected element of the destination array:
  *   mat[I] = value if mask(I) != 0
  *
- * @overload fill(value, mask = nil) Fill value
+ * @overload set(value, mask = nil) Fill value
  * @param value [CvScalar]
  * @param mask [CvMat] Operation mask, 8-bit single channel array;
  *   specifies elements of the destination array to be changed
@@ -1161,8 +1161,8 @@ rb_set(int argc, VALUE *argv, VALUE self)
  * The function copies the scalar value to every selected element of the destination array:
  *   mat[I] = value if mask(I) != 0
  *
- * @overload fill!(value, mask = nil)
- * @param (see #fill)
+ * @overload set!(value, mask = nil)
+ * @param (see #set)
  * @return [CvMat] <tt>self</tt>
  * @opencv_func cvSet
  */
