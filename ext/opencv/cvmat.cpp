@@ -1218,10 +1218,10 @@ rb_save_image(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   set_zero -> cvmat
- *
- * Return new matrix all element-value cleared.
+ * Returns cleared array.
+ * @overload set_zero
+ * @return [CvMat] Cleared array
+ * @opencv_func cvSetZero
  */
 VALUE
 rb_set_zero(VALUE self)
@@ -1230,10 +1230,10 @@ rb_set_zero(VALUE self)
 }
 
 /*
- * call-seq:
- *  set_zero! -> self
- *
- * Clear all element-value. Return self.
+ * Clears the array.
+ * @overload set_zero!
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSetZero
  */
 VALUE
 rb_set_zero_bang(VALUE self)
@@ -1248,13 +1248,12 @@ rb_set_zero_bang(VALUE self)
 }
 
 /*
- * call-seq:
- *   identity(<i>[val = [1]]</i>) -> cvmat
- *
- * Return initializes scaled identity matrix.
- * <i>val</i> should be CvScalar.
- *
- *  arr(i, j) = val if i = j, 0 otherwise
+ * Returns a scaled identity matrix.
+ *   arr(i, j) = value if i = j, 0 otherwise
+ * @overload identity(value)
+ * @param value [CvScalar] Value to assign to diagonal elements.
+ * @return [CvMat] Scaled identity matrix.
+ * @opencv_func cvSetIdentity
  */
 VALUE
 rb_set_identity(int argc, VALUE *argv, VALUE self)
@@ -1263,13 +1262,12 @@ rb_set_identity(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   identity!(<i>[val = [1]]</i>) -> self
- *
- * Initialize scaled identity matrix.
- * <i>val</i> should be CvScalar.
- *
- *  arr(i, j) = val if i = j, 0 otherwise
+ * Initializes a scaled identity matrix.
+ *   arr(i, j) = value if i = j, 0 otherwise
+ * @overload identity!(value)
+ * @param (see #identity)
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvSetIdentity
  */
 VALUE
 rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
@@ -1291,12 +1289,13 @@ rb_set_identity_bang(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   range(start, end) -> cvmat
- *
- * Create and return filled matrix with given range of numbers.
- *
- * see range!
+ * Returns initialized matrix as following:
+ *   arr(i,j)=(end-start)*(i*cols(arr)+j)/(cols(arr)*rows(arr))
+ * @overload range(start, end)
+ * @param start [Number] The lower inclusive boundary of the range
+ * @param end [Number] The upper exclusive boundary of the range
+ * @return [CvMat] Initialized matrix
+ * @opencv_func cvRange
  */
 VALUE
 rb_range(VALUE self, VALUE start, VALUE end)
@@ -1305,16 +1304,12 @@ rb_range(VALUE self, VALUE start, VALUE end)
 }
 
 /*
- * call-seq:
- *   range!(start, end) -> self
- *
- * Fills matrix with given range of numbers.
- *
- * initializes the matrix as following:
+ * Initializes the matrix as following:
  *   arr(i,j)=(end-start)*(i*cols(arr)+j)/(cols(arr)*rows(arr))
- * For example, the following code will initilize 1D vector with subsequent integer numbers.
- *   m = CvMat.new(1, 10, :cv32s)
- *   m.range!(0, m.cols);            // m will be initialized as [0,1,2,3,4,5,6,7,8,9]
+ * @overload range!(start, end)
+ * @param (see #range)
+ * @return [CvMat] <tt>self</tt>
+ * @opencv_func cvRange
  */
 VALUE
 rb_range_bang(VALUE self, VALUE start, VALUE end)
@@ -1328,17 +1323,21 @@ rb_range_bang(VALUE self, VALUE start, VALUE end)
   return self;
 }
 
-
 /*
- * call-seq:
- *   reshape(<i>[:rows => num][, :channel => cn]</i>) -> cvmat(refer self)
- *
- * Change shape of matrix/image without copying data.
- *
- * e.g.
- *  mat = CvMat.new(3, 3, CV_8U, 3)  #=> 3x3 3-channel matrix
- *  vec = mat.reshape(:rows => 1)    #=> 1x9 3-channel matrix
- *  ch1 = mat.reshape(:channel => 1) #=> 9x9 1-channel matrix
+ * Changes shape of matrix/image without copying data.
+ * @overload reshape(params = nil)
+ *   @param params [Hash] Parameters
+ *   @option params [Integer] :channel (0) New number of channels.
+ *     <tt>:channel => 0</tt> means that the number of channels remains unchanged.
+ *   @option params [Integer] :rows (0) New number of rows.
+ *     <tt>:rows => 0</tt> means that the number of rows remains unchanged unless
+ *     it needs to be changed according to new_cn value.
+ * @return [CvMat] Changed matrix
+ * @opencv_func cvReshape
+ * @example
+ *   mat = CvMat.new(3, 3, CV_8U, 3)  #=> 3x3 3-channel matrix
+ *   vec = mat.reshape(:rows => 1)    #=> 1x9 3-channel matrix
+ *   ch1 = mat.reshape(:channel => 1) #=> 9x3 1-channel matrix
  */
 VALUE
 rb_reshape(VALUE self, VALUE hash)
