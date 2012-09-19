@@ -818,80 +818,37 @@ rb_clone(VALUE self)
 
 /*
  * call-seq:
- *   copy() -> cvmat
- *   copy(<i>mat</i>) -> mat
- *   copy(<i>val</i>) -> array(include cvmat)
+ *   copy(dst = nil, mask = nil) -> cvmat
  *
- * Copy matrix.
- * Instance-specific method is *NOT* succeeded. see also #clone.
+ * Copies one array to another.
  *
- * There are 3 kind behavior depending on the argument.
+ * <i>dst</i>  - The destination array.
+ * <i>mask</i> - Operation mask, 8-bit single channel array; specifies elements of the destination array to be changed.
  *
- *   copy()
- *     Return one copied matrix.
- *   copy(mat)
- *     Copy own elements to target matrix. Return nil.
- *     Size (or ROI) and channel and depth should be match.
- *     If own width or height does not match target matrix, raise CvUnmatchedSizes
- *     If own channel or depth does not match target matrix, raise CvUnmatchedFormats
- *   copy(val)
- *     The amounts of the specified number are copied. Return Array with copies.
- *     If you give the 0 or negative value. Return nil.
- *       mat.copy(3)  #=> [mat1, mat2, mat3]
- *       mat.copy(-1) #=> nil
- *
- * When not apply to any, raise ArgumentError
+ * The function copies selected elements from an input array to an output array:
+ *     dst(I) = self(I) if mask(I) != 0
  */
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
 {
-  VALUE value, copied;
+  VALUE _dst, _mask;
+  rb_scan_args(argc, argv, "02", &_dst, &_mask);
+
+  CvMat* mask = MASK(_mask);
   CvArr *src = CVARR(self);
-  CvSize size = cvGetSize(src);
-  rb_scan_args(argc, argv, "01", &value);
-  if (argc == 0) {
-    copied = new_mat_kind_object(size, self);
-    try {
-      cvCopy(src, CVARR(copied));
-    }
-    catch (cv::Exception& e) {
-      raise_cverror(e);
-    }
-    return copied;
+  if (NIL_P(_dst)) {
+    CvSize size = cvGetSize(src);
+    _dst = new_mat_kind_object(size, self);
   }
-  else {
-    if (rb_obj_is_kind_of(value, rb_klass)) {
-      try {
-	cvCopy(src, CVARR_WITH_CHECK(value));
-      }
-      catch (cv::Exception& e) {
-	raise_cverror(e);
-      }
-      return Qnil;
-    }
-    else if (FIXNUM_P(value)) {
-      int n = FIX2INT(value);
-      if (n > 0) {
-        copied = rb_ary_new2(n);
-        for (int i = 0; i < n; ++i) {
-	  VALUE tmp = new_mat_kind_object(size, self);
-	  try {
-	    cvCopy(src, CVMAT(tmp));
-	  }
-	  catch (cv::Exception& e) {
-	    raise_cverror(e);
-	  }
-          rb_ary_store(copied, i, tmp);
-        }
-        return copied;
-      }
-      else {
-        return Qnil;
-      }
-    }
-    else
-      rb_raise(rb_eArgError, "Argument should be CvMat or Fixnum");
+
+  try {
+    cvCopy(src, CVARR_WITH_CHECK(_dst), mask);
   }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return _dst;
 }
 
 VALUE

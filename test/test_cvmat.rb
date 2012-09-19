@@ -301,30 +301,33 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_copy
-    m1 = create_cvmat(10, 20, CV_32F, 1)
+    m1 = create_cvmat(10, 20, CV_32F, 1) { |j, i, c| CvScalar.new(c) }
 
     m2 = m1.copy
     assert_equal(m1.data, m2.data)
     
-    m2 = CvMat.new(10, 20, CV_32F, 1)
-    m1.copy(m2)
+    m2 = create_cvmat(10, 20, CV_32F, 1).zero
+    m3 = m1.copy(m2)
     assert_equal(m1.data, m2.data)
-    
-    a = m1.copy(2)
-    assert_equal(2, a.size)
+    assert_equal(m1.data, m3.data)
 
-    a.each { |m|
-      assert_equal(m1.height, m.height)
-      assert_equal(m1.width, m.width)
-      m1.height.times { |j|
-        m1.width.times { |i|
-          assert_cvscalar_equal(m1[j, i], m[j, i])
-        }
+    rows, cols = m1.rows, m1.cols
+    mask = create_cvmat(rows, cols, CV_8U, 1) { |j, i, c|
+      val = (i > cols / 2) ? 0 : 255
+      CvScalar.new(val)
+    }
+
+    m2_orig = m2.copy
+    m3 = m1.copy(m2, mask)
+    rows.times { |j|
+      cols.times { |i|
+        expected = (mask[j, i][0] == 0) ? m2_orig[j, i] : m1[j, i]
+        assert_cvscalar_equal(expected, m2[j, i])
+        assert_cvscalar_equal(expected, m3[j, i])
       }
     }
-    assert_nil(m1.copy(-1))
     
-    assert_raise(ArgumentError) {
+    assert_raise(TypeError) {
       m1.copy(DUMMY_OBJ)
     }
   end
