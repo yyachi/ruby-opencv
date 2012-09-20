@@ -1335,10 +1335,12 @@ rb_reshape(VALUE self, VALUE hash)
 }
 
 /*
- * call-seq:
- *   repeat(<i>mat</i>) -> cvmat
+ * Fills the destination array with repeated copies of the source array.
  *
- * Tiled <i>mat</i> by self.
+ * @overload repeat(dst)
+ * @param dst [CvMat] Destination array of the same type as <tt>self</tt>.
+ * @return [CvMat] Destination array
+ * @opencv_func cvRepeat
  */
 VALUE
 rb_repeat(VALUE self, VALUE object)
@@ -1353,17 +1355,15 @@ rb_repeat(VALUE self, VALUE object)
 }
 
 /*
- * call-seq:
- *   flip(:x)  -> cvmat
- *   flip(:y)  -> cvmat
- *   flip(:xy) -> cvmat
- *   flip      -> cvmat
+ * Returns a fliped 2D array around vertical, horizontal, or both axes.
  *
- * Return new flipped 2D array.
- * * flip(:x)  - flip around horizontal
- * * flip(:y)  - flip around vertical
- * * flip(:xy) - flip around both axises
- * * flip      - flip around vertical
+ * @overload flip(flip_mode)
+ * @param flip_mode [Symbol] Flag to specify how to flip the array.
+ *   - <tt>:x</tt> - Flipping around the x-axis.
+ *   - <tt>:y</tt> - Flipping around the y-axis.
+ *   - <tt>:xy</tt> - Flipping around both axes.
+ * @return [CvMat] Flipped array
+ * @opencv_func cvFlip
  */
 VALUE
 rb_flip(int argc, VALUE *argv, VALUE self)
@@ -1372,15 +1372,12 @@ rb_flip(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   flip!(:x)  -> self
- *   flip!(:y)  -> self
- *   flip!(:xy) -> self
- *   flip!      -> self
+ * Flips a 2D array around vertical, horizontal, or both axes.
  *
- * Flip 2D array. Return self.
- *
- * see also CvMat#flip
+ * @overload flip!(flip_mode)
+ * @param (see #flip)
+ * @return (see #flip)
+ * @opencv_func (see #flip)
  */
 VALUE
 rb_flip_bang(int argc, VALUE *argv, VALUE self)
@@ -1410,19 +1407,15 @@ rb_flip_bang(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   split -> array(include cvmat)
+ * Divides a multi-channel array into several single-channel arrays.
  *
- * Divides multi-channel array into several single-chanel arrays.
- *
- * e.g.
- *  image = CvMat.new 640, 480, CV_8U, 3 #=> 3-channel image
- *  image.split                          #=> [image1, image2, image3] : each image have single-channel
- *
- * e.g. switch red <-> blue channel.
- *  image = IplImage.load "sample.bmp"
- *  i = image.split
- *  new_image = CvMat.merge i[2], i[1], i[0]
+ * @overload split
+ * @return [Array<CvMat>] Array of single-channel arrays
+ * @opencv_func cvSplit
+ * @see merge
+ * @example
+ *   img = CvMat.new(640, 480, CV_8U, 3) #=> 3-channel image
+ *   a = img.split                       #=> [img-ch1, img-ch2, img-ch3]
  */
 VALUE
 rb_split(VALUE self)
@@ -1449,14 +1442,15 @@ rb_split(VALUE self)
 }
 
 /*
- * call-seq:
- *   CvMat.merge(<i>mat1[,mat2][,mat3][,mat4]</i>) -> cvmat
+ * Composes a multi-channel array from several single-channel arrays.
  *
- * Composes multi-channel array from several single-channel arrays.
- * Each argument should be single-channel image(CvMat or subclass).
- * All image should be same size and same depth.
- *
- * see also CvMat#split
+ * @overload merge(src1 = nil, src2 = nil, src3 = nil, src4 = nil)
+ * @param src-n [CvMat] Source arrays to be merged.
+ *     All arrays must have the same size and the same depth.
+ * @return [CvMat] Merged array
+ * @opencv_func cvMerge
+ * @see split
+ * @scope class
  */
 VALUE
 rb_merge(VALUE klass, VALUE args)
@@ -1497,12 +1491,17 @@ rb_merge(VALUE klass, VALUE args)
 }
 
 /*
- * call-seq:
- *   rand_shuffle([seed = nil][,iter_factor = 1]) -> cvmat
+ * Returns shuffled matrix by swapping randomly chosen pairs of the matrix elements on each iteration 
+ * (where each element may contain several components in case of multi-channel arrays)
  *
- * Return shuffled matrix
- *
- * see rand_shuffle!
+ * @overload rand_shuffle(seed = -1, iter_factor = 1)
+ * @param seed [Integer] Integer value used to initiate a random sequence
+ * @param iter_factor [Integer] The relative parameter that characterizes intensity of
+ *     the shuffling performed. The number of iterations (i.e. pairs swapped) is
+ *     round(iter_factor*rows(mat)*cols(mat)), so <tt>iter_factor</tt> = 0 means that no shuffling is done,
+ *     <tt>iter_factor</tt> = 1 means that the function swaps rows(mat)*cols(mat) random pairs etc
+ * @return [CvMat] Shuffled matrix
+ * @opencv_func cvRandShuffle
  */
 VALUE
 rb_rand_shuffle(int argc, VALUE *argv, VALUE self)
@@ -1511,14 +1510,13 @@ rb_rand_shuffle(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   rand_shuffle!([seed = nil][,iter_factor = 1]) -> cvmat
+ * Shuffles the matrix by swapping randomly chosen pairs of the matrix elements on each iteration 
+ * (where each element may contain several components in case of multi-channel arrays)
  *
- * Shuffles the matrix by swapping randomly chosen pairs of the matrix elements on each iteration
- * (where each element may contain several components in case of multi-channel arrays). The number of
- * iterations (i.e. pairs swapped) is (iter_factor*mat.rows*mat.cols).round, so iter_factor=0 means
- * that no shuffling is done, iter_factor=1 means that the function swaps rows(mat)*cols(mat) random
- * pairs etc.
+ * @overload rand_shuffle!(seed = -1, iter_factor = 1)
+ * @param (see #rand_shuffle)
+ * @return (see #rand_shuffle)
+ * @opencv_func (see #rand_shuffle)
  */
 VALUE
 rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
