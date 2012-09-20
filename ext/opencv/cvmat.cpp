@@ -490,63 +490,38 @@ rb_clone(VALUE self)
 }
 
 /*
- * Copies one matrix to another.
- * @overload copy(mat)
- * @param mat [CvMat]
- * @return [nil]
- * @opencv_func cvCopy
- * @deprecated This method will be removed.
+ * call-seq:
+ *   copy(dst = nil, mask = nil) -> cvmat
+ *
+ * Copies one array to another.
+ *
+ * <i>dst</i>  - The destination array.
+ * <i>mask</i> - Operation mask, 8-bit single channel array; specifies elements of the destination array to be changed.
+ *
+ * The function copies selected elements from an input array to an output array:
+ *     dst(I) = self(I) if mask(I) != 0
  */
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
 {
-  VALUE value, copied;
+  VALUE _dst, _mask;
+  rb_scan_args(argc, argv, "02", &_dst, &_mask);
+
+  CvMat* mask = MASK(_mask);
   CvArr *src = CVARR(self);
-  CvSize size = cvGetSize(src);
-  rb_scan_args(argc, argv, "01", &value);
-  if (argc == 0) {
-    copied = new_mat_kind_object(size, self);
-    try {
-      cvCopy(src, CVARR(copied));
-    }
-    catch (cv::Exception& e) {
-      raise_cverror(e);
-    }
-    return copied;
+  if (NIL_P(_dst)) {
+    CvSize size = cvGetSize(src);
+    _dst = new_mat_kind_object(size, self);
   }
-  else {
-    if (rb_obj_is_kind_of(value, rb_klass)) {
-      try {
-	cvCopy(src, CVARR_WITH_CHECK(value));
-      }
-      catch (cv::Exception& e) {
-	raise_cverror(e);
-      }
-      return Qnil;
-    }
-    else if (FIXNUM_P(value)) {
-      int n = FIX2INT(value);
-      if (n > 0) {
-        copied = rb_ary_new2(n);
-        for (int i = 0; i < n; ++i) {
-	  VALUE tmp = new_mat_kind_object(size, self);
-	  try {
-	    cvCopy(src, CVMAT(tmp));
-	  }
-	  catch (cv::Exception& e) {
-	    raise_cverror(e);
-	  }
-          rb_ary_store(copied, i, tmp);
-        }
-        return copied;
-      }
-      else {
-        return Qnil;
-      }
-    }
-    else
-      rb_raise(rb_eArgError, "Argument should be CvMat or Fixnum");
+
+  try {
+    cvCopy(src, CVARR_WITH_CHECK(_dst), mask);
   }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  return _dst;
 }
 
 VALUE
