@@ -490,16 +490,17 @@ rb_clone(VALUE self)
 }
 
 /*
- * call-seq:
- *   copy(dst = nil, mask = nil) -> cvmat
- *
  * Copies one array to another.
  *
- * <i>dst</i>  - The destination array.
- * <i>mask</i> - Operation mask, 8-bit single channel array; specifies elements of the destination array to be changed.
- *
  * The function copies selected elements from an input array to an output array:
- *     dst(I) = self(I) if mask(I) != 0
+ *     dst(I) = src(I) if mask(I) != 0
+ *
+ * @overload copy(dst = nil, mask = nil)
+ * @param dst [CvMat] The destination array.
+ * @param mask [CvMat] Operation mask, 8-bit single channel array;
+ *     specifies elements of the destination array to be changed.
+ * @return [CvMat] Copy of the array
+ * @opencv_func cvCopy
  */
 VALUE
 rb_copy(int argc, VALUE *argv, VALUE self)
