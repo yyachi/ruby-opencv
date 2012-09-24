@@ -1594,12 +1594,14 @@ rb_convert_scale(VALUE self, VALUE hash)
 }
 
 /*
- * call-seq:
- *   convert_scale_abs(<i>:scale => 1.0, :shift => 0.0</i>)
+ * Scales, computes absolute values, and converts the result to 8-bit.
  *
- * Return new array with optional linear transformation.
- * It is similar to CvMat#convert_scale, but it stores absolute values of the conversion result
- *   mat(I) = (src(I) * scale + (shift, shift, ...)).abs
+ * @overload convert_scale_abs(params)
+ *   @param params [Hash] Transform parameters
+ *   @option params [Number] :scale (1.0) Scale factor
+ *   @option params [Number] :shift (0.0) Value added to the scaled source array elements
+ * @return [CvMat] Converted array
+ * @opencv_func cvConvertScaleAbs
  */
 VALUE
 rb_convert_scale_abs(VALUE self, VALUE hash)
