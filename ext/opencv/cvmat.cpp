@@ -1777,21 +1777,18 @@ rb_div(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   add_weighted(src1, alpha, src2, beta, gamma)
- *
  * Computes the weighted sum of two arrays.
+ * This function calculates the weighted sum of two arrays as follows:
+ *   dst(I) = src1(I) * alpha + src2(I) * beta + gamma
  *
- * src1 - The first source array
- * alpha - Weight for the first array elements
- * src2 - The second source array
- * beta - Weight for the second array elements
- * gamma - Added to each sum
- *
- * The function calculates the weighted sum of two arrays as follows:
- *   dst(I)=src1(I)*alpha+src2(I)*beta+gamma
- * All the arrays must have the same type and the same size (or ROI size). 
- * For types that have limited range this operation is saturating.
+ * @overload add_weighted(src1, alpha, src2, beta, gamma)
+ * @param src1 [CvMat] The first source array.
+ * @param alpha [Number] Weight for the first array elements.
+ * @param src2 [CvMat] The second source array.
+ * @param beta [Number] Weight for the second array elements.
+ * @param gamma [Number] Scalar added to each sum.
+ * @return [CvMat] Result array
+ * @opencv_func cvAddWeighted
  */
 VALUE
 rb_add_weighted(VALUE klass, VALUE src1, VALUE alpha, VALUE src2, VALUE beta, VALUE gamma)
