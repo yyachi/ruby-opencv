@@ -1622,15 +1622,15 @@ rb_convert_scale_abs(VALUE self, VALUE hash)
 }
 
 /*
- * call-seq:
- *   add(<i>val[,mask]</i>) -> cvmat
+ * Computes the per-element sum of two arrays or an array and a scalar.
  *
- * Return new matrix computed per-element sum.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * <i>mask</i> should be CvMat(8bit single-channel).
- * For each element (I)
- *  dst(I) = src1(I) + src2(I) if mask(I) != 0
+ * @overload add(val, mask = nil)
+ * @param val [CvMat, CvScalar] Array or scalar to add
+ * @param mask [CvMat] Optional operation mask, 8-bit single channel array, 
+ *     that specifies elements of the destination array to be changed.
+ * @return [CvMat] Result array
+ * @opencv_func cvAdd
+ * @opencv_func cvAddS
  */
 VALUE
 rb_add(int argc, VALUE *argv, VALUE self)
