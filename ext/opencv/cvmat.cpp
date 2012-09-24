@@ -1742,14 +1742,13 @@ rb_mat_mul(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   div(<i>val[,scale = 1.0]</i>) -> cvmat
+ * Performs per-element division of two arrays or a scalar by an array.
  *
- * Return new matrix computed per-element division.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * For each element (I)
- *  dst(I) = scale * src1(I) / src2(I)
+ * @overload div(val, scale = 1.0)
+ * @param val [CvMat, CvScalar] Array or scalar to divide
+ * @param scale [Number] Scale factor
+ * @return [CvMat] Result array
+ * @opencv_func cvDiv
  */
 VALUE
 rb_div(int argc, VALUE *argv, VALUE self)
