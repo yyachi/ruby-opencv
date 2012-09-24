@@ -1651,15 +1651,15 @@ rb_add(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   sub(<i>val[,mask]</i>) -> cvmat
+ * Calculates the per-element difference between two arrays or array and a scalar.
  *
- * Return new matrix computed per-element difference.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * <i>mask</i> should be CvMat(8bit single-channel).
- * For each element (I)
- *  dst(I) = src1(I) - src2(I) if mask(I) != 0
+ * @overload sub(val, mask = nil)
+ * @param val [CvMat, CvScalar] Array or scalar to subtract
+ * @param mask [CvMat] Optional operation mask, 8-bit single channel array, 
+ *     that specifies elements of the destination array to be changed.
+ * @return [CvMat] Result array
+ * @opencv_func cvSub
+ * @opencv_func cvSubS
  */
 VALUE
 rb_sub(int argc, VALUE *argv, VALUE self)
