@@ -1712,13 +1712,15 @@ rb_mul(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   mat_mul(<i>val[,shiftvec]</i>) -> cvmat
- * Performs matrix multiplication
- *   dst = src1 * src2 + shiftvec
- * <i>val</i> and <i>shiftvec</i> should be CvMat
- * All the matrices should have the same data type and coordinated sizes.
- * Real or complex floating-point matrices are supported.
+ * Calculates the product of two arrays.
+ *   dst = self * val + shiftvec
+ *
+ * @overload mat_mul(val, shiftvec = nil)
+ * @param val [CvMat] Array to multiply
+ * @param shiftvec [CvMat] Optional translation vector
+ * @return [CvMat] Result array
+ * @opencv_func cvMatMul
+ * @opencv_func cvMatMulAdd
  */
 VALUE
 rb_mat_mul(int argc, VALUE *argv, VALUE self)
