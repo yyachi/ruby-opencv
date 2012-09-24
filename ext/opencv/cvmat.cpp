@@ -1680,14 +1680,13 @@ rb_sub(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   mul(<i>val[,scale = 1.0]</i>) -> cvmat
+ * Calculates the per-element scaled product of two arrays.
  *
- * Return new matrix computed per-element product.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * For each element (I)
- *  dst(I) = scale * src1(I) * src2(I)
+ * @overload mul(val, scale = 1.0)
+ * @param val [CvMat, CvScalar] Array or scalar to multiply
+ * @param scale [Number] Optional scale factor.
+ * @return [CvMat] Result array
+ * @opencv_func cvMul
  */
 VALUE
 rb_mul(int argc, VALUE *argv, VALUE self)
