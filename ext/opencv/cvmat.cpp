@@ -1562,11 +1562,15 @@ rb_lut(VALUE self, VALUE lut)
 }
 
 /*
- * call-seq:
- *   convert_scale(<i>:depth => nil, :scale => 1.0, :shift => 0.0</i>)
+ * Converts one array to another with optional linear transformation.
  *
- * Return new array with optional linear transformation.
- *   mat(I) = src(I) * scale + (shift, shift, ...)
+ * @overload convert_scale(params)
+ *   @param params [Hash] Transform parameters
+ *   @option params [Integer] :depth (same as self) Depth of the destination array
+ *   @option params [Number] :scale (1.0) Scale factor
+ *   @option params [Number] :shift (0.0) Value added to the scaled source array elements
+ * @return [CvMat] Converted array
+ * @opencv_func cvConvertScale
  */
 VALUE
 rb_convert_scale(VALUE self, VALUE hash)
