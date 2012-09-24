@@ -1538,16 +1538,15 @@ rb_rand_shuffle_bang(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
+ * Performs a look-up table transform of an array.
+ *
+ * @overload lut(lut)
  *   lut(<i>lookup_table</i>) -> cvmat
- *
- * Return new matrix performed lookup-table transform.
- *
- * <i>lookup_table</i> should be CvMat that have 256 element (e.g. 1x256 matrix).
- * Otherwise, raise CvStatusBadArgument error.
- *
- * And <i>lookup_table</i> should either have a single-channel, or the same number of channels.
- * When single-channel lookup-table given, same table is used for all channels.
+ * @param lut [CvMat] Look-up table of 256 elements. In case of multi-channel source array,
+ *     the table should either have a single channel (in this case the same table is used
+ *     for all channels) or the same number of channels as in the source array.
+ * @return [CvMat] Transformed array
+ * @opencv_func cvLUT
  */
 VALUE
 rb_lut(VALUE self, VALUE lut)
