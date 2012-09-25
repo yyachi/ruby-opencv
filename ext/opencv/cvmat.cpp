@@ -1894,11 +1894,11 @@ rb_xor(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   not -> cvmat
+ * Returns an array which elements are bit-wise invertion of source array.
  *
- * Return new matrix performed per-element bit-wise inversion.
- *  dst(I) =~ src(I)
+ * @overload not
+ * @return [CvMat] Result array
+ * @opencv_func cvNot
  */
 VALUE
 rb_not(VALUE self)
@@ -1907,10 +1907,11 @@ rb_not(VALUE self)
 }
 
 /*
- * call-seq:
- *   not! -> self
+ * Inverts every bit of an array.
  *
- * Performe per-element bit-wise inversion.
+ * @overload not!
+ * @return [CvMat] Result array
+ * @opencv_func cvNot
  */
 VALUE
 rb_not_bang(VALUE self)
