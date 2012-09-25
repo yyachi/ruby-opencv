@@ -1948,11 +1948,13 @@ rb_cmp_internal(VALUE self, VALUE val, int operand)
 }
 
 /*
- * call-seq:
- *   eq(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "equal" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "equal".
- *  dst(I) = (self(I) == val(I) ? 0xFF : 0)
+ * @overload eq(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_eq(VALUE self, VALUE val)
@@ -1961,11 +1963,13 @@ rb_eq(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   gt(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "greater than" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "greater than".
- *  dst(I) = (self(I) > val(I) ? 0xFF : 0)
+ * @overload gt(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_gt(VALUE self, VALUE val)
@@ -1974,11 +1978,13 @@ rb_gt(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   ge(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "greater than or equal" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "greater or equal".
- *  dst(I) = (self(I) >= val(I) ? 0xFF : 0)
+ * @overload ge(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_ge(VALUE self, VALUE val)
@@ -1987,11 +1993,13 @@ rb_ge(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   lt(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "less than" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "less than".
- *  dst(I) = (self(I) < val(I) ? 0xFF : 0)
+ * @overload lt(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_lt(VALUE self, VALUE val)
@@ -2000,11 +2008,13 @@ rb_lt(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   le(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "less than or equal" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "less or equal".
- *  dst(I) = (self(I) <= val(I) ? 0xFF : 0)
+ * @overload le(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_le(VALUE self, VALUE val)
@@ -2013,11 +2023,13 @@ rb_le(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   ne(<i>val</i>) -> cvmat
+ * Performs the per-element comparison "not equal" of two arrays or an array and scalar value.
  *
- * Return new matrix performed per-element comparision "not equal".
- *  dst(I) = (self(I) != val(I) ? 0xFF : 0)
+ * @overload ne(val)
+ * @param val [CvMat, CvScalar, Number] Array, scalar or number to compare
+ * @return [CvMat] Result array
+ * @opencv_func cvCmp
+ * @opencv_func cvCmpS
  */
 VALUE
 rb_ne(VALUE self, VALUE val)
