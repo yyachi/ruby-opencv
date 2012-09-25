@@ -1865,14 +1865,15 @@ rb_or(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   xor(<i>val[,mask]</i>) -> cvmat
+ * Calculates the per-element bit-wise "exclusive or" operation on two arrays or an array and a scalar.
  *
- * Return new matrix computed per-element bit-wise "exclusive or" operation.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * For each element (I)
- *  dst(I) = src1(I) ^ src2(I) if mask(I) != 0
+ * @overload xor(val, mask = nil)
+ * @param val [CvMat, CvScalar] Array or scalar to calculate bit-wise xor operation.
+ * @param mask [CvMat] Optional operation mask, 8-bit single channel array, that specifies
+ *     elements of the destination array to be changed.
+ * @return [CvMat] Result array
+ * @opencv_func cvXor
+ * @opencv_func cvXorS
  */
 VALUE
 rb_xor(int argc, VALUE *argv, VALUE self)
