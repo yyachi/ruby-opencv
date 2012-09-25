@@ -1836,14 +1836,15 @@ rb_and(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   or(<i>val[,mask]</i>) -> cvmat
+ * Calculates the per-element bit-wise disjunction of two arrays or an array and a scalar.
  *
- * Return new matrix computed per-element bit-wise disjunction.
- * <i>val</i> should be CvMat or CvScalar.
- * If <i>val</i> is CvMat, it must have same type (depth and channel).
- * For each element (I)
- *  dst(I) = src1(I) | src2(I) if mask(I) != 0
+ * @overload or(val, mask = nil)
+ * @param val [CvMat, CvScalar] Array or scalar to calculate bit-wise disjunction
+ * @param mask [CvMat] Optional operation mask, 8-bit single channel array, that specifies
+ *     elements of the destination array to be changed.
+ * @return [CvMat] Result array
+ * @opencv_func cvOr
+ * @opencv_func cvOrS
  */
 VALUE
 rb_or(int argc, VALUE *argv, VALUE self)
