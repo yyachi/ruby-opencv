@@ -2076,12 +2076,13 @@ rb_in_range(VALUE self, VALUE min, VALUE max)
 }
 
 /*
- * call-seq:
- *   abs_diff(<i>val</i>) -> cvmat
+ * Computes the per-element absolute difference between two arrays or between an array and a scalar.
  *
- * Calculate absolute difference between two.
- * <i>val</i> should be CvMat that have same size and same type, or CvScalar.
- *  dst(I) = (src(I) - val(I)).abs
+ * @overload abs_diff(val)
+ * @param val [CvMat, CvScalar] Array or scalar to compute absolute difference
+ * @return [CvMat] Result array
+ * @opencv_func cvAbsDiff
+ * @opencv_func cvAbsDiffS
  */
 VALUE
 rb_abs_diff(VALUE self, VALUE val)
