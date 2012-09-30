@@ -2038,13 +2038,14 @@ rb_ne(VALUE self, VALUE val)
 }
 
 /*
- * call-seq:
- *   in_range(<i>min, max</i>) -> cvmat
+ * Checks if array elements lie between the elements of two other arrays.
  *
- * Check that element lie between two object.
- * <i>min</i> and <i>max</i> should be CvMat that have same size and type, or CvScalar.
- * Return new matrix performed per-element,
- *  dst(I) = within the range ? 0xFF : 0
+ * @overload in_range(min, max)
+ * @param min [CvMat, CvScalar] Inclusive lower boundary array or a scalar.
+ * @param max [CvMat, CvScalar] Inclusive upper boundary array or a scalar.
+ * @return [CvMat] Result array
+ * @opencv_func cvInRange
+ * @opencv_func cvInRangeS
  */
 VALUE
 rb_in_range(VALUE self, VALUE min, VALUE max)
