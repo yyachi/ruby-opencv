@@ -2393,8 +2393,8 @@ rb_abs_diff(VALUE self, VALUE val)
 VALUE
 rb_normalize(int argc, VALUE *argv, VALUE self)
 {
-  VALUE alphaVal, betaVal, normTypeVal;
-  rb_scan_args(argc, argv, "03", &alphaVal, &betaVal, &normTypeVal);
+  VALUE alphaVal, betaVal, normTypeVal, maskVal;
+  rb_scan_args(argc, argv, "04", &alphaVal, &betaVal, &normTypeVal, &maskVal);
   
   const double alpha = alphaVal != Qnil ? NUM2DBL(alphaVal) : 1.0;
   const double beta = betaVal != Qnil ? NUM2DBL(betaVal) : 0.0;
@@ -2405,11 +2405,18 @@ rb_normalize(int argc, VALUE *argv, VALUE self)
     const cv::Mat selfMat(CVMAT(self));
     cv::Mat destMat(CVMAT(dest));
     
-    cv::normalize(selfMat, destMat, alpha, beta, normType);
+    if (NIL_P(maskVal)) {
+      cv::normalize(selfMat, destMat, alpha, beta, normType);
+    }
+    else {
+      cv::Mat maskMat(MASK(maskVal));
+      cv::normalize(selfMat, destMat, alpha, beta, normType, -1, maskMat);
+    }
     
   } catch (cv::Exception& e) {
     raise_cverror(e);
   }
+
   return dest;
 }
 
