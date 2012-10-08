@@ -2280,13 +2280,12 @@ rb_min_max_loc(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   dot_product(<i>mat</i>) -> float
+ * Calculates the dot product of two arrays in Euclidean metrics.
  *
- * Calculates dot product of two arrays in Euclidian metrics.
- * <i>mat</i> should be CvMat have same size and same type.
- *
- *  src1.src2 = sum(src1(I) * src2(I))
+ * @overload dot_product(mat)
+ * @param mat [CvMat] An array to calculate the dot product.
+ * @return [Number] The dot product of two arrays.
+ * @opencv_func cvDotProduct
  */
 VALUE
 rb_dot_product(VALUE self, VALUE mat)
