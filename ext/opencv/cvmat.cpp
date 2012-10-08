@@ -2165,12 +2165,11 @@ rb_count_non_zero(VALUE self)
 }
 
 /*
- * call-seq:
- *   sum -> scalar
+ * Calculates the sum of array elements.
  *
- * Return summerizes elements as CvScalar. Independently for each channel.
- *
- * note: If COI is setted in IplImage, the method processes the selected channel only and store the sum to the first component scalar[0].
+ * @overload sum
+ * @return [CvScalar] The sum of array elements.
+ * @opencv_func cvSum
  */
 VALUE
 rb_sum(VALUE self)
