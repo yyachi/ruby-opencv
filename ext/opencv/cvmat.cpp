@@ -2374,25 +2374,21 @@ rb_perspective_transform(VALUE self, VALUE mat)
 }
 
 /*
- * call-seq:
- *  mul_transposed(<i>:order => 0 or 1, :delta => cvmat, :scale => number</i>)
+ * Calculates the product of a matrix and its transposition.
  *
- * Calculates the product of self and its transposition.
- *
- * options
- * * :order -> should be 0 or 1 (default is 0)
- *    see below.
- * * :delta -> should be CvMat (default is nil)
- *     An optional array, subtracted from source before multiplication.
- * * :scale -> should be a number (default is 1.0)
- *     An optional scaling
- *
- * mul_transposed evaluates:
- *   :order => 0
+ * This function calculates the product of <tt>self</tt> and its transposition:
+ *   if :order = 0
  *     dst = scale * (self - delta) * (self - delta)T
- *   :order => 1
+ *   otherwise
  *     dst = scale * (self - delta)T * (self - delta)
  *
+ * @overload mul_transposed(options)
+ *   @param options [Hash] Options
+ *   @option options [Integer] :order (0) Flag specifying the multiplication ordering, should be 0 or 1.
+ *   @option options [CvMat] :delta (nil) Optional delta matrix subtracted from source before the multiplication.
+ *   @option options [Number] :scale (1.0) Optional scale factor for the matrix product.
+ * @return [CvMat] Result array.
+ * @opencv_func cvMulTransposed
  */
 VALUE
 rb_mul_transposed(int argc, VALUE *argv, VALUE self)
