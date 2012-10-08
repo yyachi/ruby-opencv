@@ -2461,11 +2461,11 @@ rb_transpose(VALUE self)
 }
 
 /*
- * call-seq:
- *   det -> float
+ * Returns the determinant of a square floating-point matrix.
  *
- * Return determinant of matrix.
- * <i>self</i> should be single-channel and floating-point depth.
+ * @overload det
+ * @return [Number] The determinant of the matrix.
+ * @opencv_func cvDet
  */
 VALUE
 rb_det(VALUE self)
