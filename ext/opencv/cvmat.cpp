@@ -2420,10 +2420,11 @@ rb_mul_transposed(int argc, VALUE *argv, VALUE self)
 
 
 /*
- * call-seq:
- *   trace -> scalar
+ * Returns the trace of a matrix.
  *
- * Returns trace of matrix. "trace" is sum of diagonal elements of the matrix.
+ * @overload trace
+ * @return [CvScalar] The trace of a matrix.
+ * @opencv_func cvTrace
  */
 VALUE
 rb_trace(VALUE self)
