@@ -2440,10 +2440,11 @@ rb_trace(VALUE self)
 }
 
 /*
- * call-seq:
- *   transpose -> cvmat
+ * Transposes a matrix.
  *
- * Return transposed matrix.
+ * @overload transpose
+ * @return [CvMat] Transposed matrix.
+ * @opencv_func cvTranspose
  */
 VALUE
 rb_transpose(VALUE self)
