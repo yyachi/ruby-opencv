@@ -2231,10 +2231,11 @@ rb_avg_sdv(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   sdv(<i>[mask]</i>) -> std_dev(as scalar)
- *
- * Return the standard deviation of elements as CvScalar. Independently for each channel.
+ * Calculates a standard deviation of array elements.
+ * @overload sdv(mask = nil)
+ * @param mask [CvMat] Optional operation mask.
+ * @return [CvScalar] The standard deviation of array elements.
+ * @opencv_func cvAvgSdv
  */
 VALUE
 rb_sdv(int argc, VALUE *argv, VALUE self)
