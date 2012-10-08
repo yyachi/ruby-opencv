@@ -2301,11 +2301,12 @@ rb_dot_product(VALUE self, VALUE mat)
 }
 
 /*
- * call-seq:
- *   cross_product(<i>mat</i>) -> cvmat
+ * Calculates the cross product of two 3D vectors.
  *
- * Calculate cross product of two 3D vectors.
- * <i>mat</i> should be CvMat have same size and same type.
+ * @overload cross_product(mat)
+ * @param mat [CvMat] A vector to calculate the cross product.
+ * @return [CvMat] The cross product of two vectors.
+ * @opencv_func cvCrossProduct
  */
 VALUE
 rb_cross_product(VALUE self, VALUE mat)
