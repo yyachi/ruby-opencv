@@ -2104,12 +2104,13 @@ rb_abs_diff(VALUE self, VALUE val)
 /*
  * Normalizes the norm or value range of an array.
  *
- * @overload normalize(alpha = 1.0, beta = 0.0, norm_type = 4)
+ * @overload normalize(alpha = 1.0, beta = 0.0, norm_type = 4, mask = nil)
  * @param alpha [Number] Norm value to normalize to or the lower range boundary
  *     in case of the range normalization.
  * @param beta [Number] Upper range boundary in case of the range normalization.
  *     It is not used for the norm normalization.
  * @param norm_type [Integer] Normalization type.
+ * @param mask [CvMat] Optional operation mask.
  * @return [CvMat] Normalized array.
  * @opencv_func cv::normalize
  */
