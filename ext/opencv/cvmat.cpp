@@ -2185,10 +2185,11 @@ rb_sum(VALUE self)
 }
 
 /*
- * call-seq:
- *   avg(<i>[mask]</i>) -> mean(as scalar)
- *
- * Return the average(mean) of elements as CvScalar. Independently for each channel.
+ * Calculates an average (mean) of array elements.
+ * @overload avg(mask = nil)
+ * @param mask [CvMat] Optional operation mask.
+ * @return [CvScalar] The average of array elements.
+ * @opencv_func cvAvg
  */
 VALUE
 rb_avg(int argc, VALUE *argv, VALUE self)
