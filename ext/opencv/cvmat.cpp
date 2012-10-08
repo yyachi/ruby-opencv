@@ -2207,12 +2207,12 @@ rb_avg(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   avg_sdv(<i>mask</i>) -> [mean(as scalar), std_dev(as scalar)]
- *
- * Calculates the average value and standard deviation of array elements, independently for each channel.
- *
- * note: same as [CvMat#avg, CvMat#sdv]
+ * Calculates a mean and standard deviation of array elements.
+ * @overload avg_sdv(mask = nil)
+ * @param mask [CvMat] Optional operation mask.
+ * @return [Array<CvScalar>] <tt>[mean, stddev]</tt>,
+ *     where <tt>mean</tt> is the computed mean value and <tt>stddev</tt> is the computed standard deviation.
+ * @opencv_func cvAvgSdv
  */
 VALUE
 rb_avg_sdv(int argc, VALUE *argv, VALUE self)
