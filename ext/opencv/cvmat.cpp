@@ -2324,11 +2324,13 @@ rb_cross_product(VALUE self, VALUE mat)
 }
 
 /*
- * call-seq:
- *   transform(<i>transmat[,shiftvec]</i>) -> cvmat
+ * Performs the matrix transformation of every array element.
  *
- * performs matrix transform of every element.
- *  dst(I) = transmat * src(I) + shiftvec
+ * @overload transform(transmat, shiftvec = nil)
+ * @param transmat [CvMat] Transformation 2x2 or 2x3 floating-point matrix.
+ * @param shiftvec [CvMat] Optional translation vector.
+ * @return [CvMat] Transformed array.
+ * @opencv_func cvTransform
  */
 VALUE
 rb_transform(int argc, VALUE *argv, VALUE self)
