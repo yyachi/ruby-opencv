@@ -2351,19 +2351,12 @@ rb_transform(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   perspective_transform(<i>mat</i>) -> cvmat
+ * Performs the perspective matrix transformation of vectors.
  *
- * Return performed perspective matrix transform of vector array.
- * <i>mat</i> should be 3x3 or 4x4 transform matrix (CvMat).
- * Every element (by treating it as 2D or 3D vector) in the following way:
- *   (x, y, z) -> (x'/w, y'/w, z'/w) or
- *   (x, y) -> (x'/w, y'/w)
- * where
- *   (x', y', z', w') = mat4x4*(x, y, z, 1) or
- *   (x', y', w') = mat3x3*(x, y, 1)
- * and
- *   w = w' if w'!=0, inf otherwise.
+ * @overload perspective_transform(mat)
+ * @param mat [CvMat] 3x3 or 4x4 floating-point transformation matrix.
+ * @return [CvMat] Transformed vector.
+ * @opencv_func cvPerspectiveTransform
  */
 VALUE
 rb_perspective_transform(VALUE self, VALUE mat)
