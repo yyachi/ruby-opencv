@@ -2253,13 +2253,14 @@ rb_sdv(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   min_max_loc(<i>[mask]</i>) -> [min_val, max_val, min_loc(as point), max_loc(as point)]
+ * Finds the global minimum and maximum in an array.
  *
- * Finds minimum and maximum element values and their positions.
- * The extremums are searched over the whole array, selected ROI(in case of IplImage) or, if mask is not NULL, in the specified array region.
- * If the array has more than one channel, it must be IplImage with COI set.
- * In case if multi-dimensional arrays min_loc.x and max_loc.x will contain raw (linear) positions of the extremums.
+ * @overload min_max_loc(mask = nil)
+ * @param mask [CvMat] Optional mask used to select a sub-array.
+ * @return [Array<Number, CvPoint>] <tt>[min_val, max_val, min_loc, max_loc]</tt>, where
+ *   <tt>min_val</tt>, <tt>max_val</tt> are minimum, maximum values as <tt>Number</tt> and 
+ *   <tt>min_loc</tt>, <tt>max_loc</tt> are minimum, maximum locations as <tt>CvPoint</tt>, respectively.
+ * @opencv_func cvMinMaxLoc
  */
 VALUE
 rb_min_max_loc(int argc, VALUE *argv, VALUE self)
