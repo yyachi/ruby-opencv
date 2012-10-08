@@ -2145,13 +2145,11 @@ rb_normalize(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   count_non_zero -> int
+ * Counts non-zero array elements.
  *
- * Returns the number of non-zero elements.
- *   result = sumI arr(I)!=0
- *
- * In case of IplImage both ROI and COI are supported.
+ * @overload count_non_zero
+ * @return [Integer] The number of non-zero elements.
+ * @opencv_func cvCountNonZero
  */
 VALUE
 rb_count_non_zero(VALUE self)
