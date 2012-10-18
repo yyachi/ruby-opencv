@@ -2481,22 +2481,15 @@ rb_det(VALUE self)
 }
 
 /*
- * call-seq:
- *   invert(<i>inversion_method=:lu[,delta]</i>) -> float
- *
  * Finds inverse or pseudo-inverse of matrix.
- * <i>inversion_method</i> should be following symbol.
- * * :lu
- *     Gaussian elimincation with optimal pivot element chose.
- *     Return self determinant (self must be square).
- * * :svd
- *     Singular value decomposition(SVD) method.
- *     Return the inversed condition number of self(ratio of the smallest singular value to the largest singular value)
- *     and 0 if self is all zeros. The SVD method calculate a pseudo-inverse matrix if self is singular.
- * * :svd_sym or :svd_symmetric
- *     SVD method for a symmetric positively-defined matrix.
  *
- * <i>self</i> type should be single-channel and floating-point matrix.
+ * @overload invert(inversion_method = :lu)
+ * @param inversion_method [Symbol] Inversion method.
+ *   * <tt>:lu</tt> - Gaussian elimincation with optimal pivot element chose.
+ *   * <tt>:svd</tt> - Singular value decomposition(SVD) method.
+ *   * <tt>:svd_sym</tt> - SVD method for a symmetric positively-defined matrix.
+ * @return [Number] Inverse or pseudo-inverse of matrix.
+ * @opencv_func cvInvert
  */
 VALUE
 rb_invert(int argc, VALUE *argv, VALUE self)
