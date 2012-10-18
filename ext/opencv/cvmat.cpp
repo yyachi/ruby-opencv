@@ -2603,17 +2603,13 @@ rb_svbksb(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   eigenvv!(<i>[eps = 0.0]</i>) -> [eigen_vectors(cvmat), eigen_values(cvmat)]
+ * Computes eigenvalues and eigenvectors of a symmetric matrix.
+ * <tt>self</tt> must have 1-channel <tt>CV_32F</tt> or <tt>CV_64F</tt> type,
+ * square size and be symmetrical.
  *
- * Computes eigenvalues and eigenvectors of symmetric matrix.
- * <i>self</i> should be symmetric square matrix. <i>self</i> is modified during the processing.
- *
- *   self * eigen_vectors(i,:)' = eigen_values(i) * eigen_vectors(i,:)'
- *
- * Currently the function is slower than #svd yet less accurate, so if <i>self</i> is known to be positively-defined
- * (e.g., it is a convariation matrix), it is recommanded to use #svd to find eigenvalues and eigenvectors of <i>self</i>,
- * especially if eigenvectors are not required.
+ * @overload eigenvv
+ * @return [Array<CvMat>] Array of <tt>[eigenvalues, eigenvectors]</tt>
+ * @opencv_func cvEigenVV
  */
 VALUE
 rb_eigenvv(int argc, VALUE *argv, VALUE self)
@@ -2630,6 +2626,7 @@ rb_eigenvv(int argc, VALUE *argv, VALUE self)
     int type = cvGetElemType(self_ptr);
     eigen_vectors = new_object(size, type);
     eigen_values = new_object(size.height, 1, type);
+    // NOTE: eps, lowidx, highidx are ignored in the current OpenCV implementation.
     cvEigenVV(self_ptr, CVARR(eigen_vectors), CVARR(eigen_values), eps, lowidx, highidx);
   }
   catch (cv::Exception& e) {
