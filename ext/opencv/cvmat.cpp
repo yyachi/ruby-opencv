@@ -2539,10 +2539,17 @@ rb_solve(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   svd(<i>l[flag=0]</i>)
- *
- * Performs singular value decomposition of real floating-point matrix.
+ * Performs SVD of a matrix
+ * @overload svd(flag = 0)
+ * @param flag [Integer] Operation flags.
+ *   * <tt>CV_SVD_MODIFY_A</tt> - Use the algorithm to modify the decomposed matrix. It can save space and speed up processing.
+ *   * <tt>CV_SVD_U_T</tt> - Indicate that only a vector of singular values <tt>w</tt> is to be computed, while <tt>u</tt> and <tt>v</tt> will be set to empty matrices.
+ *   * <tt>CV_SVD_V_T</tt> - When the matrix is not square, by default the algorithm produces <tt>u</tt> and <tt>v</tt> matrices of sufficiently large size for the further A reconstruction. If, however, <tt>CV_SVD_V_T</tt> flag is specified, <tt>u</tt> and <tt>v</tt> will be full-size square orthogonal matrices.
+ * @return [Array<CvMat>] Array of the computed values <tt>[w, u, v]</tt>, where
+ *   * <tt>w</tt> - Computed singular values
+ *   * <tt>u</tt> - Computed left singular vectors
+ *   * <tt>v</tt> - Computed right singular vectors
+ * @opencv_func cvSVD
  */
 VALUE
 rb_svd(int argc, VALUE *argv, VALUE self)
