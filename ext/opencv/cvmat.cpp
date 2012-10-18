@@ -2510,21 +2510,16 @@ rb_invert(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * call-seq:
- *   solve(<i>mat, inversion_method=:lu</i>)
+ * Solves one or more linear systems or least-squares problems.
  *
- * Solves linear system or least-squares problem (the latter is possible with SVD method).
- *
- * <i>inversion_method</i> should be following symbol.
- * * :lu
- *     Gaussian elimincation with optimal pivot element chose.
- *     Return self determinant (self must be square).
- * * :svd
- *     Singular value decomposition(SVD) method.
- *     Return the inversed condition number of self(ratio of the smallest singular value to the largest singular value)
- *     and 0 if self is all zeros. The SVD method calculate a pseudo-inverse matrix if self is singular.
- * * :svd_sym or :svd_symmetric
- *     SVD method for a symmetric positively-defined matrix.
+ * @overload solve(mat, inversion_method = :lu)
+ * @param mat [CvMat] Input matrix on the right-hand side of the system.
+ * @param inversion_method [Symbol] Inversion method.
+ *   * <tt>:lu</tt> - Gaussian elimincation with optimal pivot element chose.
+ *   * <tt>:svd</tt> - Singular value decomposition(SVD) method.
+ *   * <tt>:svd_sym</tt> - SVD method for a symmetric positively-defined matrix.
+ * @return [Number] Output solution.
+ * @opencv_func cvInvert
  */
 VALUE
 rb_solve(int argc, VALUE *argv, VALUE self)
