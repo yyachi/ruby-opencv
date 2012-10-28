@@ -31,7 +31,7 @@ EOF
 
   p.urls = ['http://blueruby.mydns.jp/opencv']
 
-  p.extra_dev_deps << ['rake-compiler', '>= 0'] << ['hoe-gemspec'] << ['rspec']
+  p.extra_dev_deps << ['rake-compiler', '>= 0'] << ['hoe-gemspec']
 
   Rake::ExtensionTask.new('opencv', spec) do |ext|
     ext.lib_dir = File.join('lib', 'opencv')
