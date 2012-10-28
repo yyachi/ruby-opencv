@@ -2512,25 +2512,27 @@ rb_invert(int argc, VALUE *argv, VALUE self)
 /*
  * Solves one or more linear systems or least-squares problems.
  *
- * @overload solve(mat, inversion_method = :lu)
- * @param mat [CvMat] Input matrix on the right-hand side of the system.
+ * @overload solve(src1, src2, inversion_method = :lu)
+ * @param src1 [CvMat] Input matrix on the left-hand side of the system.
+ * @param src2 [CvMat] Input matrix on the right-hand side of the system.
  * @param inversion_method [Symbol] Inversion method.
  *   * <tt>:lu</tt> - Gaussian elimincation with optimal pivot element chose.
  *   * <tt>:svd</tt> - Singular value decomposition(SVD) method.
  *   * <tt>:svd_sym</tt> - SVD method for a symmetric positively-defined matrix.
  * @return [Number] Output solution.
- * @opencv_func cvInvert
+ * @scope class
+ * @opencv_func cvSolve
  */
 VALUE
 rb_solve(int argc, VALUE *argv, VALUE self)
 {
-  VALUE mat, symbol;
-  rb_scan_args(argc, argv, "11", &mat, &symbol);
+  VALUE src1, src2, symbol;
+  rb_scan_args(argc, argv, "21", &src1, &src2, &symbol);
   VALUE dest = Qnil;
-  CvArr* arr_ptr = CVARR_WITH_CHECK(mat);
+  CvArr* src2_ptr = CVARR_WITH_CHECK(src2);
   try {
-    dest = new_mat_kind_object(cvGetSize(arr_ptr), self);
-    cvSolve(CVARR(self), arr_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+    dest = new_mat_kind_object(cvGetSize(src2_ptr), src2);
+    cvSolve(CVARR_WITH_CHECK(src1), src2_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -5768,7 +5770,7 @@ init_ruby_class()
   rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
   rb_define_alias(rb_klass, "determinant", "det");
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
-  rb_define_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
+  rb_define_singleton_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
   rb_define_method(rb_klass, "svd", RUBY_METHOD_FUNC(rb_svd), -1);
   rb_define_method(rb_klass, "svbksb", RUBY_METHOD_FUNC(rb_svbksb), -1);
   rb_define_method(rb_klass, "eigenvv", RUBY_METHOD_FUNC(rb_eigenvv), -1);

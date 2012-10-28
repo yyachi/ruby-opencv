@@ -332,13 +332,13 @@ rb_seq_push(VALUE self, VALUE args, int flag)
 {
   CvSeq *seq = CVSEQ(self);
   VALUE klass = seqblock_class(seq), object;
-  void *elem = NULL;
+  volatile void *elem = NULL;
   int len = RARRAY_LEN(args);
   for (int i = 0; i < len; ++i) {
     object = RARRAY_PTR(args)[i];
     if (CLASS_OF(object) == klass) {
       if (TYPE(object) == T_FIXNUM) {
-	int int_elem = FIX2INT(object);
+	volatile int int_elem = FIX2INT(object);
 	elem = &int_elem;
       }
       else {
@@ -346,9 +346,9 @@ rb_seq_push(VALUE self, VALUE args, int flag)
       }
       try {
 	if (flag == CV_FRONT)
-	  cvSeqPushFront(seq, elem);
+	  cvSeqPushFront(seq, (const void*)elem);
 	else
-	  cvSeqPush(seq, elem);
+	  cvSeqPush(seq, (const void*)elem);
       }
       catch (cv::Exception& e) {
 	raise_cverror(e);
