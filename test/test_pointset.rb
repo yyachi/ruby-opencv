@@ -118,7 +118,7 @@ class TestPointSet < OpenCVTestCase
     assert_equal(64, center.y.to_i)
     assert_in_delta(32.959, circle.radius, 0.001)
 
-    assert_raise(CvStsBadArg) {
+    assert_raise(CvStsBadSize) {
       @contour2.min_enclosing_circle
     }
   end
