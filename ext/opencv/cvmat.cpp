@@ -309,7 +309,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "det", RUBY_METHOD_FUNC(rb_det), 0);
   rb_define_alias(rb_klass, "determinant", "det");
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
-  rb_define_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
+  rb_define_singleton_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
   rb_define_method(rb_klass, "svd", RUBY_METHOD_FUNC(rb_svd), -1);
   rb_define_method(rb_klass, "svbksb", RUBY_METHOD_FUNC(rb_svbksb), -1);
   rb_define_method(rb_klass, "eigenvv", RUBY_METHOD_FUNC(rb_eigenvv), -1);
@@ -2801,7 +2801,7 @@ rb_invert(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   solve(<i>mat, inversion_method=:lu</i>)
+ *   solve(<i>src1, src2, inversion_method=:lu</i>)
  *
  * Solves linear system or least-squares problem (the latter is possible with SVD method).
  *
@@ -2819,13 +2819,13 @@ rb_invert(int argc, VALUE *argv, VALUE self)
 VALUE
 rb_solve(int argc, VALUE *argv, VALUE self)
 {
-  VALUE mat, symbol;
-  rb_scan_args(argc, argv, "11", &mat, &symbol);
+  VALUE src1, src2, symbol;
+  rb_scan_args(argc, argv, "21", &src1, &src2, &symbol);
   VALUE dest = Qnil;
-  CvArr* arr_ptr = CVARR_WITH_CHECK(mat);
+  CvArr* src2_ptr = CVARR_WITH_CHECK(src2);
   try {
-    dest = new_mat_kind_object(cvGetSize(arr_ptr), self);
-    cvSolve(CVARR(self), arr_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
+    dest = new_mat_kind_object(cvGetSize(src2_ptr), src2);
+    cvSolve(CVARR_WITH_CHECK(src1), src2_ptr, CVARR(dest), CVMETHOD("INVERSION_METHOD", symbol, CV_LU));
   }
   catch (cv::Exception& e) {
     raise_cverror(e);

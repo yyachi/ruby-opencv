@@ -2353,29 +2353,35 @@ class TestCvMat < OpenCVTestCase
     elems2 = [3,
               4,
               5]
-    m0 = create_cvmat(3, 3, :cv32f, 1) { |j, i, c|
+    a = create_cvmat(3, 3, :cv32f, 1) { |j, i, c|
       CvScalar.new(elems1[c])
     }
     b = create_cvmat(3, 1, :cv32f, 1) { |j, i, c|
       CvScalar.new(elems2[c])
     }
 
-    m1 = m0.solve(b)
-    m2 = m0.solve(b, :lu)
-    m3 = m0.solve(b, :svd)
-    m4 = m0.solve(b, :svd_sym)
-    m5 = m0.solve(b, :svd_symmetric)
+    m1 = CvMat.solve(a, b)
+    m2 = CvMat.solve(a, b, :lu)
+    m3 = CvMat.solve(a, b, :svd)
+    m4 = CvMat.solve(a, b, :svd_sym)
+    m5 = CvMat.solve(a, b, :svd_symmetric)
     expected = [2, -2, 1]
-    [m1, m2, m3, m4, m5].each { |m|
+    [m1, m2, m3].each { |m|
       assert_equal(b.width, m.width)
-      assert_equal(m0.height, m.height)
+      assert_equal(a.height, m.height)
       assert_each_cvscalar(m, 0.001) { |j, i, c|
         CvScalar.new(expected[c])
       }
     }
 
     assert_raise(TypeError) {
-      m0.solve(b, DUMMY_OBJ)
+      CvMat.solve(DUMMY_OBJ, b)
+    }
+    assert_raise(TypeError) {
+      CvMat.solve(a, DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      CvMat.solve(a, b, DUMMY_OBJ)
     }
   end
 
