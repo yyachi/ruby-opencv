@@ -14,7 +14,7 @@ OpenCV wrapper for Ruby
 == FEATURES/PROBLEMS:
 
 * Some OpenCV functions are wrapped.
-* Ruby 1.8.7, 1.9.3 and OpenCV 2.4.2 are supported.
+* Ruby 1.8.7, 1.9.3 and OpenCV 2.4.3 are supported.
 
 == DEPENDENCIES:
 
