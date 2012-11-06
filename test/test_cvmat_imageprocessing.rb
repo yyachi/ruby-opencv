@@ -1477,15 +1477,15 @@ class TestCvMat_imageprocessing < OpenCVTestCase
       mat[i] = (mat0[i][0] <= 100) ? CvScalar.new(0) : CvScalar.new(255);
     }
 
-    [mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 50, 10, 50),
-     mat.hough_circles(:gradient, 1.5, 40, 100, 50, 10, 50),
-     mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 50),
-     mat.hough_circles(:gradient, 1.5, 40, 100, 50)].each { |seq|
+    [mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 40, 10, 50),
+     mat.hough_circles(:gradient, 1.5, 40, 100, 40, 10, 50),
+     mat.hough_circles(CV_HOUGH_GRADIENT, 1.5, 40, 100, 40),
+     mat.hough_circles(:gradient, 1.5, 40, 100, 40)].each { |seq|
       assert_equal(2, seq.size)
     }
 
     # Uncomment the following lines to show the result
-    # seq = mat.hough_circles(:gradient, 1.5, 40, 100, 50, 10, 50)
+    # seq = mat.hough_circles(:gradient, 1.5, 40, 100, 40, 10, 50)
     # seq.each { |circle|
     #   mat0.circle!(circle.center, circle.radius, :color => CvColor::Red, :thickness => 2)
     # }
@@ -1656,26 +1656,31 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   end
 
   def test_snake_image
-    mat = CvMat.load(FILENAME_LINES, CV_LOAD_IMAGE_GRAYSCALE)
+    radius = 40
+    center = CvPoint.new(128, 128)
+    mat = CvMat.new(center.y * 2, center.x * 2, :cv8u, 1).zero!
+    mat.circle!(center, radius, :color => CvColor::White, :thickness => -1)
+
     num_points = 10
-    alpha = 0.45
-    beta = 0.35
-    gamma = 0.2
+    alpha = 0.05
+    beta = 0.05
+    gamma = 0.9
+
     arr_alpha = [alpha] * num_points
     arr_beta = [beta] * num_points
     arr_gamma = [gamma] * num_points
-
-    size = CvSize.new(15, 15)
-    term_criteria = CvTermCriteria.new(100, 0.0)
+    size = CvSize.new(3, 3)
+    term_criteria = CvTermCriteria.new(100, num_points / 2)
     
     # initialize contours
     points = []
-    center = CvPoint.new(mat.cols / 2, mat.rows / 2)
     num_points.times { |i|
       x = center.x * Math.cos(2 * Math::PI * i / num_points) + center.x
       y = center.y * Math.sin(2 * Math::PI * i / num_points) + center.y
       points << CvPoint.new(x, y)
     }
+
+    acceptable_error = 50
 
     # test snake_image
     # calc_gradient = true
@@ -1683,14 +1688,12 @@ class TestCvMat_imageprocessing < OpenCVTestCase
      mat.snake_image(points, alpha, beta, gamma, size, term_criteria, true),
      mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria),
      mat.snake_image(points, arr_alpha, arr_beta, arr_gamma, size, term_criteria, true)].each { |result|
-      expected_points = [[147, 101], [138, 144], [95, 142], [56, 123], [17, 104],
-                         [25, 62], [62, 40], [99, 18], [142, 18], [157, 59]]
       assert_equal(num_points, result.size)
-      result.zip(expected_points) { |pair|
-        actual = pair[0]
-        expected = pair[1]
-        assert_equal(expected[0], actual.x)
-        assert_equal(expected[1], actual.y)
+      result.each { |pt|
+        x = pt.x - center.x
+        y = pt.y - center.y
+        error = Math.sqrt((x * x + y * y - radius * radius).abs)
+        assert(error < acceptable_error)
       }
     }
 
@@ -1700,11 +1703,11 @@ class TestCvMat_imageprocessing < OpenCVTestCase
       expected_points = [[149, 102], [139, 144], [95, 144], [56, 124], [17, 105],
                          [25, 61], [63, 39], [101, 17], [145, 17], [158, 59]]
       assert_equal(num_points, result.size)
-      result.zip(expected_points) { |pair|
-        actual = pair[0]
-        expected = pair[1]
-        assert_equal(expected[0], actual.x)
-        assert_equal(expected[1], actual.y)
+      result.each { |pt|
+        x = pt.x - center.x
+        y = pt.y - center.y
+        error = Math.sqrt((x * x + y * y - radius * radius).abs)
+        assert(error < acceptable_error)
       }
     }
 
@@ -1735,6 +1738,15 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     assert_raise(CvBadNumChannels) {
       CvMat.new(10, 10, :cv8u, 3).snake_image(points, alpha, beta, gamma, size, term_criteria)
     }
+
+    # Uncomment the following lines to show the result
+    # result = mat.clone.GRAY2BGR
+    # pts = mat.snake_image(points, alpha, beta, gamma, size, term_criteria)
+    # w = GUI::Window.new('HoughCircle')
+    # result.poly_line!([pts], :color => CvColor::Red, :is_closed => true, :thickness => 2)
+    # result.poly_line!([points], :color => CvColor::Yellow, :is_closed => true, :thickness => 2)
+    # w.show result
+    # GUI::wait_key
   end
 
   def test_optical_flow_hs

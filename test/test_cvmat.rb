@@ -1926,28 +1926,29 @@ class TestCvMat < OpenCVTestCase
   end
 
   def test_in_range
+    lower, upper = 10, 20
     m0 = create_cvmat(6, 4, :cv8u, 1) { |j, i, c|
       CvScalar.new(c + 5, 0, 0, 0)
     }
     m1 = create_cvmat(6, 4, :cv8u, 1) { |j, i, c|
-      CvScalar.new(10, 0, 0, 0)
+      CvScalar.new(lower, 0, 0, 0)
     }
     m2 = create_cvmat(6, 4, :cv8u, 1) { |j, i, c|
-      CvScalar.new(20, 0, 0, 0)
+      CvScalar.new(upper, 0, 0, 0)
     }
-    s1 = CvScalar.new(10, 0, 0, 0)
-    s2 = CvScalar.new(20, 0, 0, 0)
+    s1 = CvScalar.new(lower, 0, 0, 0)
+    s2 = CvScalar.new(upper, 0, 0, 0)
 
     m3 = m0.in_range(m1, m2)
     m4 = m0.in_range(s1, s2)
-    m5 = m0.in_range(10, 20)
+    m5 = m0.in_range(lower, upper)
 
     [m3, m4, m5].each { |m|
       assert_equal(m0.height, m.height)
       assert_equal(m0.width, m.width)
       assert_each_cvscalar(m) { |j, i, c|
         val = m0[j, i][0]
-        n = ((val >= 10) and (val < 20)) ? 0xff : 0
+        n = ((lower..upper).include? val) ? 0xff : 0
         CvScalar.new(n, 0, 0, 0)
       }
     }
@@ -2333,10 +2334,19 @@ class TestCvMat < OpenCVTestCase
     m5 = m0.invert(:svd_symmetric)
 
     expected = [3, -1, 0, -2.5, 2, -1.5, 1, -1, 1]
-    [m1, m2, m3, m4, m5].each { |m|
+    [m1, m2, m3].each { |m|
       assert_equal(m0.width, m.width)
       assert_equal(m0.height, m.height)
       assert_each_cvscalar(m, 0.001) { |j, i, c|
+        CvScalar.new(expected[c])
+      }
+    }
+
+    expected = [3, -1, 0, -1.0, 0.15, 0.23, 0, 0.23, -0.15]
+    [m4, m5].each { |m|
+      assert_equal(m0.width, m.width)
+      assert_equal(m0.height, m.height)
+      assert_each_cvscalar(m, 0.1) { |j, i, c|
         CvScalar.new(expected[c])
       }
     }
@@ -2767,9 +2777,9 @@ class TestCvMat < OpenCVTestCase
      CvMat.find_fundamental_mat(mat1, mat2, CV_FM_LMEDS)].each { |f_mat|
       assert_equal(3, f_mat.rows)
       assert_equal(3, f_mat.cols)
-      expected = [0.000032, 0.000882, -0.012426,
-                  -0.000854, 0.000091, 0.210136,
-                  0.001034, -0.2405784, 1.000000]
+      expected = [-2.79e-05, -0.0009362, 0.0396139,
+                  0.0010285, -2.48e-05, -0.3946452,
+                  -0.0322220, 0.3695115, 1.0]
       expected.each_with_index { |val, i|
         assert_in_delta(val, f_mat[i][0], 1.0e-5)
       }
@@ -2783,15 +2793,15 @@ class TestCvMat < OpenCVTestCase
     assert_equal(1, status.rows)
     assert_equal(num_points, status.cols)
 
-    expected_f_mat = [0.000009, 0.000101, -0.009396,
-                      -0.000113, -0.000002, 0.049380,
-                      0.003335, -0.045132, 1.000000]
+    expected_f_mat = [6.48e-05, 0.001502, -0.086036,
+                      -0.001652, 3.86e-05, 0.638690,
+                      0.059998, -0.597778, 1.0]
     expected_f_mat.each_with_index { |val, i|
       assert_in_delta(val, f_mat[i][0], 1.0e-5)
     }
-    expected_status = [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1 ]
+    expected_status = [1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0]
     expected_status.each_with_index { |val, i|
-      assert_in_delta(val, status[i][0], 1.0e-5)
+      assert_equal(val, status[i][0].to_i)
     }
 
     [CV_FM_7POINT, CV_FM_8POINT, CV_FM_RANSAC, CV_FM_LMEDS].each { |method|
@@ -2805,7 +2815,9 @@ class TestCvMat < OpenCVTestCase
         CvMat.find_fundamental_mat(mat1, mat2, method, DUMMY_OBJ)
       }
     }
-    CvMat.find_fundamental_mat(mat1, mat2, DUMMY_OBJ, :with_status => true)
+    assert_raise(TypeError) {
+      CvMat.find_fundamental_mat(mat1, mat2, DUMMY_OBJ, :with_status => true)
+    }
   end
 
   def test_compute_correspond_epilines
