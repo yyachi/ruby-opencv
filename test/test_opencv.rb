@@ -164,12 +164,6 @@ class TestOpenCV < OpenCVTestCase
     assert_equal(2, INVERSION_METHOD[:svd_sym])
     assert_equal(2, INVERSION_METHOD[:svd_symmetric])
 
-    # Flags for DFT and DCT
-    assert_equal(0, DXT_FLAG[:forward])
-    assert_equal(1, DXT_FLAG[:inverse])
-    assert_equal(2, DXT_FLAG[:scale])
-    assert_equal(4, DXT_FLAG[:rows])
-
     # Interpolation methods
     assert_equal(0, INTERPOLATION_METHOD[:nn])
     assert_equal(1, INTERPOLATION_METHOD[:linear])

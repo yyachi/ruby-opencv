@@ -17,9 +17,9 @@ class TestCvMat_dxt < OpenCVTestCase
       CvScalar.new(s, s)
     }
 
-    mat1 = mat0.dft(:forward)
-    mat2 = mat0.dft(:forward, :scale)
-    mat3 = mat0.dft(:forward, :scale).dft(:inverse)
+    mat1 = mat0.dft(CV_DXT_FORWARD)
+    mat2 = mat0.dft(CV_DXT_FORWARD | CV_DXT_SCALE)
+    mat3 = mat0.dft(CV_DXT_FORWARD | CV_DXT_SCALE).dft(CV_DXT_INVERSE)
     n.times { |j|
       if j == 1
         assert_in_delta(n / 2, mat1[j, 0][0], 0.001)
@@ -44,6 +44,9 @@ class TestCvMat_dxt < OpenCVTestCase
     assert_raise(TypeError) {
       mat0.dft(DUMMY_OBJ)
     }
+    assert_raise(TypeError) {
+      mat0.dft(CV_DXT_FORWARD, DUMMY_OBJ)
+    }
   end
 
   def test_dft_2D
@@ -59,9 +62,9 @@ class TestCvMat_dxt < OpenCVTestCase
       c += 1
     }
 
-    mat1 = mat0.dft(:forward)
-    mat2 = mat0.dft(:forward, :scale)
-    mat3 = mat0.dft(:forward, :scale).dft(:inverse)
+    mat1 = mat0.dft(CV_DXT_FORWARD)
+    mat2 = mat0.dft(CV_DXT_FORWARD | CV_DXT_SCALE)
+    mat3 = mat0.dft(CV_DXT_FORWARD | CV_DXT_SCALE).dft(CV_DXT_INVERSE)
     n.times { |j|
       n.times { |i|
         if i == 0 and j == 1
@@ -95,8 +98,8 @@ class TestCvMat_dxt < OpenCVTestCase
       CvScalar.new(s)
     }
 
-    mat1 = mat0.dct
-    mat2 = mat0.dct(:forward).dct(:inverse)
+    mat1 = mat0.dct(CV_DXT_FORWARD)
+    mat2 = mat0.dct(CV_DXT_FORWARD).dct(CV_DXT_INVERSE)
     expected1 = [0, 1.599647, -0.765367, -0.906127, 0, -0.180240, 0, -0.042290]
     n.times { |j|
       assert_in_delta(expected1[j], mat1[j, 0][0], 0.001)
@@ -121,8 +124,8 @@ class TestCvMat_dxt < OpenCVTestCase
       c += 1
     }
 
-    mat1 = mat0.dct(:forward)
-    mat2 = mat0.dct(:forward).dct(:inverse)
+    mat1 = mat0.dct(CV_DXT_FORWARD)
+    mat2 = mat0.dct(CV_DXT_FORWARD).dct(CV_DXT_INVERSE)
     n.times { |j|
       n.times { |i|
         if i == 0 and j == 1
