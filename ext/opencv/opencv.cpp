@@ -321,7 +321,16 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_COMP_CHISQR", INT2FIX(CV_COMP_CHISQR));
   rb_define_const(rb_module, "CV_COMP_INTERSECT", INT2FIX(CV_COMP_INTERSECT));
   rb_define_const(rb_module, "CV_COMP_BHATTACHARYYA", INT2FIX(CV_COMP_BHATTACHARYYA));
-  
+
+  /* DFT and DCT flags */
+  rb_define_const(rb_module, "CV_DXT_FORWARD", INT2FIX(CV_DXT_FORWARD));
+  rb_define_const(rb_module, "CV_DXT_INVERSE", INT2FIX(CV_DXT_INVERSE));
+  rb_define_const(rb_module, "CV_DXT_SCALE", INT2FIX(CV_DXT_SCALE));
+  rb_define_const(rb_module, "CV_DXT_INV_SCALE", INT2FIX(CV_DXT_INV_SCALE));
+  rb_define_const(rb_module, "CV_DXT_INVERSE_SCALE", INT2FIX(CV_DXT_INVERSE_SCALE));
+  rb_define_const(rb_module, "CV_DXT_ROWS", INT2FIX(CV_DXT_ROWS));
+
+
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */
   rb_define_const(rb_module, "INVERSION_METHOD", inversion_method);
@@ -329,14 +338,6 @@ define_ruby_module()
   REGISTER_CVMETHOD(inversion_method, "svd", CV_SVD);
   REGISTER_CVMETHOD(inversion_method, "svd_sym", CV_SVD_SYM);
   REGISTER_CVMETHOD(inversion_method, "svd_symmetric", CV_SVD_SYM);
-    
-  VALUE dxt_flag = rb_hash_new();
-  /* {:forward, :inverse, :scale, :rows}: DFT and DCT flags */
-  rb_define_const(rb_module, "DXT_FLAG", dxt_flag);
-  REGISTER_CVMETHOD(dxt_flag, "forward", CV_DXT_FORWARD);
-  REGISTER_CVMETHOD(dxt_flag, "inverse", CV_DXT_INVERSE);
-  REGISTER_CVMETHOD(dxt_flag, "scale", CV_DXT_SCALE);
-  REGISTER_CVMETHOD(dxt_flag, "rows", CV_DXT_ROWS);
     
   VALUE interpolation_method = rb_hash_new();
   /* {:nn, :linear, :area, :cubic}: Interpolation method */

@@ -2665,44 +2665,29 @@ rb_mahalonobis(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   dft(<i>anyflags...</i>) -> cvmat
+ *   dft(flags = CV_DXT_FORWARD, nonzero_rows = 0) -> cvmat
  *
  * Performs forward or inverse Discrete Fourier Transform(DFT) of 1D or 2D floating-point array.
- * Argument should be following symbol or combination of these.
  *
- * * :forward or :inverse
- *     Do forward or inverse transform. The result is not scaled.
- * * :scale
- *     Scale the result: divide it by the number of array elements.
- * * :rows
- *     Do forward or inverse transform of every individual row of the self.
- *     This flag allow user to transofrm multiple vectors simulaneously and can be used to decrease the overhand
- *     (which sometimes several times larger then the processing itself), to do 3D and higher-dimensional transforms etc.
- *
- * e.g.
- *   mat.dft(:inverse)
- *   mat.dft(:forward, :scale)  etc...
+ * Params:
+ *   * flags - transformation flags
+ *   * nonzero_rows - when the parameter is not zero, the function assumes that only
+ *       the first <i>nonzero_rows</i> rows of the input array (CV_DXT_INVERSE is not set)
+ *       or only the first nonzero_rows of the output array (CV_DXT_INVERSE is set) contain non-zeros.
  */
 VALUE
 rb_dft(int argc, VALUE *argv, VALUE self)
 {
-  int type = CV_DXT_FORWARD;
-  int num_rows = 0;
-  if (argc > 0) {
-    int num_flags = argc;
-    if (FIXNUM_P(argv[argc -1])) {
-      num_flags = argc - 1;
-      num_rows = FIX2INT(argv[argc - 1]);
-    }
-    for (int i = 0; i < num_flags; ++i) {
-      type |= CVMETHOD("DXT_FLAG", argv[i]);
-    }
-  }
+  VALUE flag_value, nonzero_row_value;
+  rb_scan_args(argc, argv, "02", &flag_value, &nonzero_row_value);
+
+  int flags = NIL_P(flag_value) ? CV_DXT_FORWARD : NUM2INT(flag_value);
+  int nonzero_rows = NIL_P(nonzero_row_value) ? 0 : NUM2INT(nonzero_row_value);
   CvArr* self_ptr = CVARR(self);
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvDFT(self_ptr, CVARR(dest), type, num_rows);
+    cvDFT(self_ptr, CVARR(dest), flags, nonzero_rows);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -2712,32 +2697,25 @@ rb_dft(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   dct(<i>anyflags...</i>) -> cvmat
+ *   dct(flags = CV_DXT_FORWARD) -> cvmat
  *
  * Performs forward or inverse Discrete Cosine Transform(DCT) of 1D or 2D floating-point array.
- * Argument should be following symbol or combination of these.
  *
- * * :forward or :inverse
- *     Do forward or inverse transform.
- * * :rows
- *     Do forward or inverse transform of every individual row of the self.
- *     This flag allow user to transofrm multiple vectors simulaneously and can be used to decrease the overhand
- *     (which sometimes several times larger then the processing itself), to do 3D and higher-dimensional transforms etc.
+ * Params:
+ *   * flags - transformation flags
  */
 VALUE
 rb_dct(int argc, VALUE *argv, VALUE self)
 {
-  int type = CV_DXT_FORWARD;
-  if (argc > 0) {
-    for (int i = 0; i < argc; ++i) {
-      type |= CVMETHOD("DXT_FLAG", argv[i]);
-    }
-  }
+  VALUE flag_value;
+  rb_scan_args(argc, argv, "01", &flag_value);
+
+  int flags = NIL_P(flag_value) ? CV_DXT_FORWARD : NUM2INT(flag_value);
   CvArr* self_ptr = CVARR(self);
   VALUE dest = Qnil;
   try {
     dest = new_mat_kind_object(cvGetSize(self_ptr), self);
-    cvDCT(self_ptr, CVARR(dest), type);
+    cvDCT(self_ptr, CVARR(dest), flags);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
