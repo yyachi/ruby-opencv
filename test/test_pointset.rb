@@ -122,9 +122,5 @@ class TestPointSet < OpenCVTestCase
       @contour2.min_enclosing_circle
     }
   end
-
-  def test_calc_pgh
-    flunk('FIXME: PointSet#calc_pgh is not implemented yet.')
-  end
 end
 

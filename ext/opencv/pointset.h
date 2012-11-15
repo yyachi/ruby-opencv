@@ -29,7 +29,6 @@ VALUE rb_check_contour_convexity(VALUE self);
 VALUE rb_convexity_defects(VALUE self, VALUE hull);
 VALUE rb_min_area_rect2(VALUE self);
 VALUE rb_min_enclosing_circle(VALUE self);
-VALUE rb_calc_pgh(VALUE self);
 
 __NAMESPACE_END_POINT_SET
 
