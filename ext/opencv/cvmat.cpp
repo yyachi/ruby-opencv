@@ -344,7 +344,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "corner_min_eigen_val", RUBY_METHOD_FUNC(rb_corner_min_eigen_val), -1);
   rb_define_method(rb_klass, "corner_harris", RUBY_METHOD_FUNC(rb_corner_harris), -1);
   rb_define_method(rb_klass, "find_chessboard_corners", RUBY_METHOD_FUNC(rb_find_chessboard_corners), -1);
-  rb_define_private_method(rb_klass, "__find_corner_sub_pix", RUBY_METHOD_FUNC(rbi_find_corner_sub_pix), -1);
+  rb_define_method(rb_klass, "find_corner_sub_pix", RUBY_METHOD_FUNC(rb_find_corner_sub_pix), 4);
   rb_define_method(rb_klass, "good_features_to_track", RUBY_METHOD_FUNC(rb_good_features_to_track), -1);
 
   rb_define_method(rb_klass, "rect_sub_pix", RUBY_METHOD_FUNC(rb_rect_sub_pix), -1);
@@ -3744,27 +3744,42 @@ rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   find_corner_sub_pix(<i></i>)
+ *   find_corner_sub_pix(corners, win_size, zero_zone, criteria) -> Array<CvPoint2D32f>
  *
- * Refines corner locations.
- * This method iterates to find the sub-pixel accurate location of corners,
- * or radial saddle points, as shown in on the picture below.
+ * Returns refined corner locations.
+ *
+ * corners - Initial coordinates of the input corners and refined coordinates provided for output.
+ * win_size - Half of the side length of the search window.
+ * zero_zone - Half of the size of the dead region in the middle of the search zone over
+ *             which the summation in the formula below is not done.
+ * criteria - Criteria for termination of the iterative process of corner refinement.
  */
 VALUE
-rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self)
+rb_find_corner_sub_pix(VALUE self, VALUE corners, VALUE win_size, VALUE zero_zone, VALUE criteria)
 {
-  /*
-    VALUE corners, win, zero_zone, criteria;
-    rb_scan_args(argc, argv, "13", &corners, &win, &zero_zone, &criteria);
-    if (!rb_obj_is_kind_of(corners, mPointSet::rb_module()))
-    rb_raise(rb_eTypeError, "argument 1 (corners) should be %s.", rb_class2name(mPointSet::rb_module()));
-    int count = CVSEQ(corners)->total;
-    VALUE storage = cCvMemStorage::new_object();
-    CvPoint2D32f *pointset = POINTSET2D32f(corners);
-    //cvFindCornerSubPix(CVARR(self), pointset, count, VALUE_TO_CVSIZE(win), VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
-    //return cCvSeq::new_sequence();
-    */
-  return Qnil;
+  Check_Type(corners, T_ARRAY);
+  int count = RARRAY_LEN(corners);
+  CvPoint2D32f* corners_buff = ALLOCA_N(CvPoint2D32f, count);
+  VALUE* corners_ptr = RARRAY_PTR(corners);
+
+  for (int i = 0; i < count; i++) {
+    corners_buff[i] = *(CVPOINT2D32F(corners_ptr[i]));
+  }
+
+  try {
+    cvFindCornerSubPix(CVARR(self), corners_buff, count, VALUE_TO_CVSIZE(win_size),
+		       VALUE_TO_CVSIZE(zero_zone), VALUE_TO_CVTERMCRITERIA(criteria));
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  VALUE refined_corners = rb_ary_new2(count);
+  for (int i = 0; i < count; i++) {
+    rb_ary_store(refined_corners, i, cCvPoint2D32f::new_object(corners_buff[i]));
+  }
+
+  return refined_corners;
 }
 
 /*

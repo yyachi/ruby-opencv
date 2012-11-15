@@ -214,7 +214,36 @@ class TestCvMat_imageprocessing < OpenCVTestCase
   end
 
   def test_find_corner_sub_pix
-    flunk('FIXME: CvMat#find_corner_sub_pix is not implemented yet.')
+    mat = CvMat.load(FILENAME_CHESSBOARD, CV_LOAD_IMAGE_GRAYSCALE)
+    pattern_size = CvSize.new(4, 4)
+    corners = mat.find_chessboard_corners(pattern_size)
+    expected = [[39, 39], [79, 39], [119, 39], [159, 39], [39, 79], [79, 79],
+                [119, 79], [159, 78], [38, 119], [79, 119], [119, 119], [158, 118],
+                [39, 159], [79, 159], [119, 159], [159, 159]]
+
+    refined_corners = mat.find_corner_sub_pix(corners, CvSize.new(3, 3), CvSize.new(-1, -1),
+                                                     CvTermCriteria.new(20, 0.03));
+    assert_equal(expected.size, refined_corners.size)
+    expected.zip(refined_corners).each { |e, a|
+      assert_in_delta(e[0], a.x, 3.0)
+      assert_in_delta(e[1], a.y, 3.0)
+    }
+
+    assert_raise(TypeError) {
+      mat.find_corner_sub_pix(DUMMY_OBJ, CvSize.new(3, 3), CvSize.new(-1, -1),
+                              CvTermCriteria.new(20, 0.03));
+    }
+    assert_raise(TypeError) {
+      mat.find_corner_sub_pix(corners, DUMMY_OBJ, CvSize.new(-1, -1),
+                              CvTermCriteria.new(20, 0.03));
+    }
+    assert_raise(TypeError) {
+      mat.find_corner_sub_pix(corners, CvSize.new(3, 3), DUMMY_OBJ,
+                              CvTermCriteria.new(20, 0.03));
+    }
+    assert_raise(TypeError) {
+      mat.find_corner_sub_pix(corners, CvSize.new(3, 3), CvSize.new(-1, -1), DUMMY_OBJ);
+    }
   end
 
   def test_good_features_to_track
