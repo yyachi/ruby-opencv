@@ -330,6 +330,12 @@ define_ruby_module()
   rb_define_const(rb_module, "CV_DXT_INVERSE_SCALE", INT2FIX(CV_DXT_INVERSE_SCALE));
   rb_define_const(rb_module, "CV_DXT_ROWS", INT2FIX(CV_DXT_ROWS));
 
+  /* FindChessboardCorners flags */
+  rb_define_const(rb_module, "CV_CALIB_CB_ADAPTIVE_THRESH", INT2FIX(CV_CALIB_CB_ADAPTIVE_THRESH));
+  rb_define_const(rb_module, "CV_CALIB_CB_NORMALIZE_IMAGE", INT2FIX(CV_CALIB_CB_NORMALIZE_IMAGE));
+  rb_define_const(rb_module, "CV_CALIB_CB_FILTER_QUADS", INT2FIX(CV_CALIB_CB_FILTER_QUADS));
+  rb_define_const(rb_module, "CV_CALIB_CB_FAST_CHECK", INT2FIX(CV_CALIB_CB_FAST_CHECK));
+
 
   VALUE inversion_method = rb_hash_new();
   /* {:lu, :svd, :svd_sym(:svd_symmetric)}: Inversion method */

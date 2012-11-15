@@ -343,6 +343,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "corner_eigenvv", RUBY_METHOD_FUNC(rb_corner_eigenvv), -1);
   rb_define_method(rb_klass, "corner_min_eigen_val", RUBY_METHOD_FUNC(rb_corner_min_eigen_val), -1);
   rb_define_method(rb_klass, "corner_harris", RUBY_METHOD_FUNC(rb_corner_harris), -1);
+  rb_define_method(rb_klass, "find_chessboard_corners", RUBY_METHOD_FUNC(rb_find_chessboard_corners), -1);
   rb_define_private_method(rb_klass, "__find_corner_sub_pix", RUBY_METHOD_FUNC(rbi_find_corner_sub_pix), -1);
   rb_define_method(rb_klass, "good_features_to_track", RUBY_METHOD_FUNC(rb_good_features_to_track), -1);
 
@@ -3696,6 +3697,49 @@ rb_corner_harris(int argc, VALUE *argv, VALUE self)
     raise_cverror(e);
   }
   return dest;
+}
+
+/*
+ * call-seq:
+ *   find_chessboard_corners(pattern_size, flag = CV_CALIB_CB_ADAPTIVE_THRESH) -> Array<CvPoint2D32f>
+ *
+ * Returns the positions of internal corners of the chessboard.
+ *
+ * pattern_size (CvSize) - Number of inner corners per a chessboard row and column.
+ * flags (Integer) - Various operation flags that can be zero or a combination of the following values
+ *   * CV_CALIB_CB_ADAPTIVE_THRESH Use adaptive thresholding to convert the image to black and white,
+ *         rather than a fixed threshold level (computed from the average image brightness).
+ *   * CV_CALIB_CB_NORMALIZE_IMAGE Normalize the image gamma with CvMat#equalize_hist() before applying fixed
+ *         or adaptive thresholding.
+ *   * CV_CALIB_CB_FILTER_QUADS Use additional criteria (like contour area, perimeter, square-like shape)
+ *         to filter out false quads extracted at the contour retrieval stage.
+ *   * CALIB_CB_FAST_CHECK Run a fast check on the image that looks for chessboard corners, and shortcut
+ *         the call if none is found. This can drastically speed up the call in the degenerate condition
+ *         when no chessboard is observed.
+ */
+VALUE
+rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self)
+{
+  VALUE pattern_size_val, flag_val;
+  rb_scan_args(argc, argv, "11", &pattern_size_val, &flag_val);
+
+  int flag = NIL_P(flag_val) ? CV_CALIB_CB_ADAPTIVE_THRESH : NUM2INT(flag_val);
+  CvSize pattern_size = VALUE_TO_CVSIZE(pattern_size_val);
+  CvPoint2D32f* corners = ALLOCA_N(CvPoint2D32f, pattern_size.width * pattern_size.height);
+  int num_found_corners = 0;
+  try {
+    cvFindChessboardCorners(CVARR(self), pattern_size, corners, &num_found_corners, flag);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
+  VALUE found_corners = rb_ary_new2(num_found_corners);
+  for (int i = 0; i < num_found_corners; i++) {
+    rb_ary_store(found_corners, i, cCvPoint2D32f::new_object(corners[i]));
+  }
+
+  return found_corners;
 }
 
 /*

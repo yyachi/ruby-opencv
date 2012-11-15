@@ -185,6 +185,34 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     }
   end
 
+  def test_find_chessboard_corners
+    mat = CvMat.load(FILENAME_CHESSBOARD, CV_LOAD_IMAGE_GRAYSCALE)
+    pattern_size = CvSize.new(4, 4)
+    corners1 = mat.find_chessboard_corners(pattern_size)
+    corners2 = mat.find_chessboard_corners(pattern_size, CV_CALIB_CB_ADAPTIVE_THRESH)
+    corners3 = mat.find_chessboard_corners(pattern_size, CV_CALIB_CB_NORMALIZE_IMAGE)
+    corners4 = mat.find_chessboard_corners(pattern_size, CV_CALIB_CB_FILTER_QUADS)
+    corners5 = mat.find_chessboard_corners(pattern_size, CV_CALIB_CB_FAST_CHECK)
+
+    expected = [[39, 39], [79, 39], [119, 39], [159, 39], [39, 79], [79, 79],
+                [119, 79], [159, 78], [38, 119], [79, 119], [119, 119], [158, 118],
+                [39, 159], [79, 159], [119, 159], [159, 159]]
+    [corners1, corners2, corners3, corners4, corners5].each { |corners|
+      assert_equal(expected.size, corners.size)
+      expected.zip(corners).each { |e, a|
+        assert_in_delta(e[0], a.x, 3.0)
+        assert_in_delta(e[1], a.y, 3.0)
+      }
+    }
+
+    assert_raise(TypeError) {
+      mat.find_chessboard_corners(DUMMY_OBJ)
+    }
+    assert_raise(TypeError) {
+      mat.find_chessboard_corners(pattern_size, DUMMY_OBJ)
+    }
+  end
+
   def test_find_corner_sub_pix
     flunk('FIXME: CvMat#find_corner_sub_pix is not implemented yet.')
   end

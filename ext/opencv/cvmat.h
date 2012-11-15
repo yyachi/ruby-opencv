@@ -166,6 +166,7 @@ VALUE rb_pre_corner_detect(int argc, VALUE *argv, VALUE self);
 VALUE rb_corner_eigenvv(int argc, VALUE *argv, VALUE self);
 VALUE rb_corner_min_eigen_val(int argc, VALUE *argv, VALUE self);
 VALUE rb_corner_harris(int argc, VALUE *argv, VALUE self);
+VALUE rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self);
 VALUE rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_good_features_to_track(int argc, VALUE *argv, VALUE self);
 
