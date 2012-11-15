@@ -3701,9 +3701,10 @@ rb_corner_harris(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   find_chessboard_corners(pattern_size, flag = CV_CALIB_CB_ADAPTIVE_THRESH) -> Array<CvPoint2D32f>
+ *   find_chessboard_corners(pattern_size, flag = CV_CALIB_CB_ADAPTIVE_THRESH) -> Array<Array<CvPoint2D32f>, Boolean>
  *
- * Returns the positions of internal corners of the chessboard.
+ * Returns an array which includes the positions of internal corners of the chessboard, and
+ * a parameter indicating whether the complete board was found or not.
  *
  * pattern_size (CvSize) - Number of inner corners per a chessboard row and column.
  * flags (Integer) - Various operation flags that can be zero or a combination of the following values
@@ -3727,8 +3728,9 @@ rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self)
   CvSize pattern_size = VALUE_TO_CVSIZE(pattern_size_val);
   CvPoint2D32f* corners = ALLOCA_N(CvPoint2D32f, pattern_size.width * pattern_size.height);
   int num_found_corners = 0;
+  int pattern_was_found = 0;
   try {
-    cvFindChessboardCorners(CVARR(self), pattern_size, corners, &num_found_corners, flag);
+    pattern_was_found = cvFindChessboardCorners(CVARR(self), pattern_size, corners, &num_found_corners, flag);
   }
   catch (cv::Exception& e) {
     raise_cverror(e);
@@ -3739,7 +3741,8 @@ rb_find_chessboard_corners(int argc, VALUE *argv, VALUE self)
     rb_ary_store(found_corners, i, cCvPoint2D32f::new_object(corners[i]));
   }
 
-  return found_corners;
+  VALUE found = (pattern_was_found > 0) ? Qtrue : Qfalse;
+  return rb_assoc_new(found_corners, found);
 }
 
 /*
