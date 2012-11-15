@@ -132,11 +132,8 @@ VALUE rb_det(VALUE self);
 VALUE rb_invert(int argc, VALUE *argv, VALUE self);
 VALUE rb_solve(int argc, VALUE *argv, VALUE self);
 VALUE rb_svd(int argc, VALUE *argv, VALUE self);
-VALUE rb_svbksb(int argc, VALUE *argv, VALUE self);
 VALUE rb_eigenvv(int argc, VALUE *argv, VALUE self);
 VALUE rb_eigenvv_bang(int argc, VALUE *argv, VALUE self);
-VALUE rb_calc_covar_matrix(int argc, VALUE *argv, VALUE self);
-VALUE rb_mahalonobis(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_dft(int argc, VALUE *argv, VALUE self);
 VALUE rb_dct(int argc, VALUE *argv, VALUE self);
@@ -172,7 +169,6 @@ VALUE rb_corner_harris(int argc, VALUE *argv, VALUE self);
 VALUE rbi_find_corner_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_good_features_to_track(int argc, VALUE *argv, VALUE self);
 
-VALUE rb_sample_line(int argc, VALUE *argv, VALUE self);
 VALUE rb_rect_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_quadrangle_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_resize(int argc, VALUE *argv, VALUE self);
@@ -208,7 +204,6 @@ VALUE rb_draw_contours_bang(int argc, VALUE *argv, VALUE self);
 VALUE rb_pyr_segmentation(VALUE self, VALUE level, VALUE threshold1, VALUE threshold2);
 VALUE rb_pyr_mean_shift_filtering(int argc, VALUE *argv, VALUE self);
 VALUE rb_watershed(VALUE self, VALUE markers);
-
 VALUE rb_moments(int argc, VALUE *argv, VALUE self);
 
 VALUE rb_hough_lines(int argc, VALUE *argv, VALUE self);

@@ -273,10 +273,6 @@ class TestCvMat_imageprocessing < OpenCVTestCase
     mat0.good_features_to_track(0.2, 5, :use_harris => DUMMY_OBJ)
   end
 
-  def test_sample_line
-    flunk('FIXME: CvMat#sample_line is not implemented yet.')
-  end
-
   def test_rect_sub_pix
     mat0 = CvMat.load(FILENAME_LENA256x256, CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH)
     center = CvPoint2D32f.new(mat0.width / 2, mat0.height / 2)

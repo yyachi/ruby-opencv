@@ -311,10 +311,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "invert", RUBY_METHOD_FUNC(rb_invert), -1);
   rb_define_singleton_method(rb_klass, "solve", RUBY_METHOD_FUNC(rb_solve), -1);
   rb_define_method(rb_klass, "svd", RUBY_METHOD_FUNC(rb_svd), -1);
-  rb_define_method(rb_klass, "svbksb", RUBY_METHOD_FUNC(rb_svbksb), -1);
   rb_define_method(rb_klass, "eigenvv", RUBY_METHOD_FUNC(rb_eigenvv), -1);
-  rb_define_method(rb_klass, "calc_covar_matrix", RUBY_METHOD_FUNC(rb_calc_covar_matrix), -1);
-  rb_define_method(rb_klass, "mahalonobis", RUBY_METHOD_FUNC(rb_mahalonobis), -1);
 
   /* drawing function */
   rb_define_method(rb_klass, "line", RUBY_METHOD_FUNC(rb_line), -1);
@@ -349,7 +346,6 @@ void define_ruby_class()
   rb_define_private_method(rb_klass, "__find_corner_sub_pix", RUBY_METHOD_FUNC(rbi_find_corner_sub_pix), -1);
   rb_define_method(rb_klass, "good_features_to_track", RUBY_METHOD_FUNC(rb_good_features_to_track), -1);
 
-  rb_define_method(rb_klass, "sample_line", RUBY_METHOD_FUNC(rb_sample_line), 2);
   rb_define_method(rb_klass, "rect_sub_pix", RUBY_METHOD_FUNC(rb_rect_sub_pix), -1);
   rb_define_method(rb_klass, "quadrangle_sub_pix", RUBY_METHOD_FUNC(rb_quadrangle_sub_pix), -1);
   rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
@@ -2880,18 +2876,6 @@ rb_svd(int argc, VALUE *argv, VALUE self)
 
 /*
  * call-seq:
- *   svbksb
- *
- * not yet.
- */
-VALUE
-rb_svbksb(int argc, VALUE *argv, VALUE self)
-{
-  rb_raise(rb_eNotImpError, "");
-}
-
-/*
- * call-seq:
  *   eigenvv!(<i>[eps = 0.0]</i>) -> [eigen_vectors(cvmat), eigen_values(cvmat)]
  *
  * Computes eigenvalues and eigenvectors of symmetric matrix.
@@ -2924,31 +2908,6 @@ rb_eigenvv(int argc, VALUE *argv, VALUE self)
     raise_cverror(e);
   }
   return rb_ary_new3(2, eigen_vectors, eigen_values);
-}
-
-/*
- * call-seq:
- *   calc_covar_matrix()
- *
- * not yet.
- *
- */
-VALUE
-rb_calc_covar_matrix(int argc, VALUE *argv, VALUE self)
-{
-  rb_raise(rb_eNotImpError, "");
-}
-
-/*
- * call-seq:
- *   mahalonobis(vec, mat) -> float
- *
- * not yet.
- */
-VALUE
-rb_mahalonobis(int argc, VALUE *argv, VALUE self)
-{
-  rb_raise(rb_eNotImpError, "");
 }
 
 
@@ -3824,43 +3783,6 @@ rb_good_features_to_track(int argc, VALUE *argv, VALUE self)
   return corners;
 }
 
-/*
- * call-seq:
- *   sample_line(p1, p2[,connectivity = 8]) {|pixel| }
- *
- * not yet.
- */
-VALUE
-rb_sample_line(int argc, VALUE *argv, VALUE self)
-{
-  /*
-    VALUE p1, p2, connectivity;
-    if (rb_scan_args(argc, argv, "21", &p1, &p2, &connectivity) < 3)
-    connectivity = INT2FIX(8);
-    CvPoint point1 = VALUE_TO_CVPOINT(p1), point2 = VALUE_TO_CVPOINT(p2);
-    int size;
-    switch(FIX2INT(connectivity)) {
-    case 4:
-    size = abs(point2.x - point1.x) + abs(point2.y - point1.y) + 1;
-    break;
-    case 8:
-    size = maxint(abs(point2.x - point1.x) + 1, abs(point2.y - point1.y) + 1);
-    break;
-    default:
-    rb_raise(rb_eArgError, "argument 3(connectivity) should be 4 or 8. 8 is default.");
-    }
-    VALUE buf = cCvMat::new_object(1, size, cvGetElemType(CVARR(self)));
-    cvSampleLine(CVARR(self), point1, point2, CVMAT(buf)->data.ptr, FIX2INT(connectivity));
-    if (rb_block_given_p()) {
-    for(int i = 0; i < size; i++) {
-    //Data_Wrap_Struct(cCvScalar::rb_class(), 0, 0, CVMAT(buf)->data.ptr[]);
-    //rb_yield(cCvScalar::new_object);
-    }
-    }
-    return buf;
-  */
-  return Qnil;
-}
 
 /*
  * call-seq:

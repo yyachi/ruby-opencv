@@ -2483,10 +2483,6 @@ class TestCvMat < OpenCVTestCase
     }
   end
 
-  def test_svdksb
-    flunk('FIXME: CvMat#svdksb is not implemented yet')
-  end
-
   def test_eigenvv
     elems = [6, -2, -3, 7]
     m0 = create_cvmat(2, 2, :cv32f, 1) { |j, i, c|
@@ -2520,14 +2516,6 @@ class TestCvMat < OpenCVTestCase
     assert_raise(TypeError) {
       m0.eigenvv(nil, nil, DUMMY_OBJ)
     }
-  end
-
-  def test_calc_covar_matrix
-    flunk('FIXME: CvMat#calc_covar_matrix is not implemented yet')
-  end
-
-  def test_mahalonobis
-    flunk('FIXME: CvMat#mahalonobis is not implemented yet')
   end
 
   def test_find_homography

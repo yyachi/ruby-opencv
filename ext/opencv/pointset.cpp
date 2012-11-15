@@ -197,13 +197,6 @@ rb_min_enclosing_circle(VALUE self)
   return success ? circle : Qnil;
 }
 
-VALUE
-rb_calc_pgh(VALUE self)
-{
-  /* not yet */
-  return Qnil;
-}
-
 __NAMESPACE_END_POINT_SET
 
 int
