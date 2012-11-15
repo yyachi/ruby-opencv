@@ -289,6 +289,37 @@ class TestCvMat_drawing < OpenCVTestCase
     # snap ['src', mat0], ['result0', dst0], ['result1', dst1]
   end
 
+  def test_draw_chessboard_corners
+    mat0 = CvMat.load(FILENAME_CHESSBOARD, 1)
+    mat1 = mat0.clone
+    pattern_size = CvSize.new(4, 4)
+
+    gray = mat1.BGR2GRAY
+    corners, found = gray.find_chessboard_corners(pattern_size)
+
+    mat2 = mat1.draw_chessboard_corners(pattern_size, corners, found)
+    mat1.draw_chessboard_corners!(pattern_size, corners, found)
+    [mat1, mat2].each { |dst|
+      assert_equal(mat0.class, dst.class)
+      assert_equal(mat0.rows, dst.rows)
+      assert_equal(mat0.cols, dst.cols)
+      assert_equal(mat0.depth, dst.depth)
+    }
+
+    assert_raise(TypeError) {
+      mat1.draw_chessboard_corners(DUMMY_OBJ, corners, found)
+    }
+    assert_raise(TypeError) {
+      mat1.draw_chessboard_corners(pattern_size, DUMMY_OBJ, found)
+    }
+    assert_nothing_raised {
+      mat1.draw_chessboard_corners(pattern_size, corners, DUMMY_OBJ)
+    }
+
+    # Uncomment the following line to show the results
+    # snap mat0, mat1, mat2
+  end
+
   def test_put_text
     m0 = create_cvmat(240, 320, :cv8u, 3) { CvColor::White }
     m1 = m0.clone

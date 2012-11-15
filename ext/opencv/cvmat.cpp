@@ -379,6 +379,8 @@ void define_ruby_class()
   rb_define_method(rb_klass, "find_contours!", RUBY_METHOD_FUNC(rb_find_contours_bang), -1);
   rb_define_method(rb_klass, "draw_contours", RUBY_METHOD_FUNC(rb_draw_contours), -1);
   rb_define_method(rb_klass, "draw_contours!", RUBY_METHOD_FUNC(rb_draw_contours_bang), -1);
+  rb_define_method(rb_klass, "draw_chessboard_corners", RUBY_METHOD_FUNC(rb_draw_chessboard_corners), 3);
+  rb_define_method(rb_klass, "draw_chessboard_corners!", RUBY_METHOD_FUNC(rb_draw_chessboard_corners_bang), 3);
   rb_define_method(rb_klass, "pyr_segmentation", RUBY_METHOD_FUNC(rb_pyr_segmentation), 3);
   rb_define_method(rb_klass, "pyr_mean_shift_filtering", RUBY_METHOD_FUNC(rb_pyr_mean_shift_filtering), -1);
   rb_define_method(rb_klass, "watershed", RUBY_METHOD_FUNC(rb_watershed), 1);
@@ -4913,6 +4915,54 @@ rb_draw_contours_bang(int argc, VALUE *argv, VALUE self)
   catch (cv::Exception& e) {
     raise_cverror(e);
   }
+  return self;
+}
+
+/*
+ * call-seq:
+ *   draw_chessboard_corners(pattern_size, corners, pattern_was_found) -> nil
+ *
+ * Returns an image which is rendered the detected chessboard corners.
+ *
+ * pattern_size (CvSize) - Number of inner corners per a chessboard row and column.
+ * corners (Array<CvPoint2D32f>) - Array of detected corners, the output of CvMat#find_chessboard_corners.
+ * pattern_was_found (Boolean)- Parameter indicating whether the complete board was found or not.
+ */
+VALUE
+rb_draw_chessboard_corners(VALUE self, VALUE pattern_size, VALUE corners, VALUE pattern_was_found)
+{
+  return rb_draw_chessboard_corners_bang(copy(self), pattern_size, corners, pattern_was_found);
+}
+
+/*
+ * call-seq:
+ *   draw_chessboard_corners!(pattern_size, corners, pattern_was_found) -> self
+ *
+ * Renders the detected chessboard corners.
+ *
+ * pattern_size (CvSize) - Number of inner corners per a chessboard row and column.
+ * corners (Array<CvPoint2D32f>) - Array of detected corners, the output of CvMat#find_chessboard_corners.
+ * pattern_was_found (Boolean)- Parameter indicating whether the complete board was found or not.
+ */
+VALUE
+rb_draw_chessboard_corners_bang(VALUE self, VALUE pattern_size, VALUE corners, VALUE pattern_was_found)
+{
+  Check_Type(corners, T_ARRAY);
+  int count = RARRAY_LEN(corners);
+  CvPoint2D32f* corners_buff = ALLOCA_N(CvPoint2D32f, count);
+  VALUE* corners_ptr = RARRAY_PTR(corners);
+  for (int i = 0; i < count; i++) {
+    corners_buff[i] = *(CVPOINT2D32F(corners_ptr[i]));
+  }
+
+  try {
+    int found = (pattern_was_found == Qtrue);
+    cvDrawChessboardCorners(CVARR(self), VALUE_TO_CVSIZE(pattern_size), corners_buff, count, found);
+  }
+  catch (cv::Exception& e) {
+    raise_cverror(e);
+  }
+
   return self;
 }
 
