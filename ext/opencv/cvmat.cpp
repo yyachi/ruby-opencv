@@ -352,6 +352,7 @@ void define_ruby_class()
   rb_define_method(rb_klass, "resize", RUBY_METHOD_FUNC(rb_resize), -1);
   rb_define_method(rb_klass, "warp_affine", RUBY_METHOD_FUNC(rb_warp_affine), -1);
   rb_define_singleton_method(rb_klass, "rotation_matrix2D", RUBY_METHOD_FUNC(rb_rotation_matrix2D), 3);
+  rb_define_singleton_method(rb_klass, "get_affine_transform", RUBY_METHOD_FUNC(rb_get_affine_transform), 2);
   rb_define_method(rb_klass, "warp_perspective", RUBY_METHOD_FUNC(rb_warp_perspective), -1);
   rb_define_singleton_method(rb_klass, "find_homography", RUBY_METHOD_FUNC(rb_find_homograpy), -1);
   rb_define_method(rb_klass, "remap", RUBY_METHOD_FUNC(rb_remap), -1);
@@ -4045,6 +4046,34 @@ rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale)
   return map_matrix;
 }
 
+VALUE
+rb_get_affine_transform(VALUE self, VALUE pts_src, VALUE pts_dst)
+{
+	VALUE map_matrix = new_object(cvSize(3, 2), CV_MAKETYPE(CV_32F, 1));
+	
+	int i, num_points;
+	CvPoint2D32f *s;
+	CvPoint2D32f *d;
+	
+  	Check_Type(pts_src, T_ARRAY);
+  	num_points = RARRAY_LEN(pts_src);
+  	s = ALLOCA_N(CvPoint2D32f, num_points);
+  	d = ALLOCA_N(CvPoint2D32f, num_points);
+
+  	for (i = 0; i < num_points; ++i)
+    	s[i] = VALUE_TO_CVPOINT2D32F(rb_ary_entry(pts_src, i));
+
+  	for (i = 0; i < num_points; ++i)
+    	d[i] = VALUE_TO_CVPOINT2D32F(rb_ary_entry(pts_dst, i));
+  
+	try {
+    	cvGetAffineTransform(s, d, CVMAT(map_matrix));
+  	}
+  	catch (cv::Exception& e) {
+    	raise_cverror(e);
+  	}
+	return map_matrix;
+}
 /*
  * call-seq:
  *   warp_perspective(<i>map_matrix[,interpolation=:linear][,option =:fill_outliers][,fillval=0])</i>) -> cvmat

@@ -175,6 +175,7 @@ VALUE rb_quadrangle_sub_pix(int argc, VALUE *argv, VALUE self);
 VALUE rb_resize(int argc, VALUE *argv, VALUE self);
 VALUE rb_warp_affine(int argc, VALUE *argv, VALUE self);
 VALUE rb_rotation_matrix2D(VALUE self, VALUE center, VALUE angle, VALUE scale);
+VALUE rb_get_affine_transform(VALUE self, VALUE pts_src, VALUE pts_dst);
 VALUE rb_warp_perspective(int argc, VALUE *argv, VALUE self);
 VALUE rb_find_homograpy(int argc, VALUE *argv, VALUE self);
 VALUE rb_remap(int argc, VALUE *argv, VALUE self);
